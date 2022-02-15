@@ -825,6 +825,10 @@ class PageOwnership {
 
 	public static function userpages( $user )
 	{
+		if ( !$user->isRegistered() ) {
+			return [];
+		}
+
 		$pages = self::getUserPagesDB( $user );
 
 		$pages = array_filter( array_map(
