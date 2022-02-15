@@ -1,0 +1,97 @@
+{
+	"name": "PageOwnership",
+	"author": "thomas-topway-it",
+	"version": "1.0.0",
+	"url": "https://www.mediawiki.org/wiki/Extension:PageOwnership",
+	"descriptionmsg": "pageownership-extension-desc",
+	"license-name": "GPL-2.0-or-later",
+	"type": "parserhook",
+	"requires": {
+		"MediaWiki": ">= 1.35.0"
+	},
+	"MessagesDirs": {
+		"PageOwnership": [
+			"i18n"
+		]
+	},
+	"AutoloadClasses": {
+		"PageOwnership": "includes/PageOwnership.php",
+		"PageOwnershipFunctions": "includes/PageOwnershipFunctions.php",
+		"SpecialPageOwnership": "includes/specials/SpecialPageOwnership.php"
+	},
+	"ExtensionMessagesFiles": {
+		"PageOwnershipMagic": "PageOwnershipMagic.i18n.magic.php"
+	},
+	"Hooks": {
+		"getUserPermissionsErrors": "PageOwnership::onGetUserPermissionsErrors",
+		"PageSaveComplete": "PageOwnership::onPageSaveComplete",
+		"PageRenderingHash": "PageOwnership::onPageRenderingHash",
+		"RejectParserCacheValue": "PageOwnership::onRejectParserCacheValue",
+		"ParserOptionsRegister": "PageOwnership::onParserOptionsRegister",
+		"BeforeParserFetchTemplateRevisionRecord": "PageOwnership::onBeforeParserFetchTemplateRevisionRecord",
+		"ParserFetchTemplate_": "PageOwnership::onParserFetchTemplate",	
+		"SMW::Store::AfterQueryResultLookupComplete": "PageOwnership::onSMWStoreAfterQueryResultLookupComplete",
+		"LoadExtensionSchemaUpdates": "PageOwnership::onLoadExtensionSchemaUpdates",
+		"BeforePageDisplay": "PageOwnership::onBeforePageDisplay",
+		"ArticleDeleteComplete": "PageOwnership::onArticleDeleteComplete",
+		"MagicWordwgVariableIDs": "PageOwnership::onMagicWordwgVariableIDs",
+		"ParserGetVariableValueSwitch": "PageOwnership::onParserGetVariableValueSwitch",
+		"SkinTemplateNavigation": "PageOwnership::onSkinTemplateNavigation",
+		"ParserFirstCallInit": "PageOwnership::onParserFirstCallInit",
+		"SkinBuildSidebar": "PageOwnership::onSkinBuildSidebar"
+	},
+	"SpecialPages": {
+		"PageOwnership": "SpecialPageOwnership"
+	},
+	"GroupPermissions": {
+		"pageownership-admin": {
+			"pageownership-caneditunassignedpages": true
+		},
+		"pageownership-editorofunassignedpages": {
+			"pageownership-caneditunassignedpages": true
+		}
+	},
+	"AddGroups": {
+		"pageownership-admin": [
+			"pageownership-admin",
+			"pageownership-editorofunassignedpages"
+		]
+	},
+	"RemoveGroups": {
+		"pageownership-admin": [
+			"pageownership-admin",
+			"pageownership-editorofunassignedpages"
+		]
+	},
+	"AvailableRights": [
+		"pageownership-caneditunassignedpages"
+	],
+	"ResourceModules": {
+		"ext.PageOwnership": {
+			"position": "top",
+			"localBasePath": "resources",
+			"remoteExtPath": "PageOwnership/resources",
+			"scripts": [
+				"page_ownership.js"
+			],
+			"styles": [
+				"style.css"
+			],
+			"dependencies": [
+				"oojs-ui-widgets"
+			]
+		},
+		"ext.PageOwnership.GroupsUsersMultiselectWidget": {
+			"position": "top",
+			"localBasePath": "resources",
+			"remoteExtPath": "PageOwnership/resources",
+			"scripts": [
+				"mw.widgets.GroupsUsersMultiselectWidget.js"
+			],
+			"dependencies": [
+				"oojs-ui-widgets"
+			]
+		}
+	},
+	"manifest_version": 1
+}

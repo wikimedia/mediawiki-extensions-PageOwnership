@@ -1,0 +1,90 @@
+{
+	"specialpages-group-pageownership": "Page Ownership",
+
+	"pageownership-extension-desc": "Implements page ownership based on users and groups through a user-friendly interface",
+
+	"pageownership": "Page Ownership",
+
+	"right-pageownership-caneditunassignedpages": "Can edit unassigned pages (Page Ownership)",
+
+	"// ***see here includes/user7UserGroupMembership.php getGroupMemberName": "",
+	"group-pageownership-editorofunassignedpages-member": "editor of unassigned pages (Page Ownership)",
+	
+	"group-pageownership-admin-member": "admin (Page Ownership)",
+
+	"group-pageownership-editorofunassignedpages": "editor of unassigned pages (Page Ownership)",
+	
+	"group-pageownership-admin": "admin (Page Ownership)",
+
+
+
+	"pageownership-manageownership-form-section-main": "main",
+	"pageownership-manageownership-form-section-role": "role",
+
+	"pageownership-manageownership-form-section-main-label": "",
+	"pageownership-manageownership-form-section-role-label": "",
+
+	"pageownership-manageownership-form-username-label": "username or group",
+	"pageownership-manageownership-form-username-help": "One or more username or group to be assigned with the same privileges",
+
+	"pageownership-manageownership-form-page-label": "page",
+	"pageownership-manageownership-form-page-help": "",
+
+	"pageownership-manageownership-form-role-label": "role", 
+	"pageownership-manageownership-form-role-help": "An editor has a custom set of permissions except the ability to assign other users to pages, an admin has all permissions and a reader only read permissions", 
+
+	"pageownership-manageownership-form-button-submit": "save",
+	"pageownership-manageownership-form-button-cancel": "cancel",
+	"pageownership-manageownership-form-button-delete": "delete",
+
+	"pageownership-manageownership-form-search-legend": "filter search",
+	"pageownership-manageownership-form-search-section": "search form section",
+	"pageownership-manageownership-form-search-editor-label": "username",
+	"pageownership-manageownership-form-search-editor-help": "",
+	"pageownership-manageownership-form-search-created_by-label": "created by",
+	"pageownership-manageownership-form-search-created_by-help": "",
+
+	"pageownership-manageownership-form-search-role-label": "role",
+	"pageownership-manageownership-form-search-role-help": "",
+	"pageownership-manageownership-form-search-submit": "search",
+
+	"pageownership-manageownership-pager-header-page": "page",
+	"pageownership-manageownership-pager-header-usernames": "username or groups",
+	"pageownership-manageownership-pager-header-created_by": "created by",
+	"pageownership-manageownership-pager-header-role": "role",
+	"pageownership-manageownership-pager-header-permissions": "permissions",
+	"pageownership-manageownership-pager-header-actions": "",
+
+	"pageownership-manageownership-form-fieldset-main": "User and permissions",
+
+	"pageownership-manageownership-form-permissions_edit-label": "Edit",
+	"pageownership-manageownership-form-permissions_edit-help": "",
+
+	"pageownership-manageownership-form-permissions_create-label": "Create",
+	"pageownership-manageownership-form-permissions_create-help": "",
+
+	"pageownership-manageownership-form-permissions_manage_properties-label": "Manage properties",
+	"pageownership-manageownership-form-permissions_manage_properties-help": "",
+
+	"pageownership-manageownership-form-subpages-label": "Sub-pages (apply to pages inlcuded in this page)",
+	"pageownership-manageownership-form-subpages-help": "",
+
+	"pageownership-manageownership-form-newrole-legend": "",	
+	"pageownership-manageownership-form-button-new_user": "add permissions",
+
+	"pageownership-manageownership-description-specific": "this page and its subpages",
+	"pageownership-manageownership-description-generic": "any page and their subpages",
+
+	"pageownership-manageownership-description": "Here you can add users with read, edit or admin roles to $1, and to edit existing permissions. An owned page by default becomes accessible only by authorized users. To implicitly moderate a page, add a user or group as editor and to publish it add the group \"all\" as reader.<br><br>",
+
+	"pageownership-manageownership-table-empty": "",
+
+	"pageownership-manageownership-form-updated": "← [[$1|List of permissions]]",
+
+	"pageownership-manageownership-return": "← [[$1|$2]]",
+
+	"pageownership-denied-transclusion-anonymous": "<div class=\"pageownership-denied-transclusion\">Denied transclusion ([[Special:UserLogin|log in]])</div>",
+	"pageownership-denied-transclusion-registered": "<div class=\"pageownership-denied-transclusion\">Denied transclusion</div>"
+
+}
+
