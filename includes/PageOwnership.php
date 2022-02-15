@@ -578,15 +578,20 @@ class PageOwnership {
 
 	// see here
 	// https://www.mediawiki.org/wiki/Manual:Hooks/ParserGetVariableValueSwitch
-	public static function onParserGetVariableValueSwitch($parser, &$variableCache, &$magicWordId, &$ret, $frame)
+	public static function onParserGetVariableValueSwitch($parser, &$variableCache, $magicWordId, &$ret, $frame)
 	{
+		$user = self::$User;
+
 		switch ($magicWordId) {
 			case 'pageownership_userpages':
-				$ret = self::userpages( $parser, null, false );
+				$userpages = self::userpages( $user );
+				$ret = implode( ',', $userpages);
 				break;
 
 			default:
 		}
+
+		$variableCache[$magicWordId] = $ret;
 
 		// Permit future callbacks to run for this hook.
 		// never return false since this will prevent further callbacks AND indicate we found no value!
@@ -812,13 +817,13 @@ class PageOwnership {
 	{
 		$user = self::$User;
 
-		$pages = self::userpages( $user, null, false );
+		$pages = self::userpages( $user );
 
 		return implode(',', $pages);
 	}
 
 
-	public static function userpages( $user,$at_date, $cached = true )
+	public static function userpages( $user )
 	{
 		$pages = self::getUserPagesDB( $user );
 
