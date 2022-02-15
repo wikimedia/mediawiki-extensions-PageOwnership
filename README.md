@@ -1,6 +1,6 @@
 # PageOwnership
 
-Implements page ownership based on users and groups through a user-friendly interface pages, supports cache and Semantic MediaWiki
+Implements page ownership based on users and groups through a user-friendly interface, supports cache and Semantic MediaWiki
 
-Please check https://www.mediawiki.org/wiki/Extension:PageProperties for the official documentation.
+Please check https://www.mediawiki.org/wiki/Extension:PageOwnership for the official documentation.
 
