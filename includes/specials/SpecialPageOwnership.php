@@ -209,7 +209,7 @@ class SpecialPageOwnership extends SpecialPage
 				case 'delete':
 					//$result_ = $dbr->delete('page_ownership', ['id' => $id], __METHOD__);
 					
-					\PageOwnership::deleteOwnershipData( $id );
+					\PageOwnership::deleteOwnershipData( ['id' => $id] );
 			
 					\PageOwnership::invalidateCacheOfPagesWithAskQueriesRelatedToTitle( $this->title );
 

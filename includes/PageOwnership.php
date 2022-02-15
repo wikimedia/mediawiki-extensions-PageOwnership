@@ -535,17 +535,19 @@ class PageOwnership {
 		LogEntry $logEntry, int $archivedRevisionCount
 	) {
 
-		self::deleteOwnershipData( $id );
+		self::deleteOwnershipData( [ 'page_id' => $id ] );
 
 	}
 
 
-	public static function deleteOwnershipData( $page_id ) {
+	public static function deleteOwnershipData( $conds ) {
 
 		$dbw = wfGetDB( DB_PRIMARY );
 
+		
+
 		$dbw->delete(
-			'page_ownership',  [ 'page_id' => $page_id ],
+			'page_ownership',  $conds,
 			__METHOD__
 		);
 
