@@ -257,7 +257,7 @@ class PageOwnership {
 						$result = [
 							'badaccess-groups',
 							$wgLang->commaList( $groupLinks ),
-							count( $groups )
+							count( $groupLinks )
 						];
 
 					}
