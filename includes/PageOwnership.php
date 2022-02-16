@@ -542,8 +542,6 @@ class PageOwnership {
 
 		$dbw = wfGetDB( DB_PRIMARY );
 
-		
-
 		$dbw->delete(
 			'page_ownership',  $conds,
 			__METHOD__
@@ -746,12 +744,16 @@ class PageOwnership {
 	
 				// get all permissions and role
 				if ( $row && $row !== [ false ] ) {
+
+					if( !empty( $row['permissions'] ) ) {
 					
-					array_map( function( $value ) use ( &$permissions ) {
-						if (!in_array( $value, $permissions ) ) {
-							$permissions[] = $value;
-						}
-					}, explode( ",", $row['permissions'] ) );
+						array_map( function( $value ) use ( &$permissions ) {
+							if (!in_array( $value, $permissions ) ) {
+								$permissions[] = $value;
+							}
+						}, explode( ",", $row['permissions'] ) );
+	
+					}
 
 
 					if ( $role == null || ( array_search( $row[ 'role' ], $roles_hierarchy ) < array_search( $role, $roles_hierarchy ) ) ) {
