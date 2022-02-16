@@ -121,8 +121,6 @@ class PageOwnership {
 
 		$transcludedTargets = self::getLinksTo( $title, $options, 'templatelinks', 'tl' );
 
-		// does not render form list if a form is already
-		// present in the page
 		foreach ( $transcludedTargets as $title_ ) {
 			$title_->invalidateCache();
 		}
