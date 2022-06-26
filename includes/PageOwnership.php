@@ -24,7 +24,7 @@
 
 
 use MediaWiki\Linker;
-
+use MediaWiki\MediaWikiServices;
 
 class PageOwnership {
 
@@ -303,7 +303,12 @@ class PageOwnership {
 		// *** it could also be an anonymous user with same ip ?
 		if( $logged_in ) {
 
-			$wikiPage = WikiPage::factory($title);
+			if ( method_exists( MediaWikiServices::class, 'getWikiPageFactory' ) ) {
+				// MW 1.36+
+				$wikiPage = MediaWikiServices::getInstance()->getWikiPageFactory()->newFromTitle($title);
+			} else {
+				$wikiPage = WikiPage::factory($title);
+			}
 
 			$creator = $wikiPage->getCreator();
 
@@ -613,7 +618,12 @@ class PageOwnership {
 			return;
 		}
 
-		$wikiPage = WikiPage::factory( $title );
+		if ( method_exists( MediaWikiServices::class, 'getWikiPageFactory' ) ) {
+			// MW 1.36+
+			$wikiPage = MediaWikiServices::getInstance()->getWikiPageFactory()->newFromTitle( $title );
+		} else {
+			$wikiPage = WikiPage::factory( $title );
+		}
 		$creator = $wikiPage->getCreator();
 
 
