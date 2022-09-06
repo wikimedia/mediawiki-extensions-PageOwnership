@@ -145,7 +145,6 @@ class PageOwnershipFunctions {
 	// ***this avoids storing parser output in the cache,
 	// not retrieving from it !!
 	public static function disableCaching( $parser = null ) {
-		
 		if ( !$parser ) {
 			$parser = self::$Parser;
 		}
@@ -154,8 +153,13 @@ class PageOwnershipFunctions {
 			$parser->getOutput()->updateCacheExpiry( 0 );
 		}
 
-		RequestContext::getMain()->getOutput()->enableClientCache( false );
-
+		$output = RequestContext::getMain()->getOutput();
+		if ( method_exists( $output, 'disableClientCache' ) ) {
+			// MW 1.38+
+			$output->disableClientCache();
+		} else {
+			$output->enableClientCache( false );
+		}
 	}
 
 
