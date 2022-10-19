@@ -153,6 +153,7 @@ class PageOwnershipFunctions {
 			$parser->getOutput()->updateCacheExpiry( 0 );
 		}
 
+		// @contributor Zabe
 		$output = RequestContext::getMain()->getOutput();
 		if ( method_exists( $output, 'disableClientCache' ) ) {
 			// MW 1.38+

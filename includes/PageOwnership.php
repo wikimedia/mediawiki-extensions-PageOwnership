@@ -300,6 +300,7 @@ class PageOwnership {
 		// *** it could also be an anonymous user with same ip ?
 		if( $logged_in ) {
 
+			// @contributor Umherirrender
 			if ( method_exists( MediaWikiServices::class, 'getWikiPageFactory' ) ) {
 				// MW 1.36+
 				$wikiPage = MediaWikiServices::getInstance()->getWikiPageFactory()->newFromTitle($title);
@@ -615,6 +616,7 @@ class PageOwnership {
 			return;
 		}
 
+		// @contributor Umherirrender
 		if ( method_exists( MediaWikiServices::class, 'getWikiPageFactory' ) ) {
 			// MW 1.36+
 			$wikiPage = MediaWikiServices::getInstance()->getWikiPageFactory()->newFromTitle( $title );
