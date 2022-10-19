@@ -36,7 +36,7 @@ class PageOwnershipFunctions {
 	private static $Parser;
 
 
-	public function __constructStatic()
+	public static function __constructStatic()
 	{
 		self::$userGroupManager = MediaWikiServices::getInstance()->getUserGroupManager();
 		self::$Parser = MediaWikiServices::getInstance()->getParser();

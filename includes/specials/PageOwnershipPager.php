@@ -149,7 +149,7 @@ class PageOwnershipPager extends TablePager
 		$ret = [];
 
 		$tables = [ 'page_ownership' ];
-		$fields = [ 'page_ownership.*' ];
+		$fields = [ '*' ];
 		$join_conds = [];
 		$conds = [];
 		$options = [];
@@ -201,12 +201,12 @@ class PageOwnershipPager extends TablePager
 
 	public function getIndexField()
 	{
-		return 'page_ownership.created_at';
+		return 'created_at';
 	}
 
 	public function getDefaultSort()
 	{
-		return 'page_ownership.created_at';
+		return 'created_at';
 	}
 
 	protected function isFieldSortable( $field )

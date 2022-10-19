@@ -379,8 +379,8 @@ class SpecialPageOwnership extends SpecialPage
 		} else {	
 			$permissions = [];
 
-			foreach( ['role', 'edit', 'create', 'manage properties', 'subpages' ] as $value ) {
-
+			// , 'manage properties'
+			foreach( ['role', 'edit', 'create', 'subpages' ] as $value ) {
 				if ( $this->request->getBool( 'permissions_' . str_replace( ' ', '_', $value ) ) ) {
 					$permissions[] = $value;
 				}
@@ -415,19 +415,18 @@ class SpecialPageOwnership extends SpecialPage
 		];
 
 
-		if ( class_exists('PageProperties') ) {
-
-			$formDescriptor['permissions_manage_properties'] = [
-				'id' => 'pageownership_form_input_permissions_manage_properties',
-				'section' => $section_prefix . 'form-fieldset-main',
-				'type' => 'toggle',
-				'name' => 'permissions_manage_properties',
-				'default' => in_array('manage properties', $permissions),
-				'label-message' => 'pageownership-manageownership-form-permissions_manage_properties-label',
-				'help-message' => 'pageownership-manageownership-form-permissions_manage_properties-help',
-			];
-
-		}
+		// if ( class_exists('PageProperties') ) {
+		// 	$formDescriptor['permissions_manage_properties'] = [
+		// 		'id' => 'pageownership_form_input_permissions_manage_properties',
+		// 		'section' => $section_prefix . 'form-fieldset-main',
+		// 		'type' => 'toggle',
+		// 		'name' => 'permissions_manage_properties',
+		// 		'default' => in_array('manage properties', $permissions),
+		// 		'label-message' => 'pageownership-manageownership-form-permissions_manage_properties-label',
+		// 		'help-message' => 'pageownership-manageownership-form-permissions_manage_properties-help',
+		// 	];
+		// 
+		// }
 
 		$formDescriptor['permissions_subpages'] = [
 			'id' => 'pageownership_form_input_permissions_subpages',
@@ -516,9 +515,9 @@ class SpecialPageOwnership extends SpecialPage
 			return false;
 		}
 
-
 		$permissions = [];
-		$permissions_list = ['edit', 'create', 'manage_properties', 'subpages'];
+		// , 'manage_properties'
+		$permissions_list = ['edit', 'create', 'subpages'];
 
 		foreach($permissions_list as $value) {
 			if ( !empty( $request->getVal( 'permissions_' . $value ) ) ) {

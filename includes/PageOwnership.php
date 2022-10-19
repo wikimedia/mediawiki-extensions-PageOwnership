@@ -34,13 +34,10 @@ class PageOwnership {
 	private static $User;
 
 
-	public function __constructStatic()
+	public static function __constructStatic()
 	{
 		self::$User = RequestContext::getMain()->getUser();
-
 	}
-
-	
 
 	public static function onLoadExtensionSchemaUpdates($updater = null)
 	{
@@ -73,7 +70,7 @@ class PageOwnership {
 // the standard method fails when $row->page_title is null
 
 //***edited
-	private function getLinksTo( $title, $options = [], $table = 'pagelinks', $prefix = 'pl' ) {
+	private static function getLinksTo( $title, $options = [], $table = 'pagelinks', $prefix = 'pl' ) {
 		if ( count( $options ) > 0 ) {
 			$db = wfGetDB( DB_PRIMARY );
 		} else {

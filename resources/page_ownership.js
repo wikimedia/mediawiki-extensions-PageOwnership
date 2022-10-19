@@ -43,19 +43,19 @@ $(function () {
 		'reader': {
 			'edit': {'checked': false, 'disabled': true},
 			'create': {'checked': false, 'disabled': true},
-			'manage_properties': {'checked': false, 'disabled': true},
+			// 'manage_properties': {'checked': false, 'disabled': true},
 			'subpages': {'checked': false, 'disabled': false},		
 			},
 		'editor': {
 			'edit': {'checked': false, 'disabled': false},
 			'create': {'checked': false, 'disabled': false},
-			'manage_properties': {'checked': false, 'disabled': false},
+			// 'manage_properties': {'checked': false, 'disabled': false},
 			'subpages': {'checked': false, 'disabled': false},		
 			},
 		'admin': {
 			'edit': {'checked': true, 'disabled': true},
 			'create': {'checked': true, 'disabled': true},
-			'manage_properties': {'checked': true, 'disabled': true},
+			// 'manage_properties': {'checked': true, 'disabled': true},
 			'subpages': {'checked': true, 'disabled': true},		
 			},
 	}
