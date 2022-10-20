@@ -1,22 +1,27 @@
 {
+	"@metadata": {
+		"authors": []
+	},
 	"specialpages-group-pageownership": "Page Ownership",
 
 	"pageownership-extension-desc": "Implements page ownership based on users and groups through a user-friendly interface",
 
 	"pageownership": "Page Ownership",
 
-	"right-pageownership-caneditunassignedpages": "Can edit unassigned pages (Page Ownership)",
+	"pageownership-navigation": "Ownership",
+	"pageownership-sidebar-section": "My pages",
+	"pageownership-sidebar-role-reader": "reader",
 
-	"// ***see here includes/user7UserGroupMembership.php getGroupMemberName": "",
+	"right-pageownership-caneditunassignedpages": "Can edit unassigned pages (Page Ownership)",
+	"action-pageownership-caneditunassignedpages": "can edit unassigned pages (Page Ownership)",
+
 	"group-pageownership-editorofunassignedpages-member": "editor of unassigned pages (Page Ownership)",
-	
+
 	"group-pageownership-admin-member": "admin (Page Ownership)",
 
 	"group-pageownership-editorofunassignedpages": "editor of unassigned pages (Page Ownership)",
-	
+
 	"group-pageownership-admin": "admin (Page Ownership)",
-
-
 
 	"pageownership-manageownership-form-section-main": "main",
 	"pageownership-manageownership-form-section-role": "role",
@@ -30,8 +35,8 @@
 	"pageownership-manageownership-form-page-label": "page",
 	"pageownership-manageownership-form-page-help": "",
 
-	"pageownership-manageownership-form-role-label": "role", 
-	"pageownership-manageownership-form-role-help": "An editor has a custom set of permissions except the ability to assign other users to pages, an admin has all permissions and a reader only read permissions", 
+	"pageownership-manageownership-form-role-label": "role",
+	"pageownership-manageownership-form-role-help": "An editor has a custom set of permissions except the ability to assign other users to pages, an admin has all permissions and a reader only read permissions",
 
 	"pageownership-manageownership-form-button-submit": "save",
 	"pageownership-manageownership-form-button-cancel": "cancel",
@@ -69,7 +74,7 @@
 	"pageownership-manageownership-form-subpages-label": "Sub-pages (apply to pages inlcuded in this page)",
 	"pageownership-manageownership-form-subpages-help": "",
 
-	"pageownership-manageownership-form-newrole-legend": "",	
+	"pageownership-manageownership-form-newrole-legend": "",
 	"pageownership-manageownership-form-button-new_user": "add permissions",
 
 	"pageownership-manageownership-description-specific": "this page and its subpages",
@@ -87,4 +92,3 @@
 	"pageownership-denied-transclusion-registered": "<div class=\"pageownership-denied-transclusion\">Denied transclusion</div>"
 
 }
-

@@ -1,0 +1,94 @@
+{
+	"@metadata": {
+		"authors": []
+	},
+	"specialpages-group-pageownership": "A label message",
+
+	"pageownership-extension-desc": "A label message",
+
+	"pageownership": "A label message",
+
+	"pageownership-navigation": "A label message",
+	"pageownership-sidebar-section": "A label message",
+	"pageownership-sidebar-role-reader": "A label message",
+
+	"right-pageownership-caneditunassignedpages": "A label message",
+	"action-pageownership-caneditunassignedpages": "A label message",
+
+	"group-pageownership-editorofunassignedpages-member": "A label message",
+
+	"group-pageownership-admin-member": "A label message",
+
+	"group-pageownership-editorofunassignedpages": "A label message",
+
+	"group-pageownership-admin": "A label message",
+
+	"pageownership-manageownership-form-section-main": "A label message",
+	"pageownership-manageownership-form-section-role": "A label message",
+
+	"pageownership-manageownership-form-section-main-label": "A label message",
+	"pageownership-manageownership-form-section-role-label": "A label message",
+
+	"pageownership-manageownership-form-username-label": "A label message",
+	"pageownership-manageownership-form-username-help": "A label message",
+
+	"pageownership-manageownership-form-page-label": "A label message",
+	"pageownership-manageownership-form-page-help": "A label message",
+
+	"pageownership-manageownership-form-role-label": "A label message",
+	"pageownership-manageownership-form-role-help": "A label message",
+
+	"pageownership-manageownership-form-button-submit": "A label message",
+	"pageownership-manageownership-form-button-cancel": "A label message",
+	"pageownership-manageownership-form-button-delete": "A label message",
+
+	"pageownership-manageownership-form-search-legend": "A label message",
+	"pageownership-manageownership-form-search-section": "A label message",
+	"pageownership-manageownership-form-search-editor-label": "A label message",
+	"pageownership-manageownership-form-search-editor-help": "A label message",
+	"pageownership-manageownership-form-search-created_by-label": "A label message",
+	"pageownership-manageownership-form-search-created_by-help": "A label message",
+
+	"pageownership-manageownership-form-search-role-label": "A label message",
+	"pageownership-manageownership-form-search-role-help": "A label message",
+	"pageownership-manageownership-form-search-submit": "A label message",
+
+	"pageownership-manageownership-pager-header-page": "A label message",
+	"pageownership-manageownership-pager-header-usernames": "A label message",
+	"pageownership-manageownership-pager-header-created_by": "A label message",
+	"pageownership-manageownership-pager-header-role": "A label message",
+	"pageownership-manageownership-pager-header-permissions": "A label message",
+	"pageownership-manageownership-pager-header-actions": "A label message",
+
+	"pageownership-manageownership-form-fieldset-main": "A label message",
+
+	"pageownership-manageownership-form-permissions_edit-label": "A label message",
+	"pageownership-manageownership-form-permissions_edit-help": "A label message",
+
+	"pageownership-manageownership-form-permissions_create-label": "A label message",
+	"pageownership-manageownership-form-permissions_create-help": "A label message",
+
+	"pageownership-manageownership-form-permissions_manage_properties-label": "A label message",
+	"pageownership-manageownership-form-permissions_manage_properties-help": "A label message",
+
+	"pageownership-manageownership-form-subpages-label": "A label message",
+	"pageownership-manageownership-form-subpages-help": "A label message",
+
+	"pageownership-manageownership-form-newrole-legend": "A label message",
+	"pageownership-manageownership-form-button-new_user": "A label message",
+
+	"pageownership-manageownership-description-specific": "A label message",
+	"pageownership-manageownership-description-generic": "A label message",
+
+	"pageownership-manageownership-description": "A label message",
+
+	"pageownership-manageownership-table-empty": "A label message",
+
+	"pageownership-manageownership-form-updated": "A label message",
+
+	"pageownership-manageownership-return": "A label message",
+
+	"pageownership-denied-transclusion-anonymous": "A label message",
+	"pageownership-denied-transclusion-registered": "A label message"
+
+}

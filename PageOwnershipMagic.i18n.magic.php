@@ -22,19 +22,12 @@
  * @copyright Copyright ©2021, https://wikisphere.org
  */
 
-
-
 $magicWords = [];
-
-
 
 // see here
 // https://www.mediawiki.org/wiki/Manual:Magic_words
 // '0' stands for 'case insensitive'
 
-
 $magicWords['en'] = [
 	'pageownership_userpages' => [ 0, 'pageownership_userpages', 'pageownership userpages' ],
 ];
-
-

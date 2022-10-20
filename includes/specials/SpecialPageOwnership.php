@@ -19,12 +19,10 @@
  * @file
  * @ingroup extensions
  * @author thomas-topway-it <thomas.topway.it@mail.com>
- * @copyright Copyright ©2021, https://wikisphere.org
+ * @copyright Copyright ©2021-2022, https://wikisphere.org
  */
 
-
-
-require_once(__DIR__ . '/PageOwnershipPager.php');
+require_once __DIR__ . '/PageOwnershipPager.php';
 include_once __DIR__ . '/HTMLGroupsUsersMultiselectField.php';
 
 /**
@@ -32,21 +30,28 @@ include_once __DIR__ . '/HTMLGroupsUsersMultiselectField.php';
  *
  * @ingroup SpecialPage
  */
-class SpecialPageOwnership extends SpecialPage
-{
+class SpecialPageOwnership extends SpecialPage {
+	/** @var title */
 	public $title;
+	/** @var user */
 	private $user;
+	/** @var request */
 	private $request;
+	/** @var latest_id */
 	private $latest_id;
 
-	public function __construct()
-	{
+	/**
+	 * @inheritDoc
+	 */
+	public function __construct() {
 		$listed = true;
-		parent::__construct('PageOwnership', '', $listed);
+		parent::__construct( 'PageOwnership', '', $listed );
 	}
 
-	public function execute($par)
-	{
+	/**
+	 * @inheritDoc
+	 */
+	public function execute( $par ) {
 		$this->requireLogin();
 
 		$this->setHeaders();
@@ -54,20 +59,17 @@ class SpecialPageOwnership extends SpecialPage
 
 		$out = $this->getOutput();
 
-		$out->addModuleStyles('mediawiki.special');
+		$out->addModuleStyles( 'mediawiki.special' );
 
-		$out->addModules('ext.PageOwnership');
-
+		$out->addModules( 'ext.PageOwnership' );
 
 		$title = Title::newFromText( $par );
 
 		$user = $this->getUser();
 
-
 		$isAuthorized = \PageOwnershipFunctions::isAuthorized( $user, $title );
 
 		if ( !$isAuthorized ) {
-
 			if ( !$title ) {
 				$this->displayRestrictionError();
 				return;
@@ -79,18 +81,15 @@ class SpecialPageOwnership extends SpecialPage
 				$this->displayRestrictionError();
 				return;
 			}
-
 		}
 
-
-		if ($title && $title->getNamespace() !== NS_MAIN) {
+		if ( $title && $title->getNamespace() !== NS_MAIN ) {
 			$title = null;
 		}
 
 		$this->title = $title;
 
-
-		$this->addHelpLink('Extension:PageOwnership');
+		$this->addHelpLink( 'Extension:PageOwnership' );
 
 		$request = $this->getRequest();
 
@@ -98,33 +97,24 @@ class SpecialPageOwnership extends SpecialPage
 
 		$this->user = $user;
 
-		
-		$id = $request->getVal('edit');
-
+		$id = $request->getVal( 'edit' );
 
 		if ( $id ) {
 			$this->editPermission( $request, $out );
 			return;
-
 		}
 
-
-		if( $title ) {
-
+		if ( $title ) {
 			$out->addWikiMsg(
 				'pageownership-manageownership-return',
 				$title->getText(),
 				$title->getText()
 			);
-
 		}
 
-
-		$created_by = $request->getVal('created_by');
-		$usernames = $request->getVal('usernames');
-		$role = $request->getVal('role');
-
-
+		$created_by = $request->getVal( 'created_by' );
+		$usernames = $request->getVal( 'usernames' );
+		$role = $request->getVal( 'role' );
 
 		$pager = new PageOwnershipPager(
 			$this,
@@ -136,22 +126,22 @@ class SpecialPageOwnership extends SpecialPage
 
 		$out->enableOOUI();
 
-		$out->addWikiMsg('pageownership-manageownership-description', $this->msg('pageownership-manageownership-description-' . ( $this->title ? 'specific' : 'generic' ) )->text() );
+		$out->addWikiMsg( 'pageownership-manageownership-description', $this->msg( 'pageownership-manageownership-description-' . ( $this->title ? 'specific' : 'generic' ) )->text() );
 
-		$url = Title::newFromText('Special:PageOwnership')->getLocalURL();
+		$url = Title::newFromText( 'Special:PageOwnership' )->getLocalURL();
 
-		$layout = new OOUI\PanelLayout(['expanded' => false, 'padded' => false, 'framed' => false,]);
+		$layout = new OOUI\PanelLayout( [ 'expanded' => false, 'padded' => false, 'framed' => false ] );
 
 		$layout->appendContent(
 			new OOUI\FieldsetLayout(
 				[
-					'label' => $this->msg('pageownership-manageownership-form-newrole-legend')->text(), 'items' => [
+					'label' => $this->msg( 'pageownership-manageownership-form-newrole-legend' )->text(), 'items' => [
 						new OOUI\ButtonWidget(
 							[
 								'href' => $url . ( $title ? '/' . wfEscapeWikiText( $title->getPartialURL() ) : '' ) . '?edit=new',
-								'label' => $this->msg('pageownership-manageownership-form-button-new_user')->text(),
+								'label' => $this->msg( 'pageownership-manageownership-form-button-new_user' )->text(),
 								'infusable' => true,
-								'flags' => ['progressive', 'primary'],
+								'flags' => [ 'progressive', 'primary' ],
 							]
 						)
 					],
@@ -159,24 +149,14 @@ class SpecialPageOwnership extends SpecialPage
 			)
 		);
 
-		$out->addHTML($layout);
+		$out->addHTML( $layout );
 
-		$out->addHTML('<br />');
-
+		$out->addHTML( '<br />' );
 
 		if ( empty( $par ) ) {
-
-			$out->addHTML(
-				$this->showOptions(
-					$created_by,
-					$usernames,
-					$role,
-			 	) );
-
-			$out->addHTML('<br />');
-
+			$out->addHTML( $this->showOptions( $created_by, $usernames, $role ) );
+			$out->addHTML( '<br />' );
 		}
-
 
 		if ( $pager->getNumRows() ) {
 			$out->addParserOutputContent( $pager->getFullOutput() );
@@ -184,61 +164,58 @@ class SpecialPageOwnership extends SpecialPage
 		} else {
 			$out->addWikiMsg( 'pageownership-manageownership-table-empty' );
 		}
-
 	}
 
-
+	/**
+	 * @inheritDoc
+	 */
 	public function doesWrites() {
 		return true;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
+	protected function editPermission( $request, $out ) {
+		$id = $request->getVal( 'edit' );
+		$action = $request->getVal( 'action' );
+		$new = ( $id && $id === 'new' );
 
-	protected function editPermission( $request, $out ) 
-	{
-		$id = $request->getVal('edit');
-		$action = $request->getVal('action');
-		$new = ($id && $id === 'new');
+		$dbr = wfGetDB( DB_MASTER );
 
-		$dbr = wfGetDB(DB_MASTER);
+		if ( !empty( $action ) ) {
 
-
-		if ( !empty($action) ) {
-
-			switch ($action) {
-
+			switch ( $action ) {
 				case 'delete':
-					//$result_ = $dbr->delete('page_ownership', ['id' => $id], __METHOD__);
-					
-					\PageOwnership::deleteOwnershipData( ['id' => $id] );
-			
+					// $result_ = $dbr->delete('page_ownership', ['id' => $id], __METHOD__);
+
+					\PageOwnership::deleteOwnershipData( [ 'id' => $id ] );
+
 					\PageOwnership::invalidateCacheOfPagesWithAskQueriesRelatedToTitle( $this->title );
 
-					$url = SpecialPage::getTitleFor('PageOwnership', $this->title)->getLocalURL();
-					header('Location: ' . $url);
-				return;
+					$url = SpecialPage::getTitleFor( 'PageOwnership', $this->title )->getLocalURL();
+					header( 'Location: ' . $url );
+					return;
 
 				case 'cancel':
-					$url = SpecialPage::getTitleFor('PageOwnership', $this->title)->getLocalURL();
-					header('Location: ' . $url);
-				return;
-
+					$url = SpecialPage::getTitleFor( 'PageOwnership', $this->title )->getLocalURL();
+					header( 'Location: ' . $url );
+					return;
 			}
 		}
 
-
 		$row = [];
 
-		if (!$new) {
-			$dbr = wfGetDB(DB_REPLICA);
-			$row = $dbr->selectRow('page_ownership', '*', [ 'id' => $id ], __METHOD__);
+		if ( !$new ) {
+			$dbr = wfGetDB( DB_REPLICA );
+			$row = $dbr->selectRow( 'page_ownership', '*', [ 'id' => $id ], __METHOD__ );
 			$row = (array)$row;
 		}
 
-		if ( !$row || $row == [false] ) {
-
-			if (!$new) {
-				$out->addWikiMsg('pageownership-manageownership-form-missing_item', 'Special:PageOwnership');
-				$out->addHTML('<br />');
+		if ( !$row || $row == [ false ] ) {
+			if ( !$new ) {
+				$out->addWikiMsg( 'pageownership-manageownership-form-missing_item', 'Special:PageOwnership' );
+				$out->addHTML( '<br />' );
 				return;
 			}
 
@@ -250,43 +227,35 @@ class SpecialPageOwnership extends SpecialPage
 			];
 
 		} else {
-
 			if ( !empty( $row['usernames'] ) ) {
-				$row['usernames'] = str_replace(",", "\n", $row['usernames']);
+				$row['usernames'] = str_replace( ",", "\n", $row['usernames'] );
 			}
-
 		}
-
 
 		$formDescriptor = $this->getFormDescriptor( $row, $out );
 
-		
-		$htmlForm = new OOUIHTMLForm($formDescriptor, $this->getContext(), 'pageownership-manageownership');
+		$htmlForm = new OOUIHTMLForm( $formDescriptor, $this->getContext(), 'pageownership-manageownership' );
 
-		
-		$htmlForm->setMethod('post');
+		$htmlForm->setMethod( 'post' );
 
-		$htmlForm->setSubmitCallback([$this, 'onSubmit']);
+		$htmlForm->setSubmitCallback( [ $this, 'onSubmit' ] );
 
 		$htmlForm->showCancel();
 
-		$target = Title::newFromText('Special:PageOwnership' . ( $this->title ? '/' . wfEscapeWikiText( $this->title->getPartialURL() ) : '' ) );
+		$target = Title::newFromText( 'Special:PageOwnership' . ( $this->title ? '/' . wfEscapeWikiText( $this->title->getPartialURL() ) : '' ) );
 
-		$htmlForm->setCancelTarget($target);
+		$htmlForm->setCancelTarget( $target );
 
-		$htmlForm->setSubmitTextMsg('pageownership-manageownership-form-button-submit');
-
+		$htmlForm->setSubmitTextMsg( 'pageownership-manageownership-form-button-submit' );
 
 		$out->addWikiMsg(
 			'pageownership-manageownership-form-updated',
 			'Special:PageOwnership' . ( $this->title ? '/' . wfEscapeWikiText( $this->title->getPartialURL() ) : '' )
 		);
 
-
 		$htmlForm->prepareForm();
 
 		$result = $htmlForm->tryAuthorizedSubmit();
-
 
 		$htmlForm->setAction(
 			wfAppendQuery(
@@ -295,31 +264,29 @@ class SpecialPageOwnership extends SpecialPage
 			)
 		);
 
-
-
-		if (!$new || $this->latest_id) {
+		if ( !$new || $this->latest_id ) {
 			$htmlForm->addButton(
 				[
 				'type' => 'button', 'name' => 'action', 'value' => 'delete', 'href' => $target, 'label-message' => 'pageownership-manageownership-form-button-delete',
-				'flags' => ['destructive']
+				'flags' => [ 'destructive' ]
 				]
 			);
 		}
 
 		$htmlForm->displayForm( $result );
-
 	}
 
-
-
-	protected function getFormDescriptor( $row, $out )
-	{
+	/**
+	 * @param array $row
+	 * @param Output $out
+	 * @return array
+	 */
+	protected function getFormDescriptor( $row, $out ) {
 		$formDescriptor = [];
 
 		$section_prefix = '';
 
 		if ( !$this->title ) {
-
 			$formDescriptor['page_name'] = [
 				'label-message' => 'pageownership-manageownership-form-page-label',
 				'type' => 'title',
@@ -329,11 +296,9 @@ class SpecialPageOwnership extends SpecialPage
 				'exists' => true,
 				'section' => $section_prefix . 'form-fieldset-main',
 				'help-message' => 'pageownership-manageownership-form-page-help',
-				'default' => ( !empty ( $row[ 'page_id' ] ) ? Title::newFromID( $row[ 'page_id' ] )->getText() : null )
+				'default' => ( !empty( $row[ 'page_id' ] ) ? Title::newFromID( $row[ 'page_id' ] )->getText() : null )
 			];
-
 		}
-
 
 		HTMLForm::$typeMappings['groupsusersmultiselect'] = \HTMLGroupsUsersMultiselectField::class;
 
@@ -347,17 +312,15 @@ class SpecialPageOwnership extends SpecialPage
 			'section' => $section_prefix . 'form-fieldset-main',
 			'help-message' => 'pageownership-manageownership-form-username-help',
 			'default' => $row['usernames'],
-			'options' => array_flip($groups),
+			'options' => array_flip( $groups ),
 		];
-		
 
 		$submitted = $this->request->getCheck( 'usernames' );
-
 
 		if ( $submitted ) {
 			$role = $this->request->getVal( 'role' );
 		} else {
-			$role = (!empty($row['role']) ? $row['role'] : 'editor');
+			$role = ( !empty( $row['role'] ) ? $row['role'] : 'editor' );
 		}
 
 		$formDescriptor['role'] = [
@@ -367,39 +330,36 @@ class SpecialPageOwnership extends SpecialPage
 			'name' => 'role',
 			'required' => true,
 			'label-message' => 'pageownership-manageownership-form-role-label',
-			'options' => ['editor' => 'editor', 'admin' => 'admin', 'reader' => 'reader'],
+			'options' => [ 'editor' => 'editor', 'admin' => 'admin', 'reader' => 'reader' ],
 			'default' => $role,
 			'help-message' => 'pageownership-manageownership-form-role-help'
 		];
 
+		if ( !$submitted ) {
+			$permissions = ( !empty( $row['permissions'] ) ? explode( ',', $row['permissions'] ) : [] );
 
-		if ( !$submitted) {
-			$permissions = (!empty($row['permissions']) ? explode(',', $row['permissions']) : []);
-	
-		} else {	
+		} else {
 			$permissions = [];
 
 			// , 'manage properties'
-			foreach( ['role', 'edit', 'create', 'subpages' ] as $value ) {
+			foreach ( [ 'role', 'edit', 'create', 'subpages' ] as $value ) {
 				if ( $this->request->getBool( 'permissions_' . str_replace( ' ', '_', $value ) ) ) {
 					$permissions[] = $value;
 				}
 			}
 		}
 
-
 		$out->addJsConfigVars( [
 			'pageownership-manageownership-role' => $role,
 			'pageownership-manageownership-permissions' => json_encode( $permissions ),
 		] );
-
 
 		$formDescriptor['permissions_edit'] = [
 			'id' => 'pageownership_form_input_permissions_edit',
 			'section' => $section_prefix . 'form-fieldset-main',
 			'type' => 'toggle',
 			'name' => 'permissions_edit',
-			'default' => in_array('edit', $permissions),
+			'default' => in_array( 'edit', $permissions ),
 			'label-message' => 'pageownership-manageownership-form-permissions_edit-label',
 			'help-message' => 'pageownership-manageownership-form-permissions_edit-help',
 		];
@@ -409,11 +369,10 @@ class SpecialPageOwnership extends SpecialPage
 			'section' => $section_prefix . 'form-fieldset-main',
 			'type' => 'toggle',
 			'name' => 'permissions_create',
-			'default' => in_array('create', $permissions),
+			'default' => in_array( 'create', $permissions ),
 			'label-message' => 'pageownership-manageownership-form-permissions_create-label',
 			'help-message' => 'pageownership-manageownership-form-permissions_create-help',
 		];
-
 
 		// if ( class_exists('PageProperties') ) {
 		// 	$formDescriptor['permissions_manage_properties'] = [
@@ -425,59 +384,58 @@ class SpecialPageOwnership extends SpecialPage
 		// 		'label-message' => 'pageownership-manageownership-form-permissions_manage_properties-label',
 		// 		'help-message' => 'pageownership-manageownership-form-permissions_manage_properties-help',
 		// 	];
-		// 
+		//
 		// }
 
 		$formDescriptor['permissions_subpages'] = [
 			'id' => 'pageownership_form_input_permissions_subpages',
 			'section' => $section_prefix . 'form-fieldset-main',
 			'type' => 'toggle',
-			'default' => in_array('subpages', $permissions),
+			'default' => in_array( 'subpages', $permissions ),
 			'name' => 'permissions_subpages',
 			'label-message' => 'pageownership-manageownership-form-subpages-label',
 			'help-message' => 'pageownership-manageownership-form-subpages-help',
 		];
 
-
 		return $formDescriptor;
-
 	}
 
-
-
-	// see includes/specials/SpecialListGroupRights.php
-	private function groupsList()
-	{
+	/**
+	 * @see includes/specials/SpecialListGroupRights.php
+	 * @return bool
+	 */
+	private function groupsList() {
 		$output = [];
 
 		$config = $this->getConfig();
-		$groupPermissions = $config->get('GroupPermissions');
-		$revokePermissions = $config->get('RevokePermissions');
-		$addGroups = $config->get('AddGroups');
-		$removeGroups = $config->get('RemoveGroups');
-		$groupsAddToSelf = $config->get('GroupsAddToSelf');
-		$groupsRemoveFromSelf = $config->get('GroupsRemoveFromSelf');
+		$groupPermissions = $config->get( 'GroupPermissions' );
+		$revokePermissions = $config->get( 'RevokePermissions' );
+		$addGroups = $config->get( 'AddGroups' );
+		$removeGroups = $config->get( 'RemoveGroups' );
+		$groupsAddToSelf = $config->get( 'GroupsAddToSelf' );
+		$groupsRemoveFromSelf = $config->get( 'GroupsRemoveFromSelf' );
 		$allGroups = array_unique(
 			array_merge(
-				array_keys($groupPermissions),
-				array_keys($revokePermissions),
-				array_keys($addGroups),
-				array_keys($removeGroups),
-				array_keys($groupsAddToSelf),
-				array_keys($groupsRemoveFromSelf)
+				array_keys( $groupPermissions ),
+				array_keys( $revokePermissions ),
+				array_keys( $addGroups ),
+				array_keys( $removeGroups ),
+				array_keys( $groupsAddToSelf ),
+				array_keys( $groupsRemoveFromSelf )
 			)
 		);
-		asort($allGroups);
+		asort( $allGroups );
 
 		$linkRenderer = $this->getLinkRenderer();
 
-		foreach ($allGroups as $group) {
-			$permissions = $groupPermissions[$group] ?? [];
+		foreach ( $allGroups as $group ) {
+			$permissions = $groupPermissions[ $group ] ?? [];
 
-			$groupname = ($group == '*') // Replace * with a more descriptive groupname
+			// Replace * with a more descriptive groupname
+			$groupname = ( $group == '*' )
 			? 'all' : $group;
 
-			$groupnameLocalized = UserGroupMembership::getGroupName($groupname);
+			$groupnameLocalized = UserGroupMembership::getGroupName( $groupname );
 
 			$output[$groupnameLocalized] = $groupname;
 		}
@@ -485,17 +443,19 @@ class SpecialPageOwnership extends SpecialPage
 		return $output;
 	}
 
-
-	public function onSubmit($data, $htmlForm)
-	{
+	/**
+	 * @param array $data
+	 * @param HtmlForm $htmlForm
+	 * @return bool
+	 */
+	public function onSubmit( $data, $htmlForm ) {
 		$request = $this->getRequest();
 
-		$id = $request->getVal('edit');
+		$id = $request->getVal( 'edit' );
 
-		$new = ($id && $id === 'new');
+		$new = ( $id && $id === 'new' );
 
-		$dbr = wfGetDB(DB_MASTER);
-
+		$dbr = wfGetDB( DB_MASTER );
 
 		if ( !$this->title ) {
 			$title = Title::newFromText( $data[ 'page_name' ] );
@@ -510,34 +470,31 @@ class SpecialPageOwnership extends SpecialPage
 			$pageId = $this->title->getArticleID();
 		}
 
-
-		if ( empty ($data['usernames'] ) ) {
+		if ( empty( $data['usernames'] ) ) {
 			return false;
 		}
 
 		$permissions = [];
 		// , 'manage_properties'
-		$permissions_list = ['edit', 'create', 'subpages'];
+		$permissions_list = [ 'edit', 'create', 'subpages' ];
 
-		foreach($permissions_list as $value) {
+		foreach ( $permissions_list as $value ) {
 			if ( !empty( $request->getVal( 'permissions_' . $value ) ) ) {
 				$permissions[] = str_replace( '_', ' ', $value );
 			}
 		}
 
-
 		$row = [
 			'created_by' => $this->user->getName(),
-			'usernames' => str_replace("\n", ",", $data['usernames']),
+			'usernames' => str_replace( "\n", ",", $data['usernames'] ),
 			'page_id' => $pageId,
-			'permissions' => implode(',', $permissions),
+			'permissions' => implode( ',', $permissions ),
 			'role' => $data['role'],
 		];
 
-
 		if ( $new ) {
-			$date = date('Y-m-d H:i:s');
-			$row = $dbr->insert('page_ownership', $row + ['updated_at' => $date, 'created_at' => $date]);
+			$date = date( 'Y-m-d H:i:s' );
+			$row = $dbr->insert( 'page_ownership', $row + [ 'updated_at' => $date, 'created_at' => $date ] );
 
 			$latest_id = $dbr->selectField(
 				'page_ownership',
@@ -549,11 +506,9 @@ class SpecialPageOwnership extends SpecialPage
 
 			$this->latest_id = $latest_id;
 
-
 		} else {
-			$row = $dbr->update('page_ownership', $row, ['id' => $id], __METHOD__);	
+			$row = $dbr->update( 'page_ownership', $row, [ 'id' => $id ], __METHOD__ );
 		}
-
 
 		\PageOwnership::invalidateCacheOfPagesWithAskQueriesRelatedToTitle( $this->title );
 
@@ -562,46 +517,40 @@ class SpecialPageOwnership extends SpecialPage
 		return true;
 	}
 
-
-	public function onSuccess() { }
-
+	public function onSuccess() {
+	}
 
 	/**
-	 * @param ...
-	 * @return string Input form
+	 * @param string $created_by
+	 * @param array $usernames
+	 * @param string $role
+	 * @return string
 	 */
-	protected function showOptions(
-		$created_by,
-		$usernames,
-		$role
-	)
-	{
+	protected function showOptions( $created_by, $usernames, $role ) {
 		$formDescriptor = [];
 
 		$formDescriptor['created_by'] = [
 			'label-message' => 'pageownership-manageownership-form-search-created_by-label',
-			'type' => 'user', 
+			'type' => 'user',
 			'name' => 'created_by',
 			'required' => false,
 			'help-message' => 'pageownership-manageownership-form-search-created_by-help',
 			'default' => ( !empty( $created_by ) ? $created_by : null ),
 		];
-		
 
 		HTMLForm::$typeMappings['groupsusersmultiselect'] = \HTMLGroupsUsersMultiselectField::class;
 
 		$groups = $this->groupsList();
 
 		$formDescriptor['usernames'] = [
-			'id' => "abc",
+			// 'id' => "abc",
 			'label-message' => 'pageownership-manageownership-form-username-label',
 			'type' => 'groupsusersmultiselect',
 			'name' => 'usernames',
-		//	'help-message' => 'pageownership-manageownership-form-username-help',
-			'options' => array_flip($groups),
+			// 'help-message' => 'pageownership-manageownership-form-username-help',
+			'options' => array_flip( $groups ),
 			'default' => ( !empty( $usernames ) ? $usernames : null ),
 		];
-
 
 		$formDescriptor['role'] = [
 			'type' => 'select',
@@ -622,12 +571,11 @@ class SpecialPageOwnership extends SpecialPage
 		return $htmlForm->prepareForm()->getHTML( false );
 	}
 
-
-	protected function getGroupName()
-	{
+	/**
+	 * @return string
+	 */
+	protected function getGroupName() {
 		return 'pageownership';
 	}
 
-
 }
-

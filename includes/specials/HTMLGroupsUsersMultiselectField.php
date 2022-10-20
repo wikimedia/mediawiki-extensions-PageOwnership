@@ -1,16 +1,15 @@
 <?php
 
-
 include_once __DIR__ . '/GroupsUsersMultiselectWidget.php';
-
-//use MediaWiki\Widget\UsersMultiselectWidget;
-use Wikimedia\IPUtils;
-
 
 class HTMLGroupsUsersMultiselectField extends HTMLUsersMultiselectField {
 
-
-	// see includes/htmlform/HTMLFormField.php
+	/**
+	 * @see includes/htmlform/HTMLFormField.php
+	 * @param string|array $value
+	 * @param array $alldata
+	 * @return bool
+	 */
 	public function validate( $value, $alldata ) {
 		if ( $this->isHidden( $alldata ) ) {
 			return true;
@@ -30,12 +29,13 @@ class HTMLGroupsUsersMultiselectField extends HTMLUsersMultiselectField {
 		return true;
 	}
 
-
-
-
-	//see includes/htmlform/fields/HTMLUsersMultiselectField.php
+	/**
+	 * @see includes/htmlform/fields/HTMLUsersMultiselectField.php
+	 * @param string|array $value
+	 * @param array $alldata
+	 * @return bool
+	 */
 	public function validate_( $value, $alldata ) {
-
 		if ( !$this->mParams['exists'] ) {
 			return true;
 		}
@@ -61,8 +61,9 @@ class HTMLGroupsUsersMultiselectField extends HTMLUsersMultiselectField {
 		return true;
 	}
 
-
-
+	/**
+	 * @inheritDoc
+	 */
 	public function getInputOOUI( $value ) {
 		$params = [ 'name' => $this->mName ];
 
@@ -104,17 +105,15 @@ class HTMLGroupsUsersMultiselectField extends HTMLUsersMultiselectField {
 			$params['input'] = $this->mParams['input'];
 		}
 
-
-// ***edited
+		// ***edited
 		if ( isset( $this->mParams['options'] ) ) {
 			$params['options'] = $this->mParams['options'];
 		}
 
-// ***edited
-		if( empty( $params['allowedValues'] ) ) {
-			$params['allowedValues'] = array_keys($params['options']);
+		// ***edited
+		if ( empty( $params['allowedValues'] ) ) {
+			$params['allowedValues'] = array_keys( $params['options'] );
 		}
-
 
 		if ( $value !== null ) {
 			// $value is a string, but the widget expects an array
@@ -130,9 +129,10 @@ class HTMLGroupsUsersMultiselectField extends HTMLUsersMultiselectField {
 		return $widget;
 	}
 
-
+	/**
+	 * @inheritDoc
+	 */
 	protected function getOOUIModules() {
 		return [ 'ext.PageOwnership.GroupsUsersMultiselectWidget' ];
 	}
-
 }

@@ -1,7 +1,5 @@
 <?php
 
-//namespace MediaWiki\Widget;
-
 /**
  * Widget to select multiple users.
  *
@@ -9,16 +7,20 @@
  * @license MIT
  */
 
-
-
 class GroupsUsersMultiselectWidget extends MediaWiki\Widget\TagMultiselectWidget {
-	/** @var bool */
+	/**
+	 * @var bool
+	 */
 	protected $ipAllowed;
 
-	/** @var bool */
+	/**
+	 * @var ipRangeAllowed
+	 */
 	protected $ipRangeAllowed;
 
-	/** @var array */
+	/**
+	 * @var ipRangeLimits
+	 */
 	protected $ipRangeLimits;
 
 	/**
@@ -29,7 +31,6 @@ class GroupsUsersMultiselectWidget extends MediaWiki\Widget\TagMultiselectWidget
 	 */
 	public function __construct( array $config = [] ) {
 		parent::__construct( $config );
-
 
 		if ( isset( $config['ipAllowed'] ) ) {
 			$this->ipAllowed = $config['ipAllowed'];
@@ -43,13 +44,9 @@ class GroupsUsersMultiselectWidget extends MediaWiki\Widget\TagMultiselectWidget
 			$this->ipRangeLimits = $config['ipRangeLimits'];
 		}
 
-
 		// ***edited
 		$this->options = $config['options'] ?? [];
-
 	}
-
-
 
 	public function getConfig( &$config ) {
 		if ( $this->ipAllowed !== null ) {
@@ -68,20 +65,17 @@ class GroupsUsersMultiselectWidget extends MediaWiki\Widget\TagMultiselectWidget
 			$config['ipRangeLimits'] = $this->ipRangeLimits;
 		}
 
-
 		// ***edited
 		$options = [];
-		foreach($this->options as $key => $value) {
-			$options[] = ['data' => $key, 'label' => $value];
+		foreach ( $this->options as $key => $value ) {
+			$options[] = [ 'data' => $key, 'label' => $value ];
 		}
 		$config['options'] = $options;
 
 		return parent::getConfig( $config );
 	}
 
-
 	protected function getJavaScriptClassName() {
 		return 'mw.widgets.GroupsUsersMultiselectWidget';
 	}
-
 }

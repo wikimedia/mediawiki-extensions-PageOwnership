@@ -4,7 +4,9 @@
  * @copyright 2017 MediaWiki Widgets Team and others; see AUTHORS.txt
  * @license The MIT License (MIT); see LICENSE.txt
  */
-(function () {
+
+/* eslint-disable max-len */
+( function () {
 	/**
 	 * GroupsUsersMultiselectWidget can be used to input list of users in a single
 	 * line.
@@ -30,9 +32,10 @@
 	 * @cfg {number} [ipRangeLimits.IPv4 = 16] Maximum allowed IPv4 range
 	 * @cfg {number} [ipRangeLimits.IPv6 = 32] Maximum allowed IPv6 range
 	 */
+
 	mw.widgets.GroupsUsersMultiselectWidget =
-		function MwWidgetsGroupsGroupsUsersMultiselectWidget(config) {
-	
+		function MwWidgetsGroupsGroupsUsersMultiselectWidget( config ) {
+
 			// ***edited
 			mw.widgets.GroupsUsersMultiselectWidget.prototype.originalOptions =
 				config.options;
@@ -45,25 +48,24 @@
 					ipRangeAllowed: false,
 					ipRangeLimits: {
 						IPv4: 16,
-						IPv6: 32,
-					},
+						IPv6: 32
+					}
 				},
 				config
 			);
 
-
 			// ***edited
 			// see resources/lib/ooui/oojs-ui-widgets.js -> OoUiTagMultiselectWidget
 			config.input = {
-	
-				// ***not working ?
-			//	required: true,
-				autocomplete: false,
-			//	indicatorElement: $('.oo-ui-tagMultiselectWidget-handle .oo-ui-indicatorElement-indicator')
-			
-			}
 
-/*
+				// ***not working ?
+				// required: true,
+				autocomplete: false
+				// indicatorElement: $('.oo-ui-tagMultiselectWidget-handle .oo-ui-indicatorElement-indicator')
+
+			};
+
+			/*
 config.inputWidget = new OO.ui.TextInputWidget({
 				required: true,
 				autocomplete: false,
@@ -72,18 +74,16 @@ config.inputWidget = new OO.ui.TextInputWidget({
 			} );
 */
 
-
-
 			// Parent constructor
 			mw.widgets.GroupsUsersMultiselectWidget.parent.call(
 				this,
-				$.extend({}, config, {})
+				$.extend( {}, config, {} )
 			);
 
 			// Mixin constructors
 			OO.ui.mixin.PendingElement.call(
 				this,
-				$.extend({}, config, { $pending: this.$handle })
+				$.extend( {}, config, { $pending: this.$handle } )
 			);
 
 			// Properties
@@ -92,28 +92,28 @@ config.inputWidget = new OO.ui.TextInputWidget({
 			this.ipRangeAllowed = config.ipRangeAllowed;
 			this.ipRangeLimits = config.ipRangeLimits;
 
-			if ("name" in config) {
+			if ( 'name' in config ) {
 				// Use this instead of <input type="hidden">, because hidden inputs do not have separate
 				// 'value' and 'defaultValue' properties. The script on Special:Preferences
 				// (mw.special.preferences.confirmClose) checks this property to see if a field was changed.
-				this.$hiddenInput = $("<textarea>")
-					.addClass("oo-ui-element-hidden")
-					.attr("name", config.name)
-					.appendTo(this.$element);
+				this.$hiddenInput = $( '<textarea>' )
+					.addClass( 'oo-ui-element-hidden' )
+					.attr( 'name', config.name )
+					.appendTo( this.$element );
 				// Update with preset values
 				this.updateHiddenInput();
 				// Set the default value (it might be different from just being empty)
 				this.$hiddenInput.prop(
-					"defaultValue",
-					this.getSelectedUsernames().join("\n")
+					'defaultValue',
+					this.getSelectedUsernames().join( '\n' )
 				);
 			}
 
 			// Events
 			// When list of selected usernames changes, update hidden input
-			this.connect(this, {
-				change: "onMultiselectChange",
-			});
+			this.connect( this, {
+				change: 'onMultiselectChange'
+			} );
 
 			// API init
 			this.api = config.api || new mw.Api();
@@ -153,7 +153,7 @@ config.inputWidget = new OO.ui.TextInputWidget({
 				isValidRange,
 				inputValue = this.input.getValue();
 
-			if (inputValue === this.inputValue) {
+			if ( inputValue === this.inputValue ) {
 				// Do not restart api query if nothing has changed in the input
 				return;
 			} else {
@@ -162,94 +162,94 @@ config.inputWidget = new OO.ui.TextInputWidget({
 
 			this.api.abort(); // Abort all unfinished api requests
 
-			if (inputValue.length > 0) {
+			if ( inputValue.length > 0 ) {
 				this.pushPending();
 
-				if (this.ipAllowed || this.ipRangeAllowed) {
-					isValidIp = mw.util.isIPAddress(inputValue, false);
+				if ( this.ipAllowed || this.ipRangeAllowed ) {
+					isValidIp = mw.util.isIPAddress( inputValue, false );
 					isValidRange =
 						!isValidIp &&
-						mw.util.isIPAddress(inputValue, true) &&
-						this.validateIpRange(inputValue);
+						mw.util.isIPAddress( inputValue, true ) &&
+						this.validateIpRange( inputValue );
 				}
 
 				if (
-					(this.ipAllowed && isValidIp) ||
-					(this.ipRangeAllowed && isValidRange)
+					( this.ipAllowed && isValidIp ) ||
+					( this.ipRangeAllowed && isValidRange )
 				) {
 					this.menu.clearItems();
-					this.menu.addItems([
-						new OO.ui.MenuOptionWidget({
+					this.menu.addItems( [
+						new OO.ui.MenuOptionWidget( {
 							data: inputValue,
-							label: inputValue,
-						}),
-					]);
-					this.menu.toggle(true);
+							label: inputValue
+						} )
+					] );
+					this.menu.toggle( true );
 					this.popPending();
 				} else {
 					this.api
-						.get({
-							action: "query",
-							list: "allusers",
+						.get( {
+							action: 'query',
+							list: 'allusers',
 							// Prefix of list=allusers is case sensitive. Normalise first
 							// character to uppercase so that "fo" may yield "Foo".
-							auprefix: inputValue[0].toUpperCase() + inputValue.slice(1),
-							aulimit: this.limit,
-						})
+							auprefix: inputValue[ 0 ].toUpperCase() + inputValue.slice( 1 ),
+							aulimit: this.limit
+						} )
 						.done(
-							function (response) {
+							function ( response ) {
 								var suggestions = response.query.allusers,
 									selected = this.getSelectedUsernames();
 
 								// Remove usernames, which are already selected from suggestions
 								suggestions = suggestions
-									.map(function (user) {
-										if (selected.indexOf(user.name) === -1) {
-											return new OO.ui.MenuOptionWidget({
+									.map( function ( user ) {
+										if ( selected.indexOf( user.name ) === -1 ) {
+											return new OO.ui.MenuOptionWidget( {
 												data: user.name,
 												label: user.name,
-												id: user.name,
-											});
+												id: user.name
+											} );
 										}
 										return undefined;
-									})
-									.filter(function (item) {
+									} )
+									.filter( function ( item ) {
 										return item !== undefined;
-									});
+									} );
 
 								// ***edited
 								suggestions = suggestions.concat(
 									mw.widgets.GroupsUsersMultiselectWidget.prototype.originalOptions
-										.filter(function (val) {
-											return val.data.indexOf(inputValue) === 0;
-										})
-										.map(function (x) {
-											return new OO.ui.MenuOptionWidget({
+										.filter( function ( val ) {
+											return val.data.indexOf( inputValue ) === 0;
+										} )
+										.map( function ( x ) {
+											return new OO.ui.MenuOptionWidget( {
 												data: x.data,
-												label: x.label,
-											});
-										})
+												label: x.label
+											} );
+										} )
 								);
 
 								// Remove all items from menu add fill it with new
 								this.menu.clearItems();
-								this.menu.addItems(suggestions);
+								this.menu.addItems( suggestions );
 
-								if (suggestions.length) {
+								if ( suggestions.length ) {
 									// Enable Narrator focus on menu item, see T250762.
 									this.menu.$focusOwner.attr(
-										"aria-activedescendant",
-										suggestions[0].$element.attr("id")
+										'aria-activedescendant',
+										suggestions[ 0 ].$element.attr( 'id' )
 									);
 								}
 
 								// Make the menu visible; it might not be if it was previously empty
-								this.menu.toggle(true);
+								this.menu.toggle( true );
 
 								this.popPending();
-							}.bind(this)
+							}.bind( this )
 						)
-						.fail(this.popPending.bind(this));
+						.fail( this.popPending.bind( this ) );
 				}
 			} else {
 				this.menu.clearItems();
@@ -257,11 +257,11 @@ config.inputWidget = new OO.ui.TextInputWidget({
 				// ***edited
 				this.menu.addItems(
 					mw.widgets.GroupsUsersMultiselectWidget.prototype.originalOptions.map(
-						function (x) {
-							return new OO.ui.MenuOptionWidget({
+						function ( x ) {
+							return new OO.ui.MenuOptionWidget( {
 								data: x.data,
-								label: x.label,
-							});
+								label: x.label
+							} );
 						}
 					)
 				);
@@ -276,13 +276,13 @@ config.inputWidget = new OO.ui.TextInputWidget({
 	mw.widgets.GroupsUsersMultiselectWidget.prototype.validateIpRange = function (
 		ipRange
 	) {
-		ipRange = ipRange.split("/");
+		ipRange = ipRange.split( '/' );
 
 		return (
-			(mw.util.isIPv4Address(ipRange[0]) &&
-				+ipRange[1] >= this.ipRangeLimits.IPv4) ||
-			(mw.util.isIPv6Address(ipRange[0]) &&
-				+ipRange[1] >= this.ipRangeLimits.IPv6)
+			( mw.util.isIPv4Address( ipRange[ 0 ] ) &&
+				+ipRange[ 1 ] >= this.ipRangeLimits.IPv4 ) ||
+			( mw.util.isIPv6Address( ipRange[ 0 ] ) &&
+				+ipRange[ 1 ] >= this.ipRangeLimits.IPv6 )
 		);
 	};
 
@@ -304,11 +304,11 @@ config.inputWidget = new OO.ui.TextInputWidget({
 	 */
 	mw.widgets.GroupsUsersMultiselectWidget.prototype.updateHiddenInput =
 		function () {
-			if ("$hiddenInput" in this) {
-				this.$hiddenInput.val(this.getSelectedUsernames().join("\n"));
+			if ( '$hiddenInput' in this ) {
+				this.$hiddenInput.val( this.getSelectedUsernames().join( '\n' ) );
 				// Trigger a 'change' event as if a user edited the text
 				// (it is not triggered when changing the value from JS code).
-				this.$hiddenInput.trigger("change");
+				this.$hiddenInput.trigger( 'change' );
 			}
 		};
 
@@ -320,7 +320,6 @@ config.inputWidget = new OO.ui.TextInputWidget({
 	mw.widgets.GroupsUsersMultiselectWidget.prototype.onMultiselectChange =
 		function () {
 			this.updateHiddenInput();
-			this.input.setValue("");
+			this.input.setValue( '' );
 		};
-})();
-
+}() );

@@ -20,23 +20,25 @@
 		"SpecialPageOwnership": "includes/specials/SpecialPageOwnership.php"
 	},
 	"ExtensionMessagesFiles": {
+		"PageOwnershipAlias": "PageOwnership.alias.php",
 		"PageOwnershipMagic": "PageOwnershipMagic.i18n.magic.php"
 	},
 	"Hooks": {
+		"BeforeInitialize": "PageOwnership::onBeforeInitialize",
 		"getUserPermissionsErrors": "PageOwnership::onGetUserPermissionsErrors",
 		"PageSaveComplete": "PageOwnership::onPageSaveComplete",
 		"PageRenderingHash": "PageOwnership::onPageRenderingHash",
 		"RejectParserCacheValue": "PageOwnership::onRejectParserCacheValue",
 		"ParserOptionsRegister": "PageOwnership::onParserOptionsRegister",
 		"BeforeParserFetchTemplateRevisionRecord": "PageOwnership::onBeforeParserFetchTemplateRevisionRecord",
-		"ParserFetchTemplate_": "PageOwnership::onParserFetchTemplate",	
+		"ParserFetchTemplate_": "PageOwnership::onParserFetchTemplate",
 		"SMW::Store::AfterQueryResultLookupComplete": "PageOwnership::onSMWStoreAfterQueryResultLookupComplete",
 		"LoadExtensionSchemaUpdates": "PageOwnership::onLoadExtensionSchemaUpdates",
 		"BeforePageDisplay": "PageOwnership::onBeforePageDisplay",
 		"ArticleDeleteComplete": "PageOwnership::onArticleDeleteComplete",
 		"MagicWordwgVariableIDs": "PageOwnership::onMagicWordwgVariableIDs",
 		"ParserGetVariableValueSwitch": "PageOwnership::onParserGetVariableValueSwitch",
-		"SkinTemplateNavigation": "PageOwnership::onSkinTemplateNavigation",
+		"SkinTemplateNavigation::Universal": "PageOwnership::onSkinTemplateNavigation",
 		"ParserFirstCallInit": "PageOwnership::onParserFirstCallInit",
 		"SkinBuildSidebar": "PageOwnership::onSkinBuildSidebar"
 	},
@@ -66,11 +68,13 @@
 	"AvailableRights": [
 		"pageownership-caneditunassignedpages"
 	],
+	"ResourceFileModulePaths": {
+		"localBasePath": "resources",
+		"remoteExtPath": "PageOwnership/resources"
+	},
 	"ResourceModules": {
 		"ext.PageOwnership": {
 			"position": "top",
-			"localBasePath": "resources",
-			"remoteExtPath": "PageOwnership/resources",
 			"scripts": [
 				"page_ownership.js"
 			],
@@ -83,8 +87,6 @@
 		},
 		"ext.PageOwnership.GroupsUsersMultiselectWidget": {
 			"position": "top",
-			"localBasePath": "resources",
-			"remoteExtPath": "PageOwnership/resources",
 			"scripts": [
 				"mw.widgets.GroupsUsersMultiselectWidget.js"
 			],

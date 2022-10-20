@@ -19,36 +19,22 @@
  * @file
  * @ingroup extensions
  * @author thomas-topway-it <thomas.topway.it@mail.com>
- * @copyright Copyright ©2021, https://wikisphere.org
+ * @copyright Copyright ©2021-2022, https://wikisphere.org
  */
-
 
 use MediaWiki\MediaWikiServices;
 
-
 class PageOwnershipFunctions {
 
-
 	/**
-	 * @var UserGroupManager
-	 */
-	private static $userGroupManager;
-	private static $Parser;
-
-
-	public static function __constructStatic()
-	{
-		self::$userGroupManager = MediaWikiServices::getInstance()->getUserGroupManager();
-		self::$Parser = MediaWikiServices::getInstance()->getParser();
-	}
-
-
-	/**
+	 * @param User $user
+	 * @param bool $replace_asterisk
 	 * @return array
 	 */
 	public static function getUserGroups( $user, $replace_asterisk = false ) {
+		$groupManager = \PageOwnership::$userGroupManager ?? MediaWikiServices::getInstance()->getUserGroupManager();
 
-		$user_groups = self::$userGroupManager->getUserEffectiveGroups( $user );
+		$user_groups = $groupManager->getUserEffectiveGroups( $user );
 
 		$user_groups[] = $user->getName();
 
@@ -62,13 +48,14 @@ class PageOwnershipFunctions {
 		}
 
 		return $user_groups;
-
 	}
 
-
-
-	public static function addHeaditem( $outputPage, $items  )
-	{
+	/**
+	 * @param OutputPage $outputPage
+	 * @param array $items
+	 * @return array
+	 */
+	public static function addHeaditem( $outputPage, $items ) {
 		foreach ( $items as $key => $val ) {
 
 			list( $type, $url ) = $val;
@@ -76,43 +63,46 @@ class PageOwnershipFunctions {
 			switch ( $type ) {
 				case 'stylesheet':
 					$item = '<link rel="stylesheet" href="' . $url . '" />';
-				break;
+					break;
 
 				case 'script':
 					$item = '<script src="' . $url . '"></script>';
-				break;
+					break;
 
 			}
-			
+
 			// @phan-suppress-next-line PhanTypeMismatchArgumentNullable
 			$outputPage->addHeadItem( 'PageOwnership_head_item' . $key, $item );
-		}		
-
+		}
 	}
 
-
-
-	public static function isAuthorized( $user, $title )
-	{
+	/**
+	 * @param User $user
+	 * @param Title $title
+	 * @return bool
+	 */
+	public static function isAuthorized( $user, $title ) {
 		global $wgPageOwnershipAuthorizedEditors;
 
 		$allowed_groups = [ 'sysop' ];
-		
+
 		if ( is_array( $wgPageOwnershipAuthorizedEditors ) ) {
-			$allowed_groups = array_unique (array_merge ( $allowed_groups, $wgPageOwnershipAuthorizedEditors) );
+			$allowed_groups = array_unique( array_merge( $allowed_groups, $wgPageOwnershipAuthorizedEditors ) );
 		}
 
 		$user_groups = self::getUserGroups( $user );
 
-		return sizeof( array_intersect( $allowed_groups, $user_groups ) );
-
+		return count( array_intersect( $allowed_groups, $user_groups ) );
 	}
 
-
-	public static function page_ancestors( $title, $exclude_current = true )
-	{
+	/**
+	 * @param Title $title
+	 * @param bool $exclude_current
+	 * @return array
+	 */
+	public static function page_ancestors( $title, $exclude_current = true ) {
 		$output = [];
-		
+
 		$title_parts = explode( '/', $title->getText() );
 
 		if ( $exclude_current ) {
@@ -130,30 +120,30 @@ class PageOwnershipFunctions {
 
 			} else {
 				$title_ = Title::newFromText( $title_text );
-				if ($title_->isKnown() ) {
+				if ( $title_->isKnown() ) {
 					$output[] = $title_;
 				}
-			
 			}
-				
 		}
 
 		return $output;
 	}
 
-
-	// ***this avoids storing parser output in the cache,
-	// not retrieving from it !!
+	/**
+	 * *** this avoids storing the parser output in the cache,
+	 * *** not retrieving an uncached version of it !!
+	 * @param Parser|null $parser
+	 */
 	public static function disableCaching( $parser = null ) {
 		if ( !$parser ) {
-			$parser = self::$Parser;
+			$parser = \PageOwnership::$Parser;
 		}
 
 		if ( $parser->getOutput() ) {
 			$parser->getOutput()->updateCacheExpiry( 0 );
 		}
 
-		// @contributor Zabe
+		// @credits Zabe
 		$output = RequestContext::getMain()->getOutput();
 		if ( method_exists( $output, 'disableClientCache' ) ) {
 			// MW 1.38+
@@ -162,11 +152,4 @@ class PageOwnershipFunctions {
 			$output->enableClientCache( false );
 		}
 	}
-
-
 }
-
-
-PageOwnershipFunctions::__constructStatic();
-
-
