@@ -77,6 +77,26 @@ class PageOwnership {
 		self::$Parser = MediaWikiServices::getInstance()->getParser();
 	}
 
+	/**
+	 * @return User|null
+	 */
+	public static function getUser() {
+		if ( self::$User instanceof MediaWiki\User ) {
+			return self::$User;
+		}
+		return RequestContext::getMain()->getUser();
+	}
+
+	/**
+	 * @return MediaWiki\User\UserGroupManager|null
+	 */
+	public static function getUserGroupManager() {
+		if ( self::$userGroupManager instanceof MediaWiki\User\UserGroupManager ) {
+			return self::$userGroupManager;
+		}
+		return MediaWikiServices::getInstance()->getUserGroupManager();
+	}
+
 	public static function onPageSaveComplete( WikiPage $wikiPage, MediaWiki\User\UserIdentity $user, string $summary, int $flags, MediaWiki\Revision\RevisionRecord $revisionRecord, MediaWiki\Storage\EditResult $editResult ) {
 	}
 
@@ -343,15 +363,12 @@ class PageOwnership {
 	 * @return void
 	 */
 	public static function onRejectParserCacheValue( $parserOutput, $wikiPage, $parserOptions ) {
-		// phpcs:ignore MediaWiki.Usage.DeprecatedGlobalVariables.Deprecated$wgTitle
-		global $wgTitle;
-
-		if ( self::$User->isRegistered() ) {
-			$title = $wgTitle;
+		$user = self::getUser();
+		if ( $user->isRegistered() ) {
+			$title = $wikiPage->getTitle();
 			$transcludedTemplates = $title->getTemplateLinksFrom();
 
 			foreach ( $transcludedTemplates as $title_ ) {
-
 				if ( self::isOwned( $title_ ) ) {
 					return false;
 				}
@@ -399,7 +416,7 @@ class PageOwnership {
 			return false;
 		}
 
-		$user = self::$User ?? RequestContext::getMain()->getUser();
+		$user = self::getUser();
 
 		$isAuthorized = \PageOwnershipFunctions::isAuthorized( $user, $title );
 
@@ -434,7 +451,7 @@ class PageOwnership {
 	 * @return array bool
 	 */
 	public static function onParserFetchTemplate( $parser, $title, $rev, &$text, &$deps ) {
-		$user = $parser->getUserIdentity() ?? self::$User;
+		$user = $parser->getUserIdentity() ?? self::getUser();
 
 		$isAuthorized = \PageOwnershipFunctions::isAuthorized( $user, $title );
 
@@ -489,7 +506,7 @@ class PageOwnership {
 		// If the result list was changed.
 		$changed = false;
 
-		$user = self::$User;
+		$user = self::getUser();
 
 		$isAuthorized = \PageOwnershipFunctions::isAuthorized( $user, null );
 
@@ -596,7 +613,7 @@ class PageOwnership {
 	 * @return bool|void
 	 */
 	public static function onParserGetVariableValueSwitch( $parser, &$variableCache, $magicWordId, &$ret, $frame ) {
-		$user = $parser->getUserIdentity() ?? self::$User;
+		$user = $parser->getUserIdentity() ?? self::getUser();
 
 		switch ( $magicWordId ) {
 			case 'pageownership_userpages':
@@ -704,10 +721,11 @@ class PageOwnership {
 	 * @return array
 	 */
 	public static function groupsCond( $dbr, $user ) {
-		$user_groups = \PageOwnershipFunctions::getUserGroups( $user, true );
+		$userGroupManager = self::getUserGroupManager();
+		$user_groups = \PageOwnershipFunctions::getUserGroups( $userGroupManager, $user, true );
+		$user_groups[] = $user->getName();
 
 		$conds = [];
-
 		array_map( static function ( $value ) use ( &$conds, $dbr ) {
 			$conds[] = 'FIND_IN_SET(' . $dbr->addQuotes( $value ) . ', usernames)';
 		}, $user_groups );
@@ -830,7 +848,7 @@ class PageOwnership {
 	 * @return string
 	 */
 	public static function pageownership_userpages( Parser $parser, $param1 = '' ) {
-		$user = $parser->getUserIdentity() ?? self::$User;
+		$user = $parser->getUserIdentity() ?? self::getUser();
 
 		$pages = self::userpages( $user );
 

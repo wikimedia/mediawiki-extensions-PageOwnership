@@ -22,21 +22,17 @@
  * @copyright Copyright ©2021-2022, https://wikisphere.org
  */
 
-use MediaWiki\MediaWikiServices;
-
 class PageOwnershipFunctions {
 
 	/**
+	 * @param MediaWiki\User\UserGroupManager $userGroupManager
 	 * @param User $user
 	 * @param bool $replace_asterisk
 	 * @return array
 	 */
-	public static function getUserGroups( $user, $replace_asterisk = false ) {
-		$groupManager = \PageOwnership::$userGroupManager ?? MediaWikiServices::getInstance()->getUserGroupManager();
-
-		$user_groups = $groupManager->getUserEffectiveGroups( $user );
-
-		$user_groups[] = $user->getName();
+	public static function getUserGroups( $userGroupManager, $user, $replace_asterisk = false ) {
+		$user_groups = $userGroupManager->getUserEffectiveGroups( $user );
+		// $user_groups[] = $user->getName();
 
 		if ( array_search( '*', $user_groups ) === false ) {
 			$user_groups[] = '*';
@@ -82,17 +78,35 @@ class PageOwnershipFunctions {
 	 * @return bool
 	 */
 	public static function isAuthorized( $user, $title ) {
-		global $wgPageOwnershipAuthorizedEditors;
-
+		$authorized = ( array_key_exists( 'wgPageOwnershipAuthorizedEditors', $GLOBALS ) ? $GLOBALS[ 'wgPageOwnershipAuthorizedEditors' ] : null );
+		if ( empty( $authorized ) ) {
+			$authorized = [];
+		}
+		if ( !is_array( $authorized ) ) {
+			$authorized = preg_split( "/\s*,\s*/", $authorized, -1, PREG_SPLIT_NO_EMPTY );
+		}
 		$allowed_groups = [ 'sysop' ];
+		$authorized = array_unique( array_merge( $authorized, [ 'sysop' ] ) );
 
-		if ( is_array( $wgPageOwnershipAuthorizedEditors ) ) {
-			$allowed_groups = array_unique( array_merge( $allowed_groups, $wgPageOwnershipAuthorizedEditors ) );
+		$userGroupManager = \PageOwnership::getUserGroupManager();
+
+		// ***the following avoids that an user
+		// impersonates a group through the username
+		$all_groups = array_merge( $userGroupManager->listAllGroups(), $userGroupManager->listAllImplicitGroups() );
+
+		$authorized_users = array_diff( $authorized, $all_groups );
+
+		$authorized_groups = array_intersect( $authorized, $all_groups );
+
+		$user_groups = self::getUserGroups( $userGroupManager, $user );
+
+		$isAuthorized = count( array_intersect( $authorized_groups, $user_groups ) );
+
+		if ( !$isAuthorized ) {
+			$isAuthorized = in_array( $user->getName(), $authorized_users );
 		}
 
-		$user_groups = self::getUserGroups( $user );
-
-		return count( array_intersect( $allowed_groups, $user_groups ) );
+		return $isAuthorized;
 	}
 
 	/**
@@ -131,7 +145,7 @@ class PageOwnershipFunctions {
 
 	/**
 	 * *** this avoids storing the parser output in the cache,
-	 * *** not retrieving an uncached version of it !!
+	 * *** not retrieving an uncached version of a page !!
 	 * @param Parser|null $parser
 	 */
 	public static function disableCaching( $parser = null ) {
