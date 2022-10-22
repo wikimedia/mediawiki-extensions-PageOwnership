@@ -26,11 +26,11 @@ use MediaWiki\MediaWikiServices;
 
 class PageOwnership {
 	/** @var UserPagesCache */
-	private static $UserPagesCache = [];
+	public static $UserPagesCache = [];
 	/** @var permissionsCache */
-	private static $permissionsCache = [];
+	public static $permissionsCache = [];
 	/** @var OwnedPagesCache */
-	private static $OwnedPagesCache = [];
+	public static $OwnedPagesCache = [];
 	/** @var User */
 	public static $User;
 	/** @var userGroupManager */
@@ -39,39 +39,9 @@ class PageOwnership {
 	public static $Parser;
 
 	/**
-	 * @param DatabaseUpdater|null $updater
+	 * @param User|null $user
 	 */
-	public static function onLoadExtensionSchemaUpdates( DatabaseUpdater $updater = null ) {
-		$base = __DIR__;
-		$dbType = $updater->getDB()->getType();
-		$array = [
-			[
-				'table' => 'page_ownership',
-				'filename' => '../' . $dbType . '/page_ownership.sql'
-			]
-		];
-		foreach ( $array as $value ) {
-			if ( file_exists( $base . '/' . $value['filename'] ) ) {
-				$updater->addExtensionUpdate(
-					[
-						'addTable', $value['table'],
-						$base . '/' . $value['filename'], true
-					]
-				);
-			}
-		}
-	}
-
-	/**
-	 * @param Title &$title
-	 * @param null $unused
-	 * @param OutputPage $output
-	 * @param User $user
-	 * @param WebRequest $request
-	 * @param MediaWiki $mediaWiki
-	 * @return void
-	 */
-	public static function onBeforeInitialize( \Title &$title, $unused, \OutputPage $output, \User $user, \WebRequest $request, \MediaWiki $mediaWiki ) {
+	public static function initialize( $user ) {
 		self::$User = $user;
 		self::$userGroupManager = MediaWikiServices::getInstance()->getUserGroupManager();
 		self::$Parser = MediaWikiServices::getInstance()->getParser();
@@ -97,9 +67,6 @@ class PageOwnership {
 		return MediaWikiServices::getInstance()->getUserGroupManager();
 	}
 
-	public static function onPageSaveComplete( WikiPage $wikiPage, MediaWiki\User\UserIdentity $user, string $summary, int $flags, MediaWiki\Revision\RevisionRecord $revisionRecord, MediaWiki\Storage\EditResult $editResult ) {
-	}
-
 	/**
 	 * @see includes/Title.php
 	 * *** the standard method fails when $row->page_title is null
@@ -109,7 +76,7 @@ class PageOwnership {
 	 * @param string $prefix
 	 * @return void
 	 */
-	private static function getLinksTo( $title, $options = [], $table = 'pagelinks', $prefix = 'pl' ) {
+	public static function getLinksTo( $title, $options = [], $table = 'pagelinks', $prefix = 'pl' ) {
 		if ( count( $options ) > 0 ) {
 			$db = wfGetDB( DB_PRIMARY );
 		} else {
@@ -130,7 +97,7 @@ class PageOwnership {
 
 		$retVal = [];
 		if ( $res->numRows() ) {
-			$linkCache = MediaWiki\MediaWikiServices::getInstance()->getLinkCache();
+			$linkCache = MediaWikiServices::getInstance()->getLinkCache();
 			foreach ( $res as $row ) {
 				// ***edited
 				// $titleObj = self::makeTitle( $row->page_namespace, $row->page_title );
@@ -212,179 +179,11 @@ class PageOwnership {
 	}
 
 	/**
-	 * Fetch an appropriate permission error (or none!)
-	 *
-	 * @param Title $title being checked
-	 * @param User $user whose access is being checked
-	 * @param string $action being checked
-	 * @param array|string|MessageSpecifier &$result User
-	 *   permissions error to add. If none, return true. $result can be
-	 *   returned as a single error message key (string), or an array of
-	 *   error message keys when multiple messages are needed
-	 * @return bool
-	 * @see https://www.mediawiki.org/wiki/Manual:Hooks/getUserPermissionsErrors
-	 */
-	public static function onGetUserPermissionsErrors( $title, $user, $action, &$result ) {
-		global $wgLang;
-
-		$logged_in = $user->isRegistered();
-
-		$username = $user->getName();
-
-		$read = ( $action == 'read' );
-		$edit = ( $action == 'edit' || $action == 'delete' || $action == 'move' || $action == 'create' );
-
-		$new_page = ( !$title->isKnown() || $action == 'create' );
-
-		// page is being created through a pageform form
-		if ( strpos( $title->getFullText(), 'Special:FormEdit/' ) !== false ) {
-			return true;
-		}
-
-		if ( $title->getFullText() == 'Page Forms permissions test' ) {
-			return true;
-		}
-
-		if ( $title->getNamespace() != NS_MAIN ) {
-			return true;
-		}
-
-		// shows a more adequate message
-		if ( $read && $new_page ) {
-			return true;
-		}
-
-		$isAuthorized = \PageOwnershipFunctions::isAuthorized( $user, $title );
-
-		if ( $isAuthorized ) {
-			return true;
-		}
-
-		// not an owned page
-		if ( !self::isOwned( $title ) ) {
-
-			if ( $action == 'edit' ) {
-				$is_allowed = $user->isAllowed( 'pageownership-caneditunassignedpages' );
-
-				if ( !$is_allowed ) {
-					if ( !$logged_in ) {
-						$result = [ 'badaccess-group0' ];
-
-					} else {
-						// *** this is correct but ignored on page edit
-						$groupLinks = self::getGroupLinks( [ 'pageownership-admin', 'pageownership-editorofunassignedpages' ] );
-
-						$result = [
-							'badaccess-groups',
-							$wgLang->commaList( $groupLinks ),
-							count( $groupLinks )
-						];
-
-					}
-
-					return false;
-				}
-			}
-
-			return true;
-		}
-
-		list( $role, $permissions ) = self::permissionsOfPage( $title, $user );
-
-		if ( $read ) {
-			if ( $role != null ) {
-				return true;
-			}
-		}
-
-		if ( $edit ) {
-			if ( $role == 'admin' ) {
-				return true;
-			}
-
-			if ( $new_page && in_array( 'create', $permissions ) ) {
-				return true;
-			}
-
-			if ( in_array( 'edit', $permissions ) ) {
-				return true;
-			}
-
-		}
-
-		// the user is the page's creator
-		// *** it could also be an anonymous user with same ip ?
-		if ( $logged_in ) {
-			// @credits Umherirrender
-			if ( method_exists( MediaWikiServices::class, 'getWikiPageFactory' ) ) {
-				// MW 1.36+
-				$wikiPage = MediaWikiServices::getInstance()->getWikiPageFactory()->newFromTitle( $title );
-			} else {
-				$wikiPage = WikiPage::factory( $title );
-			}
-
-			$creator = $wikiPage->getCreator();
-
-			if ( $creator == $username ) {
-				return true;
-			}
-		}
-
-		// \PageOwnershipFunctions::disableCaching();
-
-		$result = [ 'badaccess-group0' ];
-
-		return false;
-	}
-
-	/**
-	 * *** use a specific cache hash key for registered users
-	 * *** so the cache of a page is always related to anonymous/registered_users
-	 * @param string &$confstr
-	 * @param User $user
-	 * @param array &$forOptions
-	 * @return void
-	 */
-	public static function onPageRenderingHash( &$confstr, User $user, &$forOptions ) {
-		// *** see also parserOptions->addExtraKey
-
-		// *** for some reason we cannot rely on $user->isRegistered()
-		if ( $user->isRegistered() ) {
-			$confstr .= '!registered_user';
-		}
-	}
-
-	/**
-	 * *** ignore the cache if a page contains a transcluded owned page
-	 * *** only for cache related to registered users
-	 * @param ParserOutput $parserOutput
-	 * @param WikiPage $wikiPage
-	 * @param ParserOptions $parserOptions
-	 * @return void
-	 */
-	public static function onRejectParserCacheValue( $parserOutput, $wikiPage, $parserOptions ) {
-		$user = self::getUser();
-		if ( $user->isRegistered() ) {
-			$title = $wikiPage->getTitle();
-			$transcludedTemplates = $title->getTemplateLinksFrom();
-
-			foreach ( $transcludedTemplates as $title_ ) {
-				if ( self::isOwned( $title_ ) ) {
-					return false;
-				}
-			}
-		}
-	}
-
-	public static function onParserOptionsRegister( &$defaults, &$inCacheKey, &$lazyLoad ) {
-	}
-
-	/**
 	 * @see extension lockdown/src/Hooks
 	 * @param array $groups
 	 * @return array
 	 */
-	private static function getGroupLinks( $groups ) {
+	public static function getGroupLinks( $groups ) {
 		$links = [];
 		foreach ( $groups as $group ) {
 			$links[] = UserGroupMembership::getLink(
@@ -395,184 +194,44 @@ class PageOwnership {
 	}
 
 	/**
-	 * *** Mediawiki >= 1.37
-	 * @param Title $contextTitle
+	 * @param string $creatorUsername
 	 * @param Title $title
-	 * @param bool &$skip
-	 * @param RevisionRecord &$revRecord
+	 * @param array $usernames
+	 * @param array $permissions
+	 * @param string $role
+	 * @param int|null $id
 	 * @return bool
 	 */
-	public static function onBeforeParserFetchTemplateRevisionRecord( $contextTitle, $title, &$skip, &$revRecord ) {
-		// if ( interface_exists('\\MediaWiki\\Hook\\ParserFetchTemplateHook') ) {
-		// 	return;
-		// }
+	public static function setPageOwnership( $creatorUsername, $title, $usernames, $permissions, $role, $id = null ) {
+		$pageId = $title->getArticleID();
+		$dbr = wfGetDB( DB_MASTER );
 
-		// *** prevents the following error
-		// http://127.0.0.1/mediawiki/load.php?lang=en&modules=startup&only=scripts&raw=1&skin=vector
-		// "Sessions are disabled for load entry point"
-		if ( defined( 'MW_NO_SESSION' ) ) {
-			// *** this is a "conservative" block, but is it necessary ?
-			$skip = true;
+		if ( !count( $usernames ) ) {
 			return false;
 		}
 
-		$user = self::getUser();
+		$row = [
+			'created_by' => $creatorUsername,
+			'usernames' => implode( ',', $usernames ),
+			'page_id' => $pageId,
+			'permissions' => implode( ',', $permissions ),
+			'role' => $role,
+		];
 
-		$isAuthorized = \PageOwnershipFunctions::isAuthorized( $user, $title );
+		if ( !$id ) {
+			$date = date( 'Y-m-d H:i:s' );
+			$res = $dbr->insert( 'page_ownership', $row + [ 'updated_at' => $date, 'created_at' => $date ] );
 
-		if ( $isAuthorized ) {
-			return true;
+		} else {
+			$res = $dbr->update( 'page_ownership', $row, [ 'id' => $id ], __METHOD__ );
 		}
 
-		if ( !self::isOwned( $title ) ) {
-			return true;
-		}
-
-		list( $role, $permissions ) = self::permissionsOfPage( $title, $user );
-
-		if ( !empty( $role ) ) {
-			return true;
-		}
-
-		// \PageOwnershipFunctions::disableCaching();
-
-		$skip = true;
-		return false;
-	}
-
-	/**
-	 * *** Mediawiki < 1.37
-	 * @see SemanticACL/SemanticACL.class.php
-	 * @param Parser|bool $parser
-	 * @param Title $title
-	 * @param Revision $rev
-	 * @param string|bool|null &$text
-	 * @param array &$deps
-	 * @return array bool
-	 */
-	public static function onParserFetchTemplate( $parser, $title, $rev, &$text, &$deps ) {
-		$user = $parser->getUserIdentity() ?? self::getUser();
-
-		$isAuthorized = \PageOwnershipFunctions::isAuthorized( $user, $title );
-
-		if ( $isAuthorized ) {
-			return true;
-		}
-
-		if ( !self::isOwned( $title ) ) {
-			return true;
-		}
-
-		list( $role, $permissions ) = self::permissionsOfPage( $title, $user );
-
-		if ( !empty( $role ) ) {
-			return true;
-		}
-
-		// \PageOwnershipFunctions::disableCaching( $parser );
-
-		// Display error text instead of template.
-		$msgKey = 'pageownership-denied-transclusion-' . ( $user->isAnon() ? 'anonymous' : 'registered' );
-
-		$text = wfMessage( $msgKey )->plain();
-
-		return false;
-	}
-
-	/**
-	 * @param OutputPage $outputPage
-	 * @param Skin $skin
-	 */
-	public static function onBeforePageDisplay( OutputPage $outputPage, Skin $skin ) {
-		global $wgResourceBasePath;
-
-		\PageOwnershipFunctions::addHeaditem( $outputPage, [
-			[ 'stylesheet', $wgResourceBasePath . '/extensions/PageOwnership/resources/style.css' ],
-		] );
-	}
-
-	/**
-	 * @see SemanticACL/SemanticACL.class.php
-	 * @param SMW\Store $store
-	 * @param SMWQueryResult &$queryResult
-	 * @return bool
-	 */
-	public static function onSMWStoreAfterQueryResultLookupComplete( SMW\Store $store, SMWQueryResult &$queryResult ) {
-		/* NOTE: this filtering does not work with count queries. To do filtering on count queries, we would
-		 * have to use SMW::Store::BeforeQueryResultLookupComplete to add conditions on ACL properties.
-		 * However, doing that would make it extremely difficult to tweak caching on results.
-		 */
-		$filtered = [];
-		// If the result list was changed.
-		$changed = false;
-
-		$user = self::getUser();
-
-		$isAuthorized = \PageOwnershipFunctions::isAuthorized( $user, null );
-
-		if ( $isAuthorized ) {
-			return;
-		}
-
-		foreach ( $queryResult->getResults() as $result ) {
-			$title = $result->getTitle();
-			if ( !$title instanceof Title ) {
-				// T296559
-				continue;
-			}
-
-			// not an owned page
-			if ( !self::isOwned( $title ) ) {
-				$filtered[] = $result;
-				continue;
-			}
-
-			list( $role, $permissions ) = self::permissionsOfPage( $title, $user );
-
-			if ( !empty( $role ) ) {
-				$filtered[] = $result;
-
-			} else {
-				$changed = true;
-			}
-		}
-
-		if ( !$changed ) {
-			// No changes to the query results.
-			return;
-		}
-
-		// \PageOwnershipFunctions::disableCaching();
-
-		// Build a new query result object
-		$queryResult = new SMWQueryResult(
-			$queryResult->getPrintRequests(),
-			$queryResult->getQuery(),
-			$filtered,
-			$store,
-			$queryResult->hasFurtherResults()
-		);
-	}
-
-	/**
-	 * @see SemanticACL/SemanticACL.class.php
-	 * @param WikiPage $wikiPage
-	 * @param User $user
-	 * @param string $reason
-	 * @param int $id
-	 * @param Content $content
-	 * @param LogEntry $logEntry
-	 * @param int $archivedRevisionCount
-	 */
-	public static function onArticleDeleteComplete(
-		WikiPage $wikiPage, User $user, string $reason, int $id, Content $content,
-		LogEntry $logEntry, int $archivedRevisionCount
-	) {
-		self::deleteOwnershipData( [ 'page_id' => $id ] );
+		return $res;
 	}
 
 	/**
 	 * @param array $conds
+	 * @return void
 	 */
 	public static function deleteOwnershipData( $conds ) {
 		$dbw = wfGetDB( DB_PRIMARY );
@@ -581,96 +240,6 @@ class PageOwnership {
 			'page_ownership',  $conds,
 			__METHOD__
 		);
-	}
-
-	/**
-	 * @see https://www.mediawiki.org/wiki/Manual:Variable
-	 * @see https://www.mediawiki.org/wiki/Manual:Hooks/GetMagicVariableIDs
-	 * @param string[] &$aCustomVariableIds
-	 * @return bool
-	 */
-	public static function onMagicWordwgVariableIDs( &$aCustomVariableIds ) {
-		$variables = [
-			'pageownership_userpages',
-		];
-
-		foreach ( $variables as $var ) {
-			$aCustomVariableIds[] = $var;
-		}
-
-		// Permit future callbacks to run for this hook.
-		// never return false since this will prevent further callbacks AND indicate we found no value!
-		return true;
-	}
-
-	/**
-	 * @see https://www.mediawiki.org/wiki/Manual:Hooks/ParserGetVariableValueSwitch
-	 * @param Parser $parser
-	 * @param array &$variableCache
-	 * @param string $magicWordId
-	 * @param string &$ret
-	 * @param PPFrame $frame
-	 * @return bool|void
-	 */
-	public static function onParserGetVariableValueSwitch( $parser, &$variableCache, $magicWordId, &$ret, $frame ) {
-		$user = $parser->getUserIdentity() ?? self::getUser();
-
-		switch ( $magicWordId ) {
-			case 'pageownership_userpages':
-				$userpages = self::userpages( $user );
-				$ret = implode( ',', $userpages );
-				break;
-
-			default:
-		}
-
-		$variableCache[$magicWordId] = $ret;
-
-		// Permit future callbacks to run for this hook.
-		// never return false since this will prevent further callbacks AND indicate we found no value!
-		return true;
-	}
-
-	/**
-	 * @param SkinTemplate $skinTemplate
-	 * @param array &$links
-	 */
-	public static function onSkinTemplateNavigation( SkinTemplate $skinTemplate, array &$links ) {
-		$user = $skinTemplate->getUser();
-
-		if ( !$user || !$user->isRegistered() ) {
-			return;
-		}
-
-		$title = $skinTemplate->getTitle();
-
-		if ( $title->getNamespace() != NS_MAIN ) {
-			return;
-		}
-
-		// @contributor Umherirrender
-		if ( method_exists( MediaWikiServices::class, 'getWikiPageFactory' ) ) {
-			// MW 1.36+
-			$wikiPage = MediaWikiServices::getInstance()->getWikiPageFactory()->newFromTitle( $title );
-		} else {
-			$wikiPage = WikiPage::factory( $title );
-		}
-		$creator = $wikiPage->getCreator();
-
-		$isAuthorized = \PageOwnershipFunctions::isAuthorized( $user, $title );
-
-		if ( !$isAuthorized ) {
-			list( $role, $permissions ) = self::permissionsOfPage( $title, $user );
-
-			if ( $role == 'admin' ) {
-				$isAuthorized = true;
-			}
-		}
-
-		if ( $isAuthorized ) {
-			$url = SpecialPage::getTitleFor( 'PageOwnership', $title )->getLocalURL();
-			$links[ 'actions' ][] = [ 'text' => wfMessage( 'pageownership-navigation' )->text(), 'href' => $url ];
-		}
 	}
 
 	/**
@@ -686,7 +255,7 @@ class PageOwnership {
 
 		$dbr = wfGetDB( DB_REPLICA );
 
-		$page_ancestors = \PageOwnershipFunctions::page_ancestors( $title, false );
+		$page_ancestors = self::page_ancestors( $title, false );
 
 		$page_ancestors = array_reverse( $page_ancestors );
 
@@ -713,101 +282,6 @@ class PageOwnership {
 
 		self::$OwnedPagesCache[ $cache_key ] = false;
 		return false;
-	}
-
-	/**
-	 * @param \Wikimedia\Rdbms\DBConnRef $dbr
-	 * @param User $user
-	 * @return array
-	 */
-	public static function groupsCond( $dbr, $user ) {
-		$userGroupManager = self::getUserGroupManager();
-		$user_groups = \PageOwnershipFunctions::getUserGroups( $userGroupManager, $user, true );
-		$user_groups[] = $user->getName();
-
-		$conds = [];
-		array_map( static function ( $value ) use ( &$conds, $dbr ) {
-			$conds[] = 'FIND_IN_SET(' . $dbr->addQuotes( $value ) . ', usernames)';
-		}, $user_groups );
-
-		return [ $dbr->makeList( $conds, LIST_OR ) ];
-	}
-
-	/**
-	 * @param Title $title
-	 * @param User $user
-	 * @return array
-	 */
-	public static function permissionsOfPage( $title, $user ) {
-		// $hash = md5();
-
-		$cache_key = $title->getText() . $user->getName();
-
-		if ( array_key_exists( $cache_key, self::$permissionsCache ) ) {
-			return self::$permissionsCache[ $cache_key ];
-		}
-
-		$conds = [];
-
-		$dbr = wfGetDB( DB_REPLICA );
-
-		$page_ancestors = \PageOwnershipFunctions::page_ancestors( $title, false );
-
-		$page_ancestors = array_reverse( $page_ancestors );
-
-		$conds = self::groupsCond( $dbr, $user );
-
-		$role = null;
-		$permissions = [];
-
-		$roles_hierarchy = [ 'admin', 'editor', 'reader' ];
-
-		// closest (deepest) first
-		foreach ( $page_ancestors as $key => $title_ ) {
-			$conds['page_id'] = $title_->getArticleID();
-
-			if ( $key > 0 ) {
-				$conds[] = 'FIND_IN_SET(' . $dbr->addQuotes( 'subpages' ) . ', permissions)';
-			}
-
-			$rows = $dbr->select(
-				'page_ownership',
-				'*',
-				$conds,
-				__METHOD__
-			);
-
-			foreach ( $rows as $row ) {
-				$row = (array)$row;
-
-				// get all permissions and role
-				if ( $row && $row !== [ false ] ) {
-					if ( !empty( $row['permissions'] ) ) {
-						array_map( static function ( $value ) use ( &$permissions ) {
-							if ( !in_array( $value, $permissions ) ) {
-								$permissions[] = $value;
-							}
-						}, explode( ",", $row['permissions'] ) );
-					}
-
-					if ( $role == null || ( array_search( $row[ 'role' ], $roles_hierarchy ) < array_search( $role, $roles_hierarchy ) ) ) {
-						$role = $row[ 'role' ];
-					}
-				}
-			}
-		}
-
-		self::$permissionsCache[ $cache_key ] = [ $role, $permissions ];
-
-		return self::$permissionsCache[ $cache_key ];
-	}
-
-	/**
-	 * *** Register any render callbacks with the parser
-	 * @param Parser $parser
-	 */
-	public static function OnParserFirstCallInit( Parser $parser ) {
-		$parser->setFunctionHook( 'pageownership_userpages', [ self::class, 'pageownership_userpages' ] );
 	}
 
 	/**
@@ -879,29 +353,241 @@ class PageOwnership {
 	}
 
 	/**
-	 * @param Skin $skin
-	 * @param array &$bar
+	 * @param \Wikimedia\Rdbms\DBConnRef $dbr
+	 * @param User $user
+	 * @return array
 	 */
-	public static function OnSkinBuildSidebar( $skin, &$bar ) {
-		$user = $skin->getUser();
+	public static function groupsCond( $dbr, $user ) {
+		$userGroupManager = self::getUserGroupManager();
+		$user_groups = self::getUserGroups( $userGroupManager, $user, true );
+		$user_groups[] = $user->getName();
 
-		if ( !$user || !$user->isRegistered() ) {
-			return;
+		$conds = [];
+		array_map( static function ( $value ) use ( &$conds, $dbr ) {
+			$conds[] = 'FIND_IN_SET(' . $dbr->addQuotes( $value ) . ', usernames)';
+		}, $user_groups );
+
+		return [ $dbr->makeList( $conds, LIST_OR ) ];
+	}
+
+	/**
+	 * @param Title $title
+	 * @param User $user
+	 * @return array
+	 */
+	public static function permissionsOfPage( $title, $user ) {
+		// $hash = md5();
+
+		$cache_key = $title->getText() . $user->getName();
+
+		if ( array_key_exists( $cache_key, self::$permissionsCache ) ) {
+			return self::$permissionsCache[ $cache_key ];
 		}
 
-		$pages = self::getUserPagesDB( $user );
+		$conds = [];
 
-		foreach ( $pages as $page ) {
-			$title = Title::newFromID( $page['page_id'] );
+		$dbr = wfGetDB( DB_REPLICA );
 
-			if ( !$title ) {
-				continue;
+		$page_ancestors = self::page_ancestors( $title, false );
+
+		$page_ancestors = array_reverse( $page_ancestors );
+
+		$conds = self::groupsCond( $dbr, $user );
+
+		$role = null;
+		$permissions = [];
+
+		$roles_hierarchy = [ 'admin', 'editor', 'reader' ];
+
+		// closest (deepest) first
+		foreach ( $page_ancestors as $key => $title_ ) {
+			$conds['page_id'] = $title_->getArticleID();
+
+			if ( $key > 0 ) {
+				$conds[] = 'FIND_IN_SET(' . $dbr->addQuotes( 'subpages' ) . ', permissions)';
 			}
 
-			$bar[ wfMessage( 'pageownership-sidebar-section' )->text() ][] = [
-				'text'   => $title->getText() . ( $page['role'] == 'reader' ? ' (' . wfMessage( 'pageownership-sidebar-role-reader' )->text() . ')' : '' ),
-				'href'   => $title->getLocalURL()
-			];
+			$rows = $dbr->select(
+				'page_ownership',
+				'*',
+				$conds,
+				__METHOD__
+			);
+
+			foreach ( $rows as $row ) {
+				$row = (array)$row;
+
+				// get all permissions and role
+				if ( $row && $row !== [ false ] ) {
+					if ( !empty( $row['permissions'] ) ) {
+						array_map( static function ( $value ) use ( &$permissions ) {
+							if ( !in_array( $value, $permissions ) ) {
+								$permissions[] = $value;
+							}
+						}, explode( ",", $row['permissions'] ) );
+					}
+
+					if ( $role == null || ( array_search( $row[ 'role' ], $roles_hierarchy ) < array_search( $role, $roles_hierarchy ) ) ) {
+						$role = $row[ 'role' ];
+					}
+				}
+			}
+		}
+
+		self::$permissionsCache[ $cache_key ] = [ $role, $permissions ];
+
+		return self::$permissionsCache[ $cache_key ];
+	}
+
+	/**
+	 * @param MediaWiki\User\UserGroupManager $userGroupManager
+	 * @param User $user
+	 * @param bool $replace_asterisk
+	 * @return array
+	 */
+	public static function getUserGroups( $userGroupManager, $user, $replace_asterisk = false ) {
+		$user_groups = $userGroupManager->getUserEffectiveGroups( $user );
+		// $user_groups[] = $user->getName();
+
+		if ( array_search( '*', $user_groups ) === false ) {
+			$user_groups[] = '*';
+		}
+
+		if ( $replace_asterisk ) {
+			$key = array_search( '*', $user_groups );
+			$user_groups[ $key ] = 'all';
+		}
+
+		return $user_groups;
+	}
+
+	/**
+	 * @param OutputPage $outputPage
+	 * @param array $items
+	 * @return array
+	 */
+	public static function addHeaditem( $outputPage, $items ) {
+		foreach ( $items as $key => $val ) {
+
+			list( $type, $url ) = $val;
+
+			switch ( $type ) {
+				case 'stylesheet':
+					$item = '<link rel="stylesheet" href="' . $url . '" />';
+					break;
+
+				case 'script':
+					$item = '<script src="' . $url . '"></script>';
+					break;
+
+			}
+
+			// @phan-suppress-next-line PhanTypeMismatchArgumentNullable
+			$outputPage->addHeadItem( 'PageOwnership_head_item' . $key, $item );
+		}
+	}
+
+	/**
+	 * @param string $varName
+	 * @return array
+	 */
+	public static function getGlobalParameterAsArray( $varName ) {
+		$ret = ( array_key_exists( $varName, $GLOBALS ) ? $GLOBALS[ $varName ] : null );
+		if ( empty( $ret ) ) {
+			$ret = [];
+		}
+		if ( !is_array( $ret ) ) {
+			$ret = preg_split( "/\s*,\s*/", $ret, -1, PREG_SPLIT_NO_EMPTY );
+		}
+		return $ret;
+	}
+
+	/**
+	 * @param User $user
+	 * @param Title $title
+	 * @return bool
+	 */
+	public static function isAuthorized( $user, $title ) {
+		$authorizedEditors = self::getGlobalParameterAsArray( 'wgPageOwnershipAuthorizedEditors' );
+		$authorizedEditors = array_unique( array_merge( $authorizedEditors, [ 'sysop' ] ) );
+
+		$userGroupManager = self::getUserGroupManager();
+
+		// ***the following avoids that an user
+		// impersonates a group through the username
+		$all_groups = array_merge( $userGroupManager->listAllGroups(), $userGroupManager->listAllImplicitGroups() );
+
+		$authorized_users = array_diff( $authorizedEditors, $all_groups );
+
+		$authorized_groups = array_intersect( $authorizedEditors, $all_groups );
+
+		$user_groups = self::getUserGroups( $userGroupManager, $user );
+
+		$isAuthorized = count( array_intersect( $authorized_groups, $user_groups ) );
+
+		if ( !$isAuthorized ) {
+			$isAuthorized = in_array( $user->getName(), $authorized_users );
+		}
+
+		return $isAuthorized;
+	}
+
+	/**
+	 * @param Title $title
+	 * @param bool $exclude_current
+	 * @return array
+	 */
+	public static function page_ancestors( $title, $exclude_current = true ) {
+		$output = [];
+
+		$title_parts = explode( '/', $title->getText() );
+
+		if ( $exclude_current ) {
+			array_pop( $title_parts );
+		}
+
+		$path = [];
+
+		foreach ( $title_parts as $value ) {
+			$path[] = $value;
+			$title_text = implode( '/', $path );
+
+			if ( $title->getText() == $title_text ) {
+				$output[] = $title;
+
+			} else {
+				$title_ = Title::newFromText( $title_text );
+				if ( $title_->isKnown() ) {
+					$output[] = $title_;
+				}
+			}
+		}
+
+		return $output;
+	}
+
+	/**
+	 * *** attention! this avoids storing the parser output in the cache,
+	 * *** not retrieving an uncached version of a page !!
+	 * @param Parser|null $parser
+	 * @return void
+	 */
+	public static function disableCaching( $parser = null ) {
+		if ( !$parser ) {
+			$parser = self::$Parser;
+		}
+
+		if ( $parser->getOutput() ) {
+			$parser->getOutput()->updateCacheExpiry( 0 );
+		}
+
+		// @credits Zabe
+		$output = RequestContext::getMain()->getOutput();
+		if ( method_exists( $output, 'disableClientCache' ) ) {
+			// MW 1.38+
+			$output->disableClientCache();
+		} else {
+			$output->enableClientCache( false );
 		}
 	}
 }

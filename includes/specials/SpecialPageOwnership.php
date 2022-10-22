@@ -67,7 +67,7 @@ class SpecialPageOwnership extends SpecialPage {
 
 		$user = $this->getUser();
 
-		$isAuthorized = \PageOwnershipFunctions::isAuthorized( $user, $title );
+		$isAuthorized = \PageOwnership::isAuthorized( $user, $title );
 
 		if ( !$isAuthorized ) {
 			if ( !$title ) {
@@ -405,7 +405,7 @@ class SpecialPageOwnership extends SpecialPage {
 	 * @return bool
 	 */
 	private function groupsList() {
-		$output = [];
+		$ret = [];
 
 		$config = $this->getConfig();
 		$groupPermissions = $config->get( 'GroupPermissions' );
@@ -437,10 +437,10 @@ class SpecialPageOwnership extends SpecialPage {
 
 			$groupnameLocalized = UserGroupMembership::getGroupName( $groupname );
 
-			$output[$groupnameLocalized] = $groupname;
+			$ret[$groupnameLocalized] = $groupname;
 		}
 
-		return $output;
+		return $ret;
 	}
 
 	/**
@@ -455,22 +455,23 @@ class SpecialPageOwnership extends SpecialPage {
 
 		$new = ( $id && $id === 'new' );
 
-		$dbr = wfGetDB( DB_MASTER );
+		$title = $this->title;
 
-		if ( !$this->title ) {
+		if ( !$title ) {
 			$title = Title::newFromText( $data[ 'page_name' ] );
+		}
 
-			if ( !$title ) {
-				return false;
-			}
-
-			$pageId = $title->getArticleID();
-
-		} else {
-			$pageId = $this->title->getArticleID();
+		if ( !$title ) {
+			return false;
 		}
 
 		if ( empty( $data['usernames'] ) ) {
+			return false;
+		}
+
+		$usernames = preg_split( "/[\r\n]+/", $data['usernames'], -1, PREG_SPLIT_NO_EMPTY );
+
+		if ( !count( $usernames ) ) {
 			return false;
 		}
 
@@ -484,30 +485,19 @@ class SpecialPageOwnership extends SpecialPage {
 			}
 		}
 
-		$row = [
-			'created_by' => $this->user->getName(),
-			'usernames' => str_replace( "\n", ",", $data['usernames'] ),
-			'page_id' => $pageId,
-			'permissions' => implode( ',', $permissions ),
-			'role' => $data['role'],
-		];
+		$role = $data['role'];
+
+		\PageOwnership::setPageOwnership( $this->user->getName(), $title, $usernames, $permissions, $role, ( !$new ? $id : null ) );
 
 		if ( $new ) {
-			$date = date( 'Y-m-d H:i:s' );
-			$row = $dbr->insert( 'page_ownership', $row + [ 'updated_at' => $date, 'created_at' => $date ] );
-
-			$latest_id = $dbr->selectField(
+			$dbr = wfGetDB( DB_MASTER );
+			$this->latest_id = $dbr->selectField(
 				'page_ownership',
 				'id',
 				[],
 				__METHOD__,
 				[ 'ORDER BY' => 'id DESC' ]
 			);
-
-			$this->latest_id = $latest_id;
-
-		} else {
-			$row = $dbr->update( 'page_ownership', $row, [ 'id' => $id ], __METHOD__ );
 		}
 
 		\PageOwnership::invalidateCacheOfPagesWithAskQueriesRelatedToTitle( $this->title );

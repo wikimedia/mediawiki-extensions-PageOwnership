@@ -1,7 +1,7 @@
 {
 	"name": "PageOwnership",
 	"author": "thomas-topway-it",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"url": "https://www.mediawiki.org/wiki/Extension:PageOwnership",
 	"descriptionmsg": "pageownership-extension-desc",
 	"license-name": "GPL-2.0-or-later",
@@ -15,8 +15,8 @@
 		]
 	},
 	"AutoloadClasses": {
+		"PageOwnershipHooks": "includes/PageOwnershipHooks.php",
 		"PageOwnership": "includes/PageOwnership.php",
-		"PageOwnershipFunctions": "includes/PageOwnershipFunctions.php",
 		"SpecialPageOwnership": "includes/specials/SpecialPageOwnership.php"
 	},
 	"ExtensionMessagesFiles": {
@@ -24,23 +24,23 @@
 		"PageOwnershipMagic": "PageOwnershipMagic.i18n.magic.php"
 	},
 	"Hooks": {
-		"BeforeInitialize": "PageOwnership::onBeforeInitialize",
-		"getUserPermissionsErrors": "PageOwnership::onGetUserPermissionsErrors",
-		"PageSaveComplete": "PageOwnership::onPageSaveComplete",
-		"PageRenderingHash": "PageOwnership::onPageRenderingHash",
-		"RejectParserCacheValue": "PageOwnership::onRejectParserCacheValue",
-		"ParserOptionsRegister": "PageOwnership::onParserOptionsRegister",
-		"BeforeParserFetchTemplateRevisionRecord": "PageOwnership::onBeforeParserFetchTemplateRevisionRecord",
-		"ParserFetchTemplate_": "PageOwnership::onParserFetchTemplate",
-		"SMW::Store::AfterQueryResultLookupComplete": "PageOwnership::onSMWStoreAfterQueryResultLookupComplete",
-		"LoadExtensionSchemaUpdates": "PageOwnership::onLoadExtensionSchemaUpdates",
-		"BeforePageDisplay": "PageOwnership::onBeforePageDisplay",
-		"ArticleDeleteComplete": "PageOwnership::onArticleDeleteComplete",
-		"MagicWordwgVariableIDs": "PageOwnership::onMagicWordwgVariableIDs",
-		"ParserGetVariableValueSwitch": "PageOwnership::onParserGetVariableValueSwitch",
-		"SkinTemplateNavigation::Universal": "PageOwnership::onSkinTemplateNavigation",
-		"ParserFirstCallInit": "PageOwnership::onParserFirstCallInit",
-		"SkinBuildSidebar": "PageOwnership::onSkinBuildSidebar"
+		"BeforeInitialize": "PageOwnershipHooks::onBeforeInitialize",
+		"getUserPermissionsErrors": "PageOwnershipHooks::onGetUserPermissionsErrors",
+		"PageSaveComplete": "PageOwnershipHooks::onPageSaveComplete",
+		"PageRenderingHash": "PageOwnershipHooks::onPageRenderingHash",
+		"RejectParserCacheValue": "PageOwnershipHooks::onRejectParserCacheValue",
+		"ParserOptionsRegister": "PageOwnershipHooks::onParserOptionsRegister",
+		"BeforeParserFetchTemplateRevisionRecord": "PageOwnershipHooks::onBeforeParserFetchTemplateRevisionRecord",
+		"ParserFetchTemplate_": "PageOwnershipHooks::onParserFetchTemplate",
+		"SMW::Store::AfterQueryResultLookupComplete": "PageOwnershipHooks::onSMWStoreAfterQueryResultLookupComplete",
+		"LoadExtensionSchemaUpdates": "PageOwnershipHooks::onLoadExtensionSchemaUpdates",
+		"BeforePageDisplay": "PageOwnershipHooks::onBeforePageDisplay",
+		"ArticleDeleteComplete": "PageOwnershipHooks::onArticleDeleteComplete",
+		"MagicWordwgVariableIDs": "PageOwnershipHooks::onMagicWordwgVariableIDs",
+		"ParserGetVariableValueSwitch": "PageOwnershipHooks::onParserGetVariableValueSwitch",
+		"SkinTemplateNavigation::Universal": "PageOwnershipHooks::onSkinTemplateNavigation",
+		"ParserFirstCallInit": "PageOwnershipHooks::onParserFirstCallInit",
+		"SkinBuildSidebar": "PageOwnershipHooks::onSkinBuildSidebar"
 	},
 	"SpecialPages": {
 		"PageOwnership": "SpecialPageOwnership"
