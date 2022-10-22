@@ -508,8 +508,8 @@ class PageOwnership {
 	 * @return bool
 	 */
 	public static function isAuthorized( $user, $title ) {
-		$authorizedEditors = self::getGlobalParameterAsArray( 'wgPageOwnershipAuthorizedEditors' );
-		$authorizedEditors = array_unique( array_merge( $authorizedEditors, [ 'sysop' ] ) );
+		$admins = self::getGlobalParameterAsArray( 'wgPageOwnershipAdmins' );
+		$admins = array_unique( array_merge( $admins, [ 'sysop' ] ) );
 
 		$userGroupManager = self::getUserGroupManager();
 
@@ -517,9 +517,9 @@ class PageOwnership {
 		// impersonates a group through the username
 		$all_groups = array_merge( $userGroupManager->listAllGroups(), $userGroupManager->listAllImplicitGroups() );
 
-		$authorized_users = array_diff( $authorizedEditors, $all_groups );
+		$authorized_users = array_diff( $admins, $all_groups );
 
-		$authorized_groups = array_intersect( $authorizedEditors, $all_groups );
+		$authorized_groups = array_intersect( $admins, $all_groups );
 
 		$user_groups = self::getUserGroups( $userGroupManager, $user );
 
