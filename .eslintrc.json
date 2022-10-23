@@ -9,11 +9,7 @@
 		"wikimedia/mediawiki"
 	],
 	"rules": {
-		"block-scoped-var": "off",
 		"camelcase": "off",
-		"no-redeclare": "off",
-		"no-undef": "off",
-		"no-var": "off",
-		"prefer-const": "off"
+		"no-var": "off"
 	}
 }
