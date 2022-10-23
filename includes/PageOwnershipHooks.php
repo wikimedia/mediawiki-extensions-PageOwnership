@@ -269,6 +269,11 @@ class PageOwnershipHooks {
 		}
 	}
 
+	/**
+	 * @param array &$defaults Options and their defaults
+	 * @param array &$inCacheKey Whether each option splits the parser cache
+	 * @param array &$lazyLoad Initializers for lazy-loaded options
+	 */
 	public static function onParserOptionsRegister( &$defaults, &$inCacheKey, &$lazyLoad ) {
 	}
 

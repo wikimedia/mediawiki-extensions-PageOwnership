@@ -48,6 +48,10 @@ class GroupsUsersMultiselectWidget extends MediaWiki\Widget\TagMultiselectWidget
 		$this->options = $config['options'] ?? [];
 	}
 
+	/**
+	 * @param array &$config
+	 * @return array
+	 */
 	public function getConfig( &$config ) {
 		if ( $this->ipAllowed !== null ) {
 			$config['ipAllowed'] = $this->ipAllowed;
@@ -75,6 +79,9 @@ class GroupsUsersMultiselectWidget extends MediaWiki\Widget\TagMultiselectWidget
 		return parent::getConfig( $config );
 	}
 
+	/**
+	 * @return string
+	 */
 	protected function getJavaScriptClassName() {
 		return 'mw.widgets.GroupsUsersMultiselectWidget';
 	}
