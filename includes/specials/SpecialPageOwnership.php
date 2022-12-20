@@ -427,6 +427,12 @@ class SpecialPageOwnership extends SpecialPage {
 		asort( $allGroups );
 
 		$linkRenderer = $this->getLinkRenderer();
+		if ( method_exists( Language::class, 'getGroupName' ) ) {
+			// MW 1.38+
+			$lang = $this->getLanguage();
+		} else {
+			$lang = null;
+		}
 
 		foreach ( $allGroups as $group ) {
 			$permissions = $groupPermissions[ $group ] ?? [];
@@ -435,7 +441,12 @@ class SpecialPageOwnership extends SpecialPage {
 			$groupname = ( $group == '*' )
 			? 'all' : $group;
 
-			$groupnameLocalized = UserGroupMembership::getGroupName( $groupname );
+			if ( $lang !== null ) {
+				// MW 1.38+
+				$groupnameLocalized = $lang->getGroupName( $groupname );
+			} else {
+				$groupnameLocalized = UserGroupMembership::getGroupName( $groupname );
+			}
 
 			$ret[$groupnameLocalized] = $groupname;
 		}
