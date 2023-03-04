@@ -553,6 +553,8 @@ class SpecialPageOwnership extends SpecialPage {
 
 		$htmlForm = HTMLForm::factory( 'ooui', $formDescriptor, $this->getContext() );
 
+		$htmlForm->setId( 'pageownership-form' );
+
 		$htmlForm
 			->setMethod( 'get' )
 			->setWrapperLegendMsg( 'pageownership-manageownership-form-search-legend' )

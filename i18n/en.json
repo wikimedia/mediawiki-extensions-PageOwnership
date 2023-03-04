@@ -4,9 +4,12 @@
 	},
 	"specialpages-group-pageownership": "Page Ownership",
 
+	"pageownership-sitenotice-missing-table": "(Page Ownership) Please run <code>php maintenance/update.php</code> to initialize the extension",
+
 	"pageownership-extension-desc": "Implements page ownership based on users and groups through a user-friendly interface",
 
 	"pageownership": "Page Ownership",
+	"pageownership-jsmodule-deleteitemconfirm": "Are you sure you want to delete this item?",
 
 	"pageownership-navigation": "Ownership",
 	"pageownership-sidebar-section": "My pages",

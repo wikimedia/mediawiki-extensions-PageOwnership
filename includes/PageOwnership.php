@@ -97,7 +97,7 @@ class PageOwnership {
 
 		$retVal = [];
 		if ( $res->numRows() ) {
-			$linkCache = MediaWikiServices::getInstance()->getLinkCache();
+			// $linkCache = MediaWikiServices::getInstance()->getLinkCache();
 			foreach ( $res as $row ) {
 				// ***edited
 				// $titleObj = self::makeTitle( $row->page_namespace, $row->page_title );
@@ -121,9 +121,11 @@ class PageOwnership {
 		$config = $context->getConfig();
 		$options = [ 'LIMIT' => $config->get( 'PageInfoTransclusionLimit' ) ];
 
-		// $transcludedTargets = $title->getTemplateLinksTo( $options );
-
-		$transcludedTargets = self::getLinksTo( $title, $options, 'templatelinks', 'tl' );
+		if ( version_compare( MW_VERSION, '1.39', '<' ) ) {
+			$transcludedTargets = self::getLinksTo( $title, $options, 'templatelinks', 'tl' );
+		} else {
+			$transcludedTargets = $title->getTemplateLinksTo( $options );
+		}
 
 		foreach ( $transcludedTargets as $title_ ) {
 			$title_->invalidateCache();
@@ -255,6 +257,10 @@ class PageOwnership {
 
 		$dbr = wfGetDB( DB_REPLICA );
 
+		if ( !$dbr->tableExists( 'page_ownership' ) ) {
+			return false;
+		}
+
 		$page_ancestors = self::page_ancestors( $title, false );
 
 		$page_ancestors = array_reverse( $page_ancestors );
@@ -296,6 +302,10 @@ class PageOwnership {
 		}
 
 		$dbr = wfGetDB( DB_REPLICA );
+
+		if ( !$dbr->tableExists( 'page_ownership' ) ) {
+			return [];
+		}
 
 		$conds = self::groupsCond( $dbr, $user );
 
@@ -388,6 +398,10 @@ class PageOwnership {
 
 		$dbr = wfGetDB( DB_REPLICA );
 
+		if ( !$dbr->tableExists( 'page_ownership' ) ) {
+			return [ null, [] ];
+		}
+
 		$page_ancestors = self::page_ancestors( $title, false );
 
 		$page_ancestors = array_reverse( $page_ancestors );
@@ -427,7 +441,7 @@ class PageOwnership {
 						}, explode( ",", $row['permissions'] ) );
 					}
 
-					if ( $role == null || ( array_search( $row[ 'role' ], $roles_hierarchy ) < array_search( $role, $roles_hierarchy ) ) ) {
+					if ( !$role || ( array_search( $row[ 'role' ], $roles_hierarchy ) < array_search( $role, $roles_hierarchy ) ) ) {
 						$role = $row[ 'role' ];
 					}
 				}
@@ -552,7 +566,7 @@ class PageOwnership {
 			$path[] = $value;
 			$title_text = implode( '/', $path );
 
-			if ( $title->getText() == $title_text ) {
+			if ( $title->getText() === $title_text ) {
 				$output[] = $title;
 
 			} else {
@@ -564,6 +578,18 @@ class PageOwnership {
 		}
 
 		return $output;
+	}
+
+	/**
+	 * @param Title $title
+	 * @return void
+	 */
+	public static function getWikiPage( $title ) {
+		// MW 1.36+
+		if ( method_exists( MediaWikiServices::class, 'getWikiPageFactory' ) ) {
+			return MediaWikiServices::getInstance()->getWikiPageFactory()->newFromTitle( $title );
+		}
+		return WikiPage::factory( $title );
 	}
 
 	/**
