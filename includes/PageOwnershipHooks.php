@@ -24,6 +24,9 @@
 
 class PageOwnershipHooks {
 
+	/** @var admins */
+	public static $admins = [ 'sysop', 'bureaucrat', 'interface-admin' ];
+
 	/**
 	 * @param DatabaseUpdater|null $updater
 	 * @return void
@@ -72,19 +75,58 @@ class PageOwnershipHooks {
 	 * @return bool|void
 	 */
 	public static function onPageSaveComplete( WikiPage $wikiPage, MediaWiki\User\UserIdentity $user, string $summary, int $flags, MediaWiki\Revision\RevisionRecord $revisionRecord, MediaWiki\Storage\EditResult $editResult ) {
-		// see onGetUserPermissionsErrors
-		// *** this is a way to enforce *implicit moderation*
+		// *** enforce *implicit moderation*
 		if ( $editResult->isNew() ) {
-			$onCreateUnassignedPageAssignTo = \PageOwnership::getGlobalParameterAsArray( 'wgPageOwnershipOnCreateUnassignedPageAssignTo' );
-			if ( count( $onCreateUnassignedPageAssignTo ) ) {
-				$isAuthorized = \PageOwnership::isAuthorized( $user, $title );
+			$title = $wikiPage->getTitle();
+			$moderatedGroupsOrUsers = \PageOwnership::getGlobalParameterAsArray( 'wgPageOwnershipModeratedGroupsOrUsers' );
+			$isAuthorized = \PageOwnership::isAuthorized( $user, $title );
 
-				if ( !$isAuthorized && !\PageOwnership::isOwned( $title ) ) {
+			if ( !$isAuthorized ) {
+				$userGroupManager = \PageOwnership::getUserGroupManager();
+				$userGroups = \PageOwnership::getUserGroups( $userGroupManager, $user );
+
+				if ( ( \PageOwnership::matchUsernameOrGroup( $user, $moderatedGroupsOrUsers ) || in_array( 'pageownership-moderated-user', $userGroups ) )
+					&& !\PageOwnership::isOwned( $title ) ) {
+
 					// add the current user as editor
-					\PageOwnership::setPageOwnership( 'onCreateUnassignedPageAssignTo', $title, [ $user->getName() ], [ 'edit', 'create', 'subpages' ], 'editor' );
+					\PageOwnership::setPageOwnership( 'moderated-user', $title, [ $user->getName() ],
+						[ 'edit', 'create', 'subpages' ], 'editor' );
 
-					// add the content of $wgPageOwnershipOnCreateUnassignedPagesAssignTo as admin
-					\PageOwnership::setPageOwnership( 'onCreateUnassignedPageAssignTo', $title, $onCreateUnassignedPageAssignTo, [], 'admin' );
+					// add the content of $wgPageOwnershipModerators
+
+					// returns an array of groups or an associative array
+					// with group => array of supervisors
+					$pageOwnershipModerators = \PageOwnership::getGlobalParameterAsArray( 'wgPageOwnershipModerators' );
+
+					if ( empty( $pageOwnershipModerators ) ) {
+						$pageOwnershipModerators = self::$admins;
+					}
+
+					if ( !\PageOwnership::isAssoc( $pageOwnershipModerators ) ) {
+						$assignee = $pageOwnershipModerators;
+
+					} else {
+						// parse an associative array in this form
+						/*
+							$wgPageOwnershipModerators = [
+								'*' => [ 'sysop' ],
+								'user' => 'bureaucrat',
+								// ...
+							];
+						*/
+						$assignee = [];
+						foreach ( $pageOwnershipModerators as $group => $moderators ) {
+							if ( in_array( $group, $userGroups ) ) {
+								if ( is_array( $moderators ) ) {
+									$assignee = array_merge( $assignee, $moderators );
+								} else {
+									$assignee[] = $moderators;
+								}
+							}
+						}
+
+						\PageOwnership::setPageOwnership( 'moderated-user', $title, $assignee, [], 'admin' );
+					}
 				}
 			}
 		}
@@ -99,11 +141,9 @@ class PageOwnershipHooks {
 		$user = \PageOwnership::getUser();
 
 		$userGroupManager = \PageOwnership::getUserGroupManager();
-		$user_groups = \PageOwnership::getUserGroups( $userGroupManager, $user, true );
+		$userGroups = \PageOwnership::getUserGroups( $userGroupManager, $user, true );
 
-		$admins = [ 'sysop', 'bureaucrat', 'interface-admin' ];
-
-		if ( count( array_intersect( $admins, $user_groups ) ) ) {
+		if ( count( array_intersect( self::$admins, $userGroups ) ) ) {
 			$dbr = wfGetDB( DB_REPLICA );
 
 			if ( !$dbr->tableExists( 'page_ownership' ) ) {

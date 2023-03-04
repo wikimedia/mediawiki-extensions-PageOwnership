@@ -15,16 +15,11 @@
 	"pageownership-sidebar-section": "My pages",
 	"pageownership-sidebar-role-reader": "reader",
 
-	"right-pageownership-caneditunassignedpages": "Can edit unassigned pages (Page Ownership)",
-	"action-pageownership-caneditunassignedpages": "can edit unassigned pages (Page Ownership)",
-
-	"group-pageownership-editorofunassignedpages-member": "editor of unassigned pages (Page Ownership)",
-
 	"group-pageownership-admin-member": "admin (Page Ownership)",
-
-	"group-pageownership-editorofunassignedpages": "editor of unassigned pages (Page Ownership)",
-
 	"group-pageownership-admin": "admin (Page Ownership)",
+
+	"group-pageownership-moderated-user-member": "moderated user (Page Ownership)",
+	"group-pageownership-moderated-user": "moderated user (Page Ownership)",
 
 	"pageownership-manageownership-form-section-main": "main",
 	"pageownership-manageownership-form-section-role": "role",

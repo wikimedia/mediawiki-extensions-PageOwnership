@@ -518,22 +518,31 @@ class PageOwnership {
 
 	/**
 	 * @param User $user
-	 * @param Title $title
+	 * @param Title|null $title
 	 * @return bool
 	 */
-	public static function isAuthorized( $user, $title ) {
+	public static function isAuthorized( $user, $title = null ) {
 		$admins = self::getGlobalParameterAsArray( 'wgPageOwnershipAdmins' );
 		$admins = array_unique( array_merge( $admins, [ 'sysop' ] ) );
 
+		return self::matchUsernameOrGroup( $user, $admins );
+	}
+
+	/**
+	 * @param User $user
+	 * @param array $groups
+	 * @return bool
+	 */
+	public static function matchUsernameOrGroup( $user, $groups ) {
 		$userGroupManager = self::getUserGroupManager();
 
 		// ***the following avoids that an user
 		// impersonates a group through the username
 		$all_groups = array_merge( $userGroupManager->listAllGroups(), $userGroupManager->listAllImplicitGroups() );
 
-		$authorized_users = array_diff( $admins, $all_groups );
+		$authorized_users = array_diff( $groups, $all_groups );
 
-		$authorized_groups = array_intersect( $admins, $all_groups );
+		$authorized_groups = array_intersect( $groups, $all_groups );
 
 		$user_groups = self::getUserGroups( $userGroupManager, $user );
 
@@ -615,5 +624,17 @@ class PageOwnership {
 		} else {
 			$output->enableClientCache( false );
 		}
+	}
+
+	/**
+	 * @see https://stackoverflow.com/questions/173400/how-to-check-if-php-array-is-associative-or-sequential
+	 * @param array $arr
+	 * @return bool
+	 */
+	public static function isAssoc( $arr ) {
+		if ( $arr === [] ) {
+			return false;
+		}
+		return array_keys( $arr ) !== range( 0, count( $arr ) - 1 );
 	}
 }
