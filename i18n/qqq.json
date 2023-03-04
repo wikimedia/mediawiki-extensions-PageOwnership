@@ -14,16 +14,11 @@
 	"pageownership-sidebar-section": "A label message",
 	"pageownership-sidebar-role-reader": "A label message",
 
-	"right-pageownership-caneditunassignedpages": "A label message",
-	"action-pageownership-caneditunassignedpages": "A label message",
-
-	"group-pageownership-editorofunassignedpages-member": "A label message",
-
 	"group-pageownership-admin-member": "A label message",
-
-	"group-pageownership-editorofunassignedpages": "A label message",
-
 	"group-pageownership-admin": "A label message",
+
+	"group-pageownership-moderated-user-member": "A label message",
+	"group-pageownership-moderated-user": "A label message",
 
 	"pageownership-manageownership-form-section-main": "A label message",
 	"pageownership-manageownership-form-section-role": "A label message",

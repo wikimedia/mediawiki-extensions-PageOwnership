@@ -47,28 +47,21 @@
 		"PageOwnership": "SpecialPageOwnership"
 	},
 	"GroupPermissions": {
-		"pageownership-admin": {
-			"pageownership-caneditunassignedpages": true
-		},
-		"pageownership-editorofunassignedpages": {
-			"pageownership-caneditunassignedpages": true
-		}
+		"pageownership-admin": {},
+		"pageownership-moderated-user": {}
 	},
 	"AddGroups": {
 		"pageownership-admin": [
 			"pageownership-admin",
-			"pageownership-editorofunassignedpages"
+			"pageownership-moderated-user"
 		]
 	},
 	"RemoveGroups": {
 		"pageownership-admin": [
 			"pageownership-admin",
-			"pageownership-editorofunassignedpages"
+			"pageownership-moderated-user"
 		]
 	},
-	"AvailableRights": [
-		"pageownership-caneditunassignedpages"
-	],
 	"ResourceFileModulePaths": {
 		"localBasePath": "resources",
 		"remoteExtPath": "PageOwnership/resources"
