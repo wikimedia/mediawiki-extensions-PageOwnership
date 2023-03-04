@@ -1,7 +1,7 @@
 {
 	"name": "PageOwnership",
 	"author": "thomas-topway-it",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"url": "https://www.mediawiki.org/wiki/Extension:PageOwnership",
 	"descriptionmsg": "pageownership-extension-desc",
 	"license-name": "GPL-2.0-or-later",
@@ -25,6 +25,7 @@
 	},
 	"Hooks": {
 		"BeforeInitialize": "PageOwnershipHooks::onBeforeInitialize",
+		"SiteNoticeBefore": "PageOwnershipHooks::onSiteNoticeBefore",
 		"getUserPermissionsErrors": "PageOwnershipHooks::onGetUserPermissionsErrors",
 		"PageSaveComplete": "PageOwnershipHooks::onPageSaveComplete",
 		"PageRenderingHash": "PageOwnershipHooks::onPageRenderingHash",
@@ -83,6 +84,9 @@
 			],
 			"dependencies": [
 				"oojs-ui-widgets"
+			],
+			"messages": [
+				"pageownership-jsmodule-deleteitemconfirm"
 			]
 		},
 		"ext.PageOwnership.GroupsUsersMultiselectWidget": {

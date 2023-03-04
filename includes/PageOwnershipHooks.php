@@ -22,8 +22,6 @@
  * @copyright Copyright ©2021-2022, https://wikisphere.org
  */
 
-use MediaWiki\MediaWikiServices;
-
 class PageOwnershipHooks {
 
 	/**
@@ -77,12 +75,11 @@ class PageOwnershipHooks {
 		// see onGetUserPermissionsErrors
 		// *** this is a way to enforce *implicit moderation*
 		if ( $editResult->isNew() ) {
-			$is_allowed = $user->isAllowed( 'pageownership-caneditunassignedpages' );
-			if ( !$is_allowed ) {
-				$onCreateUnassignedPageAssignTo = \PageOwnership::getGlobalParameterAsArray( 'wgPageOwnershipOnCreateUnassignedPageAssignTo' );
-				$title = $wikiPage->getTitle();
+			$onCreateUnassignedPageAssignTo = \PageOwnership::getGlobalParameterAsArray( 'wgPageOwnershipOnCreateUnassignedPageAssignTo' );
+			if ( count( $onCreateUnassignedPageAssignTo ) ) {
+				$isAuthorized = \PageOwnership::isAuthorized( $user, $title );
 
-				if ( count( $onCreateUnassignedPageAssignTo ) && !\PageOwnership::isOwned( $title ) ) {
+				if ( !$isAuthorized && !\PageOwnership::isOwned( $title ) ) {
 					// add the current user as editor
 					\PageOwnership::setPageOwnership( 'onCreateUnassignedPageAssignTo', $title, [ $user->getName() ], [ 'edit', 'create', 'subpages' ], 'editor' );
 
@@ -91,6 +88,30 @@ class PageOwnershipHooks {
 				}
 			}
 		}
+	}
+
+	/**
+	 * @param string &$siteNotice
+	 * @param Skin $skin
+	 * @return bool
+	 */
+	public static function onSiteNoticeBefore( &$siteNotice, $skin ) {
+		$user = \PageOwnership::getUser();
+
+		$userGroupManager = \PageOwnership::getUserGroupManager();
+		$user_groups = \PageOwnership::getUserGroups( $userGroupManager, $user, true );
+
+		$admins = [ 'sysop', 'bureaucrat', 'interface-admin' ];
+
+		if ( count( array_intersect( $admins, $user_groups ) ) ) {
+			$dbr = wfGetDB( DB_REPLICA );
+
+			if ( !$dbr->tableExists( 'page_ownership' ) ) {
+				$siteNotice = '<div class="pageownership-sitenotice">' . wfMessage( 'pageownership-sitenotice-missing-table' )->plain() . '</div>';
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**
@@ -107,23 +128,20 @@ class PageOwnershipHooks {
 	 * @see https://www.mediawiki.org/wiki/Manual:Hooks/getUserPermissionsErrors
 	 */
 	public static function onGetUserPermissionsErrors( $title, $user, $action, &$result ) {
-		global $wgLang;
-
 		$logged_in = $user->isRegistered();
-
 		$username = $user->getName();
 
-		$read = ( $action == 'read' );
-		$edit = ( $action == 'edit' || $action == 'delete' || $action == 'move' || $action == 'create' );
+		$read = ( $action === 'read' );
+		$edit = ( $action === 'edit' || $action === 'delete' || $action === 'move' || $action === 'create' );
 
-		$new_page = ( !$title->isKnown() || $action == 'create' );
+		$new_page = ( !$title->isKnown() || $action === 'create' );
 
 		// page is being created through a pageform form
 		if ( strpos( $title->getFullText(), 'Special:FormEdit/' ) !== false ) {
 			return true;
 		}
 
-		if ( $title->getFullText() == 'Page Forms permissions test' ) {
+		if ( $title->getFullText() === 'Page Forms permissions test' ) {
 			return true;
 		}
 
@@ -144,40 +162,6 @@ class PageOwnershipHooks {
 
 		// not an owned page
 		if ( !\PageOwnership::isOwned( $title ) ) {
-
-			if ( $action == 'edit' || $new_page ) {
-				$is_allowed = $user->isAllowed( 'pageownership-caneditunassignedpages' );
-			}
-
-			if ( $new_page ) {
-				// *** this is a way to enforce *implicit moderation*
-				$onCreateUnassignedPageAssignTo = \PageOwnership::getGlobalParameterAsArray( 'wgPageOwnershipOnCreateUnassignedPageAssignTo' );
-				if ( !$is_allowed && count( $onCreateUnassignedPageAssignTo ) ) {
-					return true;
-				}
-			}
-
-			if ( $action == 'edit' ) {
-				if ( !$is_allowed ) {
-					if ( !$logged_in ) {
-						$result = [ 'badaccess-group0' ];
-
-					} else {
-						// *** this is correct but ignored on page edit
-						$groupLinks = \PageOwnership::getGroupLinks( [ 'pageownership-admin', 'pageownership-editorofunassignedpages' ] );
-
-						$result = [
-							'badaccess-groups',
-							$wgLang->commaList( $groupLinks ),
-							count( $groupLinks )
-						];
-
-					}
-
-					return false;
-				}
-			}
-
 			return true;
 		}
 
@@ -191,7 +175,7 @@ class PageOwnershipHooks {
 		}
 
 		if ( $edit ) {
-			if ( $role == 'admin' ) {
+			if ( $role === 'admin' ) {
 				return true;
 			}
 
@@ -208,14 +192,7 @@ class PageOwnershipHooks {
 		// the user is the page's creator
 		// *** it could also be an anonymous user with same ip ?
 		if ( $logged_in ) {
-			// @credits Umherirrender
-			if ( method_exists( MediaWikiServices::class, 'getWikiPageFactory' ) ) {
-				// MW 1.36+
-				$wikiPage = MediaWikiServices::getInstance()->getWikiPageFactory()->newFromTitle( $title );
-			} else {
-				$wikiPage = WikiPage::factory( $title );
-			}
-
+			$wikiPage = \PageOwnership::getWikiPage( $title );
 			$creator = $wikiPage->getCreator();
 
 			if ( $creator == $username ) {
@@ -270,9 +247,10 @@ class PageOwnershipHooks {
 	}
 
 	/**
-	 * @param array &$defaults Options and their defaults
-	 * @param array &$inCacheKey Whether each option splits the parser cache
-	 * @param array &$lazyLoad Initializers for lazy-loaded options
+	 * @param array &$defaults
+	 * @param array &$inCacheKey
+	 * @param array &$lazyLoad
+	 * @return bool|void True or no return value to continue or false to abort
 	 */
 	public static function onParserOptionsRegister( &$defaults, &$inCacheKey, &$lazyLoad ) {
 	}
@@ -373,6 +351,9 @@ class PageOwnershipHooks {
 		\PageOwnership::addHeaditem( $outputPage, [
 			[ 'stylesheet', $wgResourceBasePath . '/extensions/PageOwnership/resources/style.css' ],
 		] );
+
+		$outputPage->addHeadItem( 'pageownership_groupsusersmultiselectwidget_input',
+			'<style>#pageownership-form .mw-widgets-tagMultiselectWidget-multilineTextInputWidget{ display: none; } </style>' );
 	}
 
 	/**
@@ -522,13 +503,7 @@ class PageOwnershipHooks {
 			return;
 		}
 
-		// @contributor Umherirrender
-		if ( method_exists( MediaWikiServices::class, 'getWikiPageFactory' ) ) {
-			// MW 1.36+
-			$wikiPage = MediaWikiServices::getInstance()->getWikiPageFactory()->newFromTitle( $title );
-		} else {
-			$wikiPage = WikiPage::factory( $title );
-		}
+		$wikiPage = \PageOwnership::getWikiPage( $title );
 		$creator = $wikiPage->getCreator();
 
 		$isAuthorized = \PageOwnership::isAuthorized( $user, $title );
@@ -536,7 +511,7 @@ class PageOwnershipHooks {
 		if ( !$isAuthorized ) {
 			list( $role, $permissions ) = \PageOwnership::permissionsOfPage( $title, $user );
 
-			if ( $role == 'admin' ) {
+			if ( $role === 'admin' ) {
 				$isAuthorized = true;
 			}
 		}
@@ -578,7 +553,7 @@ class PageOwnershipHooks {
 			}
 
 			$bar[ wfMessage( 'pageownership-sidebar-section' )->text() ][] = [
-				'text'   => $title->getText() . ( $page['role'] == 'reader' ? ' (' . wfMessage( 'pageownership-sidebar-role-reader' )->text() . ')' : '' ),
+				'text'   => $title->getText() . ( $page['role'] === 'reader' ? ' (' . wfMessage( 'pageownership-sidebar-role-reader' )->text() . ')' : '' ),
 				'href'   => $title->getLocalURL()
 			];
 		}

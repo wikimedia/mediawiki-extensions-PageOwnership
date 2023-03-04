@@ -71,15 +71,15 @@ $( function () {
 
 	updateCheckboxes( input_role.getValue() );
 
-	$( 'button[type="submit"]' ).click( function () {
-		// alert ($(this).val());
-
+	// eslint-disable-next-line no-jquery/no-global-selector, no-unused-vars
+	$( '#pageownership-form button[type="submit"]' ).on( 'click', function ( val ) {
 		if ( $( this ).val() === 'delete' ) {
 			// eslint-disable-next-line no-alert
-			if ( !confirm( 'Are you sure you want to delete this item?' ) ) {
+			if ( !confirm( mw.msg( 'pageownership-jsmodule-deleteitemconfirm' ) ) ) {
 				return false;
 			}
 
+			// eslint-disable-next-line no-jquery/no-sizzle
 			$( this )
 				.closest( 'form' )
 				.find( ':input' )
