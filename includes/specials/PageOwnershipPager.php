@@ -18,8 +18,8 @@
  *
  * @file
  * @ingroup extensions
- * @author thomas-topway-it <thomas.topway.it@mail.com>
- * @copyright Copyright ©2021-2022, https://wikisphere.org
+ * @author thomas-topway-it <business@topway.it>
+ * @copyright Copyright ©2021-2023, https://wikisphere.org
  */
 
 use MediaWiki\Linker\LinkRenderer;
@@ -120,7 +120,7 @@ class PageOwnershipPager extends TablePager {
 
 			case 'actions':
 				$link = '<span class="mw-ui-button mw-ui-progressive">edit</span>';
-				$title = Title::newFromText( 'Special:PageOwnership' . ( $this->parentClass->title ? '/' . $this->parentClass->title->getText() : '' ) );
+				$title = SpecialPage::getTitleFor( 'PageOwnership', $this->parentClass->title );
 				$query = [ 'edit' => $row->id ];
 				$formatted = Linker::link( $title, $link, [], $query );
 				break;

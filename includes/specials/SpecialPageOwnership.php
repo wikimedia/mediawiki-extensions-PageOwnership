@@ -18,8 +18,8 @@
  *
  * @file
  * @ingroup extensions
- * @author thomas-topway-it <thomas.topway.it@mail.com>
- * @copyright Copyright ©2021-2022, https://wikisphere.org
+ * @author thomas-topway-it <business@topway.it>
+ * @copyright Copyright ©2021-2023, https://wikisphere.org
  */
 
 require_once __DIR__ . '/PageOwnershipPager.php';
@@ -31,12 +31,19 @@ include_once __DIR__ . '/HTMLGroupsUsersMultiselectField.php';
  * @ingroup SpecialPage
  */
 class SpecialPageOwnership extends SpecialPage {
+
 	/** @var title */
 	public $title;
+
+	/** @var localTitle */
+	public $localTitle;
+
 	/** @var user */
 	private $user;
+
 	/** @var request */
 	private $request;
+
 	/** @var latest_id */
 	private $latest_id;
 
@@ -83,8 +90,11 @@ class SpecialPageOwnership extends SpecialPage {
 			}
 		}
 
-		if ( $title && $title->getNamespace() !== NS_MAIN ) {
+		if ( $title && ( !$title->isKnown() || $title->isSpecialPage() ) ) {
 			$title = null;
+
+		} else {
+			$this->localTitle = SpecialPage::getTitleFor( 'PageOwnership', $title );
 		}
 
 		$this->title = $title;
@@ -107,8 +117,8 @@ class SpecialPageOwnership extends SpecialPage {
 		if ( $title ) {
 			$out->addWikiMsg(
 				'pageownership-manageownership-return',
-				$title->getText(),
-				$title->getText()
+				$title->getFullText(),
+				$title->getFullText()
 			);
 		}
 
@@ -126,9 +136,8 @@ class SpecialPageOwnership extends SpecialPage {
 
 		$out->enableOOUI();
 
-		$out->addWikiMsg( 'pageownership-manageownership-description', $this->msg( 'pageownership-manageownership-description-' . ( $this->title ? 'specific' : 'generic' ) )->text() );
-
-		$url = Title::newFromText( 'Special:PageOwnership' )->getLocalURL();
+		$out->addWikiMsg( 'pageownership-manageownership-description',
+			$this->msg( 'pageownership-manageownership-description-' . ( $this->title ? 'specific' : 'generic' ) )->text() );
 
 		$layout = new OOUI\PanelLayout( [ 'expanded' => false, 'padded' => false, 'framed' => false ] );
 
@@ -138,7 +147,7 @@ class SpecialPageOwnership extends SpecialPage {
 					'label' => $this->msg( 'pageownership-manageownership-form-newrole-legend' )->text(), 'items' => [
 						new OOUI\ButtonWidget(
 							[
-								'href' => $url . ( $title ? '/' . wfEscapeWikiText( $title->getPartialURL() ) : '' ) . '?edit=new',
+								'href' => $this->localTitle->getLocalURL() . '?edit=new',
 								'label' => $this->msg( 'pageownership-manageownership-form-button-new_user' )->text(),
 								'infusable' => true,
 								'flags' => [ 'progressive', 'primary' ],
@@ -187,19 +196,14 @@ class SpecialPageOwnership extends SpecialPage {
 
 			switch ( $action ) {
 				case 'delete':
-					// $result_ = $dbr->delete('page_ownership', ['id' => $id], __METHOD__);
-
 					\PageOwnership::deleteOwnershipData( [ 'id' => $id ] );
-
 					\PageOwnership::invalidateCacheOfPagesWithAskQueriesRelatedToTitle( $this->title );
 
-					$url = SpecialPage::getTitleFor( 'PageOwnership', $this->title )->getLocalURL();
-					header( 'Location: ' . $url );
+					header( 'Location: ' . $this->localTitle->getLocalURL() );
 					return;
 
 				case 'cancel':
-					$url = SpecialPage::getTitleFor( 'PageOwnership', $this->title )->getLocalURL();
-					header( 'Location: ' . $url );
+					header( 'Location: ' . $this->localTitle->getLocalURL() );
 					return;
 			}
 		}
@@ -214,7 +218,7 @@ class SpecialPageOwnership extends SpecialPage {
 
 		if ( !$row || $row == [ false ] ) {
 			if ( !$new ) {
-				$out->addWikiMsg( 'pageownership-manageownership-form-missing_item', 'Special:PageOwnership' );
+				$out->addWikiMsg( 'pageownership-manageownership-form-missing-item' );
 				$out->addHTML( '<br />' );
 				return;
 			}
@@ -236,38 +240,42 @@ class SpecialPageOwnership extends SpecialPage {
 
 		$htmlForm = new OOUIHTMLForm( $formDescriptor, $this->getContext(), 'pageownership-manageownership' );
 
+		$htmlForm->setId( 'pageownership-form' );
+
 		$htmlForm->setMethod( 'post' );
 
 		$htmlForm->setSubmitCallback( [ $this, 'onSubmit' ] );
 
 		$htmlForm->showCancel();
 
-		$target = Title::newFromText( 'Special:PageOwnership' . ( $this->title ? '/' . wfEscapeWikiText( $this->title->getPartialURL() ) : '' ) );
-
-		$htmlForm->setCancelTarget( $target );
+		$htmlForm->setCancelTarget( $this->localTitle->getLocalURL() );
 
 		$htmlForm->setSubmitTextMsg( 'pageownership-manageownership-form-button-submit' );
 
 		$out->addWikiMsg(
 			'pageownership-manageownership-form-updated',
-			'Special:PageOwnership' . ( $this->title ? '/' . wfEscapeWikiText( $this->title->getPartialURL() ) : '' )
+			$this->localTitle->getFullText()
 		);
 
 		$htmlForm->prepareForm();
 
 		$result = $htmlForm->tryAuthorizedSubmit();
 
+		// @TODO goback and list all rows
 		$htmlForm->setAction(
-			wfAppendQuery(
-				$htmlForm->getTitle()->getLocalURL(),
-				'edit=' . ( !empty( $this->latest_id ) ? $this->latest_id : $id )
-			)
+			wfAppendQuery( $this->localTitle->getLocalURL(),
+				'edit=' . ( !empty( $this->latest_id ) ? $this->latest_id : $id ) )
+			// $this->localTitle->getLocalURL()
 		);
 
 		if ( !$new || $this->latest_id ) {
 			$htmlForm->addButton(
 				[
-				'type' => 'button', 'name' => 'action', 'value' => 'delete', 'href' => $target, 'label-message' => 'pageownership-manageownership-form-button-delete',
+				'type' => 'button',
+				'name' => 'action',
+				'value' => 'delete',
+				'href' => $this->localTitle->getLocalURL(),
+				'label-message' => 'pageownership-manageownership-form-button-delete',
 				'flags' => [ 'destructive' ]
 				]
 			);
@@ -296,7 +304,7 @@ class SpecialPageOwnership extends SpecialPage {
 				'exists' => true,
 				'section' => $section_prefix . 'form-fieldset-main',
 				'help-message' => 'pageownership-manageownership-form-page-help',
-				'default' => ( !empty( $row[ 'page_id' ] ) ? Title::newFromID( $row[ 'page_id' ] )->getText() : null )
+				'default' => ( !empty( $row[ 'page_id' ] ) ? Title::newFromID( $row[ 'page_id' ] )->getFullText() : null )
 			];
 		}
 
@@ -512,7 +520,6 @@ class SpecialPageOwnership extends SpecialPage {
 		}
 
 		\PageOwnership::invalidateCacheOfPagesWithAskQueriesRelatedToTitle( $this->title );
-
 		\PageOwnership::invalidateCacheOfPagesWithTemplateLinksTo( $this->title );
 
 		return true;
@@ -563,8 +570,6 @@ class SpecialPageOwnership extends SpecialPage {
 		];
 
 		$htmlForm = HTMLForm::factory( 'ooui', $formDescriptor, $this->getContext() );
-
-		$htmlForm->setId( 'pageownership-form' );
 
 		$htmlForm
 			->setMethod( 'get' )

@@ -75,59 +75,61 @@ class PageOwnershipHooks {
 	 * @return bool|void
 	 */
 	public static function onPageSaveComplete( WikiPage $wikiPage, MediaWiki\User\UserIdentity $user, string $summary, int $flags, MediaWiki\Revision\RevisionRecord $revisionRecord, MediaWiki\Storage\EditResult $editResult ) {
+		if ( $flags & EDIT_FORCE_BOT || !$editResult->isNew() ) {
+			return;
+		}
+
 		// *** enforce *implicit moderation*
-		if ( $editResult->isNew() ) {
-			$title = $wikiPage->getTitle();
-			$moderatedGroupsOrUsers = \PageOwnership::getGlobalParameterAsArray( 'wgPageOwnershipModeratedGroupsOrUsers' );
-			$isAuthorized = \PageOwnership::isAuthorized( $user, $title );
+		$title = $wikiPage->getTitle();
+		$moderatedGroupsOrUsers = \PageOwnership::getGlobalParameterAsArray( 'wgPageOwnershipModeratedGroupsOrUsers' );
+		$isAuthorized = \PageOwnership::isAuthorized( $user, $title );
 
-			if ( !$isAuthorized ) {
-				$userGroupManager = \PageOwnership::getUserGroupManager();
-				$userGroups = \PageOwnership::getUserGroups( $userGroupManager, $user );
+		if ( !$isAuthorized ) {
+			$userGroupManager = \PageOwnership::getUserGroupManager();
+			$userGroups = \PageOwnership::getUserGroups( $userGroupManager, $user );
 
-				if ( ( \PageOwnership::matchUsernameOrGroup( $user, $moderatedGroupsOrUsers ) || in_array( 'pageownership-moderated-user', $userGroups ) )
-					&& !\PageOwnership::isOwned( $title ) ) {
+			if ( ( \PageOwnership::matchUsernameOrGroup( $user, $moderatedGroupsOrUsers ) || in_array( 'pageownership-moderated-user', $userGroups ) )
+				&& !\PageOwnership::isOwned( $title ) ) {
 
-					// add the current user as editor
-					\PageOwnership::setPageOwnership( 'moderated-user', $title, [ $user->getName() ],
-						[ 'edit', 'create', 'subpages' ], 'editor' );
+				// add the current user as editor
+				\PageOwnership::setPageOwnership( 'moderated-user', $title, [ $user->getName() ],
+					[ 'edit', 'create', 'subpages' ], 'editor' );
 
-					// add the content of $wgPageOwnershipModerators
+				// add the content of $wgPageOwnershipModerators
 
-					// returns an array of groups or an associative array
-					// with group => array of supervisors
-					$pageOwnershipModerators = \PageOwnership::getGlobalParameterAsArray( 'wgPageOwnershipModerators' );
+				// returns an array of groups or an associative array
+				// with group => array of supervisors
+				$pageOwnershipModerators = \PageOwnership::getGlobalParameterAsArray( 'wgPageOwnershipModerators' );
 
-					if ( empty( $pageOwnershipModerators ) ) {
-						$pageOwnershipModerators = self::$admins;
-					}
+				if ( empty( $pageOwnershipModerators ) ) {
+					$pageOwnershipModerators = self::$admins;
+				}
 
-					if ( !\PageOwnership::isAssoc( $pageOwnershipModerators ) ) {
-						$assignee = $pageOwnershipModerators;
+				if ( !\PageOwnership::isAssoc( $pageOwnershipModerators ) ) {
+					$assignee = $pageOwnershipModerators;
 
-					} else {
-						// parse an associative array in this form
-						/*
-							$wgPageOwnershipModerators = [
-								'*' => [ 'sysop' ],
-								'user' => 'bureaucrat',
-								// ...
-							];
-						*/
-						$assignee = [];
-						foreach ( $pageOwnershipModerators as $group => $moderators ) {
-							if ( in_array( $group, $userGroups ) ) {
-								if ( is_array( $moderators ) ) {
-									$assignee = array_merge( $assignee, $moderators );
-								} else {
-									$assignee[] = $moderators;
-								}
+				} else {
+					// parse an associative array in this form
+					/*
+						$wgPageOwnershipModerators = [
+							'*' => [ 'sysop' ],
+							'user' => 'bureaucrat',
+							// ...
+						];
+					*/
+					$assignee = [];
+					foreach ( $pageOwnershipModerators as $group => $moderators ) {
+						if ( in_array( $group, $userGroups ) ) {
+							if ( is_array( $moderators ) ) {
+								$assignee = array_merge( $assignee, $moderators );
+							} else {
+								$assignee[] = $moderators;
 							}
 						}
-
-						$assignee = array_unique( $assignee );
-						\PageOwnership::setPageOwnership( 'moderated-user', $title, $assignee, [], 'admin' );
 					}
+
+					$assignee = array_unique( $assignee );
+					\PageOwnership::setPageOwnership( 'moderated-user', $title, $assignee, [], 'admin' );
 				}
 			}
 		}
@@ -177,16 +179,11 @@ class PageOwnershipHooks {
 
 		$new_page = ( !$title->isKnown() || $action === 'create' );
 
-		// page is being created through a pageform form
-		if ( strpos( $title->getFullText(), 'Special:FormEdit/' ) !== false ) {
-			return true;
-		}
+		// if ( $title->getFullText() === 'Page Forms permissions test' ) {
+		// 	return true;
+		// }
 
-		if ( $title->getFullText() === 'Page Forms permissions test' ) {
-			return true;
-		}
-
-		if ( $title->getNamespace() != NS_MAIN ) {
+		if ( !$title->isKnown() || $title->isSpecialPage() ) {
 			return true;
 		}
 
@@ -540,7 +537,7 @@ class PageOwnershipHooks {
 
 		$title = $skinTemplate->getTitle();
 
-		if ( $title->getNamespace() != NS_MAIN ) {
+		if ( !$title->isKnown() || $title->isSpecialPage() ) {
 			return;
 		}
 

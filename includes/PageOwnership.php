@@ -18,8 +18,8 @@
  *
  * @file
  * @ingroup extensions
- * @author thomas-topway-it <thomas.topway.it@mail.com>
- * @copyright Copyright ©2021-2022, https://wikisphere.org
+ * @author thomas-topway-it <business@topway.it>
+ * @copyright Copyright ©2021-2023, https://wikisphere.org
  */
 
 use MediaWiki\MediaWikiServices;
@@ -151,7 +151,7 @@ class PageOwnership {
 			$store
 		);
 
-		$subject = new SMW\DIWikiPage( $title, NS_MAIN );
+		$subject = SMW\DIWikiPage::newFromTitle( $title );
 
 		$requestOptions = new \SMWRequestOptions();
 		$requestOptions->limit = 500;
