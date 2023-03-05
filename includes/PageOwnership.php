@@ -141,6 +141,10 @@ class PageOwnership {
 			return;
 		}
 
+		if ( !$title ) {
+			return;
+		}
+
 		// @see extensions/SemanticMediaWiki/src/MediaWiki/Hooks.php
 		$queryDependencyLinksStoreFactory = SMW\ApplicationFactory::getInstance()
 			->singleton( 'QueryDependencyLinksStoreFactory' );
