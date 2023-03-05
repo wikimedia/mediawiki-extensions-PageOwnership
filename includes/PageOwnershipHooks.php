@@ -125,6 +125,7 @@ class PageOwnershipHooks {
 							}
 						}
 
+						$assignee = array_unique( $assignee );
 						\PageOwnership::setPageOwnership( 'moderated-user', $title, $assignee, [], 'admin' );
 					}
 				}
