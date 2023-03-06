@@ -200,6 +200,17 @@ class PageOwnershipHooks {
 
 		// not an owned page
 		if ( !\PageOwnership::isOwned( $title ) ) {
+
+			// @TODO implement with a proper interface and merge
+			// with $wgPageOwnershipModeratedGroupsOrUsers
+			// and $wgPageOwnershipGuests
+			$guests = \PageOwnership::getGlobalParameterAsArray( 'wgPageOwnershipGuests' );
+
+			if ( \PageOwnership::matchUsernameOrGroup( $user, $guests ) ) {
+				// @TODO show notice redirecting to their page if any
+				return false;
+			}
+
 			return true;
 		}
 
