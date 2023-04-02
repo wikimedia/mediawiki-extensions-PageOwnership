@@ -13,3 +13,63 @@
 	font-size: large;
 	font-weight: bold;
 }
+
+.pageownership-permissions-field {
+	margin-bottom: 16px;
+}
+
+.pageownership-permissions-field-info {
+	display: inline;
+}
+
+.pageownership-permissions-toggle-buttons .oo-ui-buttonElement-button {
+	margin-bottom: 4px;
+	font-size: smaller;
+	border-radius: 12px;
+	padding-top: 0;
+	padding-bottom: 0;
+	min-height: auto;
+}
+
+.pageownership-button-multiselect-widget {
+	position: relative;
+	display: inline-block;
+}
+
+.pageownership-button-multiselect-widget .oo-ui-buttonElement-button {
+	margin-bottom: 4px;
+	margin-top: 4px;
+	font-size: smaller;
+	border-radius: 12px;
+	padding-top: 0;
+	padding-bottom: 0;
+	min-height: auto;
+}
+
+.pageownership-button-multiselect-widget .oo-ui-buttonElement-framed.oo-ui-labelElement > .oo-ui-buttonElement-button {
+	padding: 4px 16px;
+}
+
+.pageownership-button-multiselect-widget .oo-ui-buttonElement-framed.oo-ui-widget-enabled.oo-ui-buttonElement-active > .oo-ui-buttonElement-button {
+	border: 1px solid gray;
+	background: gray;
+}
+
+.pageownership-permissions-options-optgroup.oo-ui-optionWidget.oo-ui-widget-disabled {
+	font-weight: bold;
+	color: black;
+}
+
+.pageownership-permissions-options-option.oo-ui-decoratedOptionWidget {
+	margin-left: 12px;
+}
+
+.oo-ui-messageWidget.oo-ui-messageWidget-block.oo-ui-messageWidget-showClose {
+	padding-right: 56px;
+}
+
+.oo-ui-messageWidget.oo-ui-messageWidget-block > .oo-ui-messageWidget-close {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+}

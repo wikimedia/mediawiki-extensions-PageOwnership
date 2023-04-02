@@ -2,91 +2,123 @@
 	"@metadata": {
 		"authors": []
 	},
+	"pageownership-extension-desc": "Implements page ownership based on users and groups through a user-friendly interface",
+
 	"specialpages-group-pageownership": "Page Ownership",
+	"mw-widgets-tagmultiselect-placeholder": "Add more...",
+
+	"pageownership": "Page Ownership",
+	"pageownershippermissions": "Manage permissions",
+	"apihelp-pageownership-check-latest-version-example-1": "check extension's latest version",
+	"apihelp-pageownership-check-latest-version-summary": "check extension's latest version",
+	"pageownership-jsmodule-pageproperties-outdated-version": "This version of PageOwnership is outdated. <a href=\"https://www.mediawiki.org/wiki/Special:ExtensionDistributor/PageOwnership\">Update</a>",
+
+	"right-pageownership-read-subpages": "read subpages (Page Ownership)",
+	"right-pageownership-create-subpages": "create subpages (Page Ownership)",
+	"right-pageownership-edit-subpages": "edit subpages (Page Ownership)",
+	"right-pageownership-move-subpages": "move subpages within root page (Page Ownership)",
+	"right-pageownership-delete-subpages": "delete subpages (Page Ownership)",
+	"right-pageownership-canmanagepermissions": "can manage permissions (Page Ownership)",
+	"right-pageownership-caneditpermissions": "can edit permissions (Page Ownership)",
+
+	"action-pageownership-read-subpages": "read subpages (Page Ownership)",
+	"action-pageownership-create-subpages": "create subpages (Page Ownership)",
+	"action-pageownership-edit-subpages": "edit subpages (Page Ownership)",
+	"action-pageownership-move-subpages": "move subpages within root page (Page Ownership)",
+	"action-pageownership-delete-subpages": "delete subpages (Page Ownership)",
+	"action-pageownership-canmanagepermissions": "can manage permissions (Page Ownership)",
+	"action-pageownership-caneditpermissions": "can edit permissions (Page Ownership)",
+
+	"pageownership-managepermissions-form-additional-rights-label": "Additional rights",
+	"pageownership-managepermissions-pager-header-additional-rights": "Additional rights",
+	"pageownership-managepermissions-pager-header-add-permissions": "Add permissions",
+	"pageownership-managepermissions-pager-header-remove-permissions": "Remove permissions",
+
+	"pageownership-managepermissions-pager-header-permissions-bytype": "Permissions type",
+
+	"pageownership-permissions-actions-label-reading": "Reading",
+	"pageownership-permissions-actions-label-editing": "Editing",
+	"pageownership-permissions-actions-label-management": "Management",
+	"pageownership-permissions-actions-label-administration": "Administration",
+	"pageownership-permissions-actions-label-technical": "Technical",
+
+	"pageownership-permissions-field-info-label": "Assign permissions by type",
+	"pageownership-permissions-field-info-group": "Assign permissions by group",
+
+	"pageownership-managepermissions-pager-header-namespaces": "Namespaces",
 
 	"pageownership-sitenotice-missing-table": "(Page Ownership) Please run <code>php maintenance/update.php</code> to initialize the extension",
 
-	"pageownership-extension-desc": "Implements page ownership based on users and groups through a user-friendly interface",
-
-	"pageownership": "Page Ownership",
 	"pageownership-jsmodule-deleteitemconfirm": "Are you sure you want to delete this item?",
 
-	"pageownership-navigation": "Ownership",
+	"pageownership-navigation": "Permissions",
 	"pageownership-sidebar-section": "My pages",
 	"pageownership-sidebar-role-reader": "reader",
 
 	"group-pageownership-admin-member": "admin (Page Ownership)",
 	"group-pageownership-admin": "admin (Page Ownership)",
 
-	"group-pageownership-moderated-user-member": "moderated user (Page Ownership)",
-	"group-pageownership-moderated-user": "moderated user (Page Ownership)",
+	"pageownership-managepermissions-form-fieldset-permissions-main": "Permissions",
 
-	"pageownership-manageownership-form-section-main": "main",
-	"pageownership-manageownership-form-section-role": "role",
+	"pageownership-managepermissions-form-username-label": "username or group",
+	"pageownership-managepermissions-form-username-help": "One or more username or group to be assigned with the same privileges",
 
-	"pageownership-manageownership-form-section-main-label": "",
-	"pageownership-manageownership-form-section-role-label": "",
+	"pageownership-managepermissions-form-permissions-bytype-label": "Add permissions by type",
+	"pageownership-managepermissions-form-permissions-bytype-help": "See [https://www.mediawiki.org/wiki/Manual:User_rights#List_of_permissions here] for the set of rights for each kind of permissions",
 
-	"pageownership-manageownership-form-username-label": "username or group",
-	"pageownership-manageownership-form-username-help": "One or more username or group to be assigned with the same privileges",
+	"pageownership-managepermissions-form-permissions-actions-label": "add/remove single permissions",
+	"pageownership-managepermissions-form-permissions-pages-label": "restrict the current set of permissions to the following pages",
+	"pageownership-managepermissions-form-permissions-pages-help": "can be blank",
+	"pageownership-managepermissions-form-permissions-namespaces-label": "restrict the current set of permissions to the following namespaces",
+	"pageownership-managepermissions-form-permissions-namespaces-help": "can be blank",
 
-	"pageownership-manageownership-form-page-label": "page",
-	"pageownership-manageownership-form-page-help": "",
+	"pageownership-managepermissions-form-permissions-addpermissions-label": "Add specific permissions",
+	"pageownership-managepermissions-form-permissions-addpermissions-help": "The menu is automatically populated depending on the selected permission types",
+	"pageownership-managepermissions-form-permissions-removepermissions-label": "Remove specific permissions",
+	"pageownership-managepermissions-form-permissions-removepermissions-help": "The menu is automatically populated depending on the selected permission types",
 
-	"pageownership-manageownership-form-role-label": "role",
-	"pageownership-manageownership-form-role-help": "An editor has a custom set of permissions except the ability to assign other users to pages, an admin has all permissions and a reader only read permissions",
+	"pageownership-managepermissions-form-pages-label": "pages",
+	"pageownership-managepermissions-form-namespaces-label": "namespaces",
 
-	"pageownership-manageownership-form-button-submit": "save",
-	"pageownership-manageownership-form-button-cancel": "cancel",
-	"pageownership-manageownership-form-button-delete": "delete",
+	"pageownership-managepermissions-form-button-submit": "Save",
+	"pageownership-managepermissions-form-button-delete": "Delete",
 
-	"pageownership-manageownership-form-search-legend": "filter search",
-	"pageownership-manageownership-form-search-section": "search form section",
-	"pageownership-manageownership-form-search-editor-label": "username",
-	"pageownership-manageownership-form-search-editor-help": "",
-	"pageownership-manageownership-form-search-created_by-label": "created by",
-	"pageownership-manageownership-form-search-created_by-help": "",
+	"pageownership-managepermissions-form-search-legend": "filter search",
+	"pageownership-managepermissions-form-search-section": "search form section",
+	"pageownership-managepermissions-form-search-editor-label": "username",
+	"pageownership-managepermissions-form-search-editor-help": "",
+	"pageownership-managepermissions-form-search-created_by-label": "created by",
+	"pageownership-managepermissions-form-search-created_by-help": "",
 
-	"pageownership-manageownership-form-search-role-label": "role",
-	"pageownership-manageownership-form-search-role-help": "",
-	"pageownership-manageownership-form-search-submit": "search",
+	"pageownership-managepermissions-form-search-submit": "search",
 
-	"pageownership-manageownership-pager-header-page": "page",
-	"pageownership-manageownership-pager-header-usernames": "username or groups",
-	"pageownership-manageownership-pager-header-created_by": "created by",
-	"pageownership-manageownership-pager-header-role": "role",
-	"pageownership-manageownership-pager-header-permissions": "permissions",
-	"pageownership-manageownership-pager-header-actions": "",
+	"pageownership-managepermissions-pager-header-page": "page",
+	"pageownership-managepermissions-pager-header-usernames": "username or groups",
+	"pageownership-managepermissions-pager-header-created_by": "created by",
+	"pageownership-managepermissions-pager-header-permissions": "permissions",
 
-	"pageownership-manageownership-form-fieldset-main": "User and permissions",
+	"pageownership-managepermissions-pager-header-actions": "",
+	"pageownership-managepermissions-pager-header-pages": "pages",
 
-	"pageownership-manageownership-form-missing-item": "Missing data",
+	"pageownership-managepermissions-form-button-addpermission": "add permissions",
+	"pageownership-managepermissions-form-button-addpermission-legend": "",
 
-	"pageownership-manageownership-form-permissions_edit-label": "Edit",
-	"pageownership-manageownership-form-permissions_edit-help": "",
+	"pageownership-managepermissions-form-missing-item": "Missing data",
 
-	"pageownership-manageownership-form-permissions_create-label": "Create",
-	"pageownership-manageownership-form-permissions_create-help": "",
+	"pageownership-managepermissions-description-specific": "Here you can add multiple sets of permissions to this page and its subpages based on specific users or groups. To restrict access from specific users or groups, assign to the user or groups you want to deny access  an entry without rights, then create a different entry with a more permissive set of permissions.$1",
 
-	"pageownership-manageownership-form-permissions_manage_properties-label": "Manage properties",
-	"pageownership-manageownership-form-permissions_manage_properties-help": "",
+	"pageownership-managepermissions-description-generic": "Here you can add multiple sets of permissions to any page and namespace based on specific users or groups. To restrict access to a page or namespace, assign to the user or groups you want to deny access an entry without rights, then create another entry with a more permissive set of permissions for different users or groups related to the same page or namespace.",
 
-	"pageownership-manageownership-form-subpages-label": "Sub-pages (apply to pages inlcuded in this page)",
-	"pageownership-manageownership-form-subpages-help": "",
+	"pageownership-managepermissions-description-manage-all-permissions": " To manage all permissions go [[Special:PageOwnershipPermissions|here]].",
 
-	"pageownership-manageownership-form-newrole-legend": "",
-	"pageownership-manageownership-form-button-new_user": "add permissions",
+	"pageownership-managepermissions-form-preamble-generic": "",
+	"pageownership-managepermissions-form-preamble-specific": "",
 
-	"pageownership-manageownership-description-specific": "this page and its subpages",
-	"pageownership-manageownership-description-generic": "any page and their subpages",
+	"pageownership-managepermissions-table-empty": "",
 
-	"pageownership-manageownership-description": "Here you can add users with read, edit or admin roles to $1, and to edit existing permissions. An owned page by default becomes accessible only by authorized users. To implicitly moderate a page, add a user or group as editor and to publish it add the group \"all\" as reader.<br><br>",
+	"pageownership-managepermissions-form-returnlink": "← [[$1|List of permissions]]",
 
-	"pageownership-manageownership-table-empty": "",
-
-	"pageownership-manageownership-form-updated": "← [[$1|List of permissions]]",
-
-	"pageownership-manageownership-return": "← [[$1|$2]]",
+	"pageownership-managepermissions-return": "← [[$1|$2]]",
 
 	"pageownership-denied-transclusion-anonymous": "<div class=\"pageownership-denied-transclusion\">Denied transclusion ([[Special:UserLogin|log in]])</div>",
 	"pageownership-denied-transclusion-registered": "<div class=\"pageownership-denied-transclusion\">Denied transclusion</div>"

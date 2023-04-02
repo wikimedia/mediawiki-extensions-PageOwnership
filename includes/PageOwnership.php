@@ -18,7 +18,7 @@
  *
  * @file
  * @ingroup extensions
- * @author thomas-topway-it <business@topway.it>
+ * @author thomas-topway-it <support@topway.it>
  * @copyright Copyright ©2021-2023, https://wikisphere.org
  */
 
@@ -27,16 +27,119 @@ use MediaWiki\MediaWikiServices;
 class PageOwnership {
 	/** @var UserPagesCache */
 	public static $UserPagesCache = [];
+
 	/** @var permissionsCache */
 	public static $permissionsCache = [];
-	/** @var OwnedPagesCache */
-	public static $OwnedPagesCache = [];
+
+	/** @var hasPermissionsCache */
+	public static $hasPermissionsCache = [];
+
 	/** @var User */
 	public static $User;
+
 	/** @var userGroupManager */
 	public static $userGroupManager;
+
 	/** @var Parser */
 	public static $Parser;
+
+	/**
+	 * @see https://www.mediawiki.org/wiki/Manual:User_rights
+	 * @var PermissionsByType
+	 */
+	public static $PermissionsByType = [
+		"reading" => [
+			"read"
+		],
+		"editing" => [
+			"applychangetags",
+			"autocreateaccount",
+			"createaccount",
+			"createpage",
+			"createtalk",
+			"delete-redirect",
+			"edit",
+			"editsemiprotected",
+			"editprotected",
+			"minoredit",
+			"move",
+			"move-categorypages",
+			"move-rootuserpages",
+			"move-subpages",
+			"movefile",
+			"reupload",
+			"reupload-own",
+			"reupload-shared",
+			"sendemail",
+			"upload",
+			"upload_by_url"
+		],
+		"management" => [
+			"bigdelete",
+			"block",
+			"blockemail",
+			"browsearchive",
+			"changetags",
+			"delete",
+			"deletedhistory",
+			"deletedtext",
+			"deletelogentry",
+			"deleterevision",
+			"editcontentmodel",
+			"editinterface",
+			"editmyoptions",
+			"editmyprivateinfo",
+			"editmyusercss",
+			"editmyuserjs",
+			"editmyuserjsredirect",
+			"editmyuserjson",
+			"editmywatchlist",
+			"editsitecss",
+			"editsitejs",
+			"editsitejson",
+			"editusercss",
+			"edituserjs",
+			"edituserjson",
+			"hideuser",
+			"markbotedits",
+			"mergehistory",
+			"pagelang",
+			"patrol",
+			"patrolmarks",
+			"protect",
+			"rollback",
+			"suppressionlog",
+			"suppressrevision",
+			"unblockself",
+			"undelete",
+			"userrights",
+			"userrights-interwiki",
+			"viewmyprivateinfo",
+			"viewmywatchlist",
+			"viewsuppressed"
+		],
+		"administration" => [
+			"autopatrol",
+			"deletechangetags",
+			"import",
+			"importupload",
+			"managechangetags",
+			"siteadmin",
+			"unwatchedpages",
+		],
+		"technical" => [
+			"apihighlimits",
+			"autoconfirmed",
+			"bot",
+			"ipblock-exempt",
+			"nominornewtalk",
+			"noratelimit",
+			"override-export-depth",
+			"purge",
+			"suppressredirect",
+			"writeapi"
+		]
+	];
 
 	/**
 	 * @param User|null $user
@@ -45,6 +148,14 @@ class PageOwnership {
 		self::$User = $user;
 		self::$userGroupManager = MediaWikiServices::getInstance()->getUserGroupManager();
 		self::$Parser = MediaWikiServices::getInstance()->getParser();
+
+/*
+global $wgGroupPermissions;
+print_r($wgGroupPermissions);
+
+global $wgAvailableRights;
+print_r($wgAvailableRights);
+*/
 	}
 
 	/**
@@ -201,35 +312,31 @@ class PageOwnership {
 
 	/**
 	 * @param string $creatorUsername
-	 * @param Title $title
-	 * @param array $usernames
-	 * @param array $permissions
-	 * @param string $role
+	 * @param array $row
 	 * @param int|null $id
 	 * @return bool
 	 */
-	public static function setPageOwnership( $creatorUsername, $title, $usernames, $permissions, $role, $id = null ) {
-		$pageId = $title->getArticleID();
+	public static function setPermissions( $creatorUsername, $row, $id = null ) {
 		$dbr = wfGetDB( DB_MASTER );
 
-		if ( !count( $usernames ) ) {
+		if ( !count( $row['usernames'] ) ) {
 			return false;
 		}
 
-		$row = [
-			'created_by' => $creatorUsername,
-			'usernames' => implode( ',', $usernames ),
-			'page_id' => $pageId,
-			'permissions' => implode( ',', $permissions ),
-			'role' => $role,
-		];
+		$row['pages'] = self::titleTextsToIDs( $row['pages'] );
+
+		foreach ( $row as $key => $value ) {
+			$row[$key] = implode( ',', $value );
+		}
+
+		$row['created_by'] = $creatorUsername;
 
 		if ( !$id ) {
 			$date = date( 'Y-m-d H:i:s' );
-			$res = $dbr->insert( 'page_ownership', $row + [ 'updated_at' => $date, 'created_at' => $date ] );
+			$res = $dbr->insert( 'pageownership_permissions', $row + [ 'updated_at' => $date, 'created_at' => $date ] );
 
 		} else {
-			$res = $dbr->update( 'page_ownership', $row, [ 'id' => $id ], __METHOD__ );
+			$res = $dbr->update( 'pageownership_permissions', $row, [ 'id' => $id ], __METHOD__ );
 		}
 
 		return $res;
@@ -239,66 +346,21 @@ class PageOwnership {
 	 * @param array $conds
 	 * @return void
 	 */
-	public static function deleteOwnershipData( $conds ) {
+	public static function deletePermissions( $conds ) {
 		$dbw = wfGetDB( DB_PRIMARY );
 
 		$dbw->delete(
-			'page_ownership',  $conds,
+			'pageownership_permissions',  $conds,
 			__METHOD__
 		);
 	}
 
 	/**
-	 * @param Title $title
-	 * @return bool
-	 */
-	public static function isOwned( $title ) {
-		$cache_key = $title->getText();
-
-		if ( array_key_exists( $cache_key, self::$OwnedPagesCache ) ) {
-			return self::$OwnedPagesCache[ $cache_key ];
-		}
-
-		$dbr = wfGetDB( DB_REPLICA );
-
-		if ( !$dbr->tableExists( 'page_ownership' ) ) {
-			return false;
-		}
-
-		$page_ancestors = self::page_ancestors( $title, false );
-
-		$page_ancestors = array_reverse( $page_ancestors );
-
-		// closest (deepest) first
-		foreach ( $page_ancestors as $key => $title_ ) {
-			$conds = [ 'page_id' => $title_->getArticleID() ];
-
-			if ( $key > 0 ) {
-				$conds[] = 'FIND_IN_SET(' . $dbr->addQuotes( 'subpages' ) . ', permissions)';
-			}
-
-			$row = $dbr->selectRow(
-				'page_ownership',
-				'*',
-				$conds,
-				__METHOD__
-			);
-
-			if ( $row && $row !== [ false ] ) {
-				self::$OwnedPagesCache[ $cache_key ] = true;
-				return true;
-			}
-		}
-
-		self::$OwnedPagesCache[ $cache_key ] = false;
-		return false;
-	}
-
-	/**
 	 * @param User $user
+	 * @param array|null $conds
 	 * @return array
 	 */
-	public static function getUserPagesDB( $user ) {
+	public static function getUserPagesDB( $user, $conds = [] ) {
 		$cache_key = $user->getName();
 
 		if ( array_key_exists( $cache_key, self::$UserPagesCache ) ) {
@@ -307,26 +369,26 @@ class PageOwnership {
 
 		$dbr = wfGetDB( DB_REPLICA );
 
-		if ( !$dbr->tableExists( 'page_ownership' ) ) {
+		if ( !$dbr->tableExists( 'pageownership_permissions' ) ) {
 			return [];
 		}
 
-		$conds = self::groupsCond( $dbr, $user );
+		$conds = array_merge( self::groupsCond( $dbr, $user ), $conds );
 
-		$rows = $dbr->select( 'page_ownership', '*', $conds );
+		$rows = $dbr->select( 'pageownership_permissions', '*', $conds );
 
 		$output = [];
-
 		foreach ( $rows as $row ) {
 			$row = (array)$row;
 
-			if ( !array_key_exists( $row[ 'page_id' ], $output ) ) {
-				$output[ $row[ 'page_id' ] ] = $row;
+			if ( !empty( $row['permissions_by_type'] ) ) {
+				$output = array_merge( $output, ( !empty( $row[ 'pages' ] ) ? explode( ',', $row[ 'pages' ] ) : [] ) );
 			}
 		}
 
-		self::$UserPagesCache[ $cache_key ] = $output;
+		$output = array_unique( $output );
 
+		self::$UserPagesCache[ $cache_key ] = $output;
 		return self::$UserPagesCache[ $cache_key ];
 	}
 
@@ -337,9 +399,7 @@ class PageOwnership {
 	 */
 	public static function pageownership_userpages( Parser $parser, $param1 = '' ) {
 		$user = $parser->getUserIdentity() ?? self::getUser();
-
 		$pages = self::userpages( $user );
-
 		return implode( ',', $pages );
 	}
 
@@ -351,34 +411,64 @@ class PageOwnership {
 		if ( !$user->isRegistered() ) {
 			return [];
 		}
-
 		$pages = self::getUserPagesDB( $user );
 
-		$pages = array_filter( array_map( static function ( $value ) {
-					$title = Title::newFromID( $value['page_id'] );
+		return self::pageIDsToText( $pages );
+	}
+
+	/**
+	 * @param array $arr
+	 * @return array
+	 */
+	public static function pageIDsToText( $arr ) {
+		return array_filter( array_map( static function ( $value ) {
+				// ContentPage
+				if ( is_numeric( $value ) ) {
+					$title = Title::newFromID( $value );
 					if ( $title ) {
-						return $title->getText();
+						return $title->getFullText();
 					}
-		}, $pages ), static function ( $value ) {
+				// special page
+				} else {
+					$title = Title::newFromText( $value );
+					if ( $title ) {
+						return $title->getFullText();
+					}
+				}
+		}, $arr ), static function ( $value ) {
 			return !empty( $value );
 		} );
+	}
 
-		return $pages;
+	/**
+	 * @param array $arr
+	 * @return array
+	 */
+	public static function titleTextsToIDs( $arr ) {
+		return array_filter( array_map( static function ( $value ) {
+					$title = Title::newFromText( $value );
+					if ( $title && $title->isKnown() ) {
+						return ( $title->isContentPage() ? $title->getArticleID() : $title->getFullText() );
+					}
+		}, $arr ), static function ( $value ) {
+			return !empty( $value );
+		} );
 	}
 
 	/**
 	 * @param \Wikimedia\Rdbms\DBConnRef $dbr
 	 * @param User $user
+	 * @param string|null $field
 	 * @return array
 	 */
-	public static function groupsCond( $dbr, $user ) {
+	public static function groupsCond( $dbr, $user, $field = 'usernames' ) {
 		$userGroupManager = self::getUserGroupManager();
 		$user_groups = self::getUserGroups( $userGroupManager, $user, true );
 		$user_groups[] = $user->getName();
 
 		$conds = [];
-		array_map( static function ( $value ) use ( &$conds, $dbr ) {
-			$conds[] = 'FIND_IN_SET(' . $dbr->addQuotes( $value ) . ', usernames)';
+		array_map( static function ( $value ) use ( &$conds, $dbr, $field ) {
+			$conds[] = 'FIND_IN_SET(' . $dbr->addQuotes( $value ) . ', ' . $field . ')';
 		}, $user_groups );
 
 		return [ $dbr->makeList( $conds, LIST_OR ) ];
@@ -386,75 +476,106 @@ class PageOwnership {
 
 	/**
 	 * @param Title $title
-	 * @param User $user
-	 * @return array
+	 * @param User|null $user
+	 * @param string|null $action
+	 * @return bool
 	 */
-	public static function permissionsOfPage( $title, $user ) {
-		// $hash = md5();
+	public static function getPermissions( $title, $user = null, $action = "read" ) {
+		$cacheKey = $title->getFullText() . ( $user ? $user->getName() : '' ) . $action;
+		$cacheVar = ( $user ? 'permissionsCache' : 'hasPermissionsCache' );
 
-		$cache_key = $title->getText() . $user->getName();
-
-		if ( array_key_exists( $cache_key, self::$permissionsCache ) ) {
-			return self::$permissionsCache[ $cache_key ];
+		if ( array_key_exists( $cacheKey, self::$$cacheVar ) ) {
+			return self::$$cacheVar[ $cacheKey ];
 		}
 
 		$conds = [];
 
 		$dbr = wfGetDB( DB_REPLICA );
-
-		if ( !$dbr->tableExists( 'page_ownership' ) ) {
-			return [ null, [] ];
+		if ( !$dbr->tableExists( 'pageownership_permissions' ) ) {
+			return null;
 		}
 
 		$page_ancestors = self::page_ancestors( $title, false );
-
 		$page_ancestors = array_reverse( $page_ancestors );
 
-		$conds = self::groupsCond( $dbr, $user );
+		$conds = ( $user ? self::groupsCond( $dbr, $user ) : [] );
 
-		$role = null;
-		$permissions = [];
+		$conds[] = $dbr->makeList( [
+			'namespaces = ""',
+			'FIND_IN_SET(' . $title->getNamespace() . ', namespaces)',
+		], LIST_OR );
 
-		$roles_hierarchy = [ 'admin', 'editor', 'reader' ];
+		$ret = null;
 
 		// closest (deepest) first
 		foreach ( $page_ancestors as $key => $title_ ) {
-			$conds['page_id'] = $title_->getArticleID();
+			$conds_ = $conds;
+
+			$conds_[] = $dbr->makeList( [
+				'pages = ""',
+				'FIND_IN_SET(' . ( $title_->isContentPage() ? $title_->getArticleID() : $dbr->addQuotes( $title_->getFullText() ) ) . ', pages)',
+			], LIST_OR );
 
 			if ( $key > 0 ) {
-				$conds[] = 'FIND_IN_SET(' . $dbr->addQuotes( 'subpages' ) . ', permissions)';
+				$conds_[] = 'FIND_IN_SET(' . $dbr->addQuotes( "pageownership-$action-subpages" ) . ', additional_rights)';
 			}
 
 			$rows = $dbr->select(
-				'page_ownership',
+				'pageownership_permissions',
 				'*',
-				$conds,
+				$conds_,
 				__METHOD__
 			);
+
+			// initialize to false if a row matched the current
+			// title or user/group
+			if ( $rows->numRows() ) {
+				$ret = false;
+			}
+
+			// we only need to know if a condition matched
+			if ( !$user ) {
+				continue;
+			}
 
 			foreach ( $rows as $row ) {
 				$row = (array)$row;
 
-				// get all permissions and role
-				if ( $row && $row !== [ false ] ) {
-					if ( !empty( $row['permissions'] ) ) {
-						array_map( static function ( $value ) use ( &$permissions ) {
-							if ( !in_array( $value, $permissions ) ) {
-								$permissions[] = $value;
-							}
-						}, explode( ",", $row['permissions'] ) );
-					}
+				$remove_permissions = ( !empty( $row['remove_permissions'] ) ? explode( ',', $row['remove_permissions'] ) : [] );
+				if ( in_array( $action, $remove_permissions ) ) {
+					continue;
+				}
 
-					if ( !$role || ( array_search( $row[ 'role' ], $roles_hierarchy ) < array_search( $role, $roles_hierarchy ) ) ) {
-						$role = $row[ 'role' ];
+				$permissions_by_type = ( !empty( $row['permissions_by_type'] ) ? explode( ',', $row['permissions_by_type'] ) : [] );
+				foreach ( $permissions_by_type as $type ) {
+					if ( in_array( $action, self::$PermissionsByType[$type] ) ) {
+						$ret = true;
+						break 2;
 					}
 				}
+
+				$add_permissions = explode( ',', $row['add_permissions'] );
+				if ( in_array( $action, $add_permissions ) ) {
+					$ret = true;
+					break;
+				}
+
+				$additional_rights = explode( ',', $row['additional_rights'] );
+				if ( in_array( $action, $additional_rights ) ) {
+					$ret = true;
+					break;
+				}
+
+				if ( $key > 0 && in_array( "pageownership-$action-subpages", $additional_rights ) ) {
+					$ret = true;
+					break;
+				}
+
 			}
+
 		}
-
-		self::$permissionsCache[ $cache_key ] = [ $role, $permissions ];
-
-		return self::$permissionsCache[ $cache_key ];
+		self::$$cacheVar[ $cacheKey ] = $ret;
+		return self::$$cacheVar[ $cacheKey ];
 	}
 
 	/**
@@ -522,10 +643,9 @@ class PageOwnership {
 
 	/**
 	 * @param User $user
-	 * @param Title|null $title
 	 * @return bool
 	 */
-	public static function isAuthorized( $user, $title = null ) {
+	public static function isAuthorized( $user ) {
 		$admins = self::getGlobalParameterAsArray( 'wgPageOwnershipAdmins' );
 		$admins = array_unique( array_merge( $admins, [ 'sysop' ] ) );
 
@@ -540,7 +660,7 @@ class PageOwnership {
 	public static function matchUsernameOrGroup( $user, $groups ) {
 		$userGroupManager = self::getUserGroupManager();
 
-		// ***the following avoids that an user
+		// ***the following prevents that an user
 		// impersonates a group through the username
 		$all_groups = array_merge( $userGroupManager->listAllGroups(), $userGroupManager->listAllImplicitGroups() );
 
@@ -567,19 +687,18 @@ class PageOwnership {
 	public static function page_ancestors( $title, $exclude_current = true ) {
 		$output = [];
 
-		$title_parts = explode( '/', $title->getText() );
+		$title_parts = explode( '/', $title->getFullText() );
 
 		if ( $exclude_current ) {
 			array_pop( $title_parts );
 		}
 
 		$path = [];
-
 		foreach ( $title_parts as $value ) {
 			$path[] = $value;
 			$title_text = implode( '/', $path );
 
-			if ( $title->getText() === $title_text ) {
+			if ( $title->getFullText() === $title_text ) {
 				$output[] = $title;
 
 			} else {
@@ -630,15 +749,4 @@ class PageOwnership {
 		}
 	}
 
-	/**
-	 * @see https://stackoverflow.com/questions/173400/how-to-check-if-php-array-is-associative-or-sequential
-	 * @param array $arr
-	 * @return bool
-	 */
-	public static function isAssoc( $arr ) {
-		if ( $arr === [] ) {
-			return false;
-		}
-		return array_keys( $arr ) !== range( 0, count( $arr ) - 1 );
-	}
 }

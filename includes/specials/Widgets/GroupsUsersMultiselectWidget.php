@@ -24,6 +24,11 @@ class GroupsUsersMultiselectWidget extends MediaWiki\Widget\TagMultiselectWidget
 	protected $ipRangeLimits;
 
 	/**
+	 * @var options
+	 */
+	protected $options;
+
+	/**
 	 * @param array $config Configuration options
 	 * - bool $config['ipAllowed'] Accept valid IP addresses
 	 * - bool $config['ipRangeAllowed'] Accept valid IP ranges

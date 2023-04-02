@@ -72,7 +72,7 @@ $( function () {
 	updateCheckboxes( input_role.getValue() );
 
 	// eslint-disable-next-line no-jquery/no-global-selector, no-unused-vars
-	$( '#pageownership-form button[type="submit"]' ).on( 'click', function ( val ) {
+	$( '#pageownership-form,pageownership-form-permissions button[type="submit"]' ).on( 'click', function ( val ) {
 		if ( $( this ).val() === 'delete' ) {
 			// eslint-disable-next-line no-alert
 			if ( !confirm( mw.msg( 'pageownership-jsmodule-deleteitemconfirm' ) ) ) {

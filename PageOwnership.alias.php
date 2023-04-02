@@ -12,4 +12,5 @@ $specialPageAliases = [];
  */
 $specialPageAliases['en'] = [
 	'PageOwnership' => [ 'PageOwnership' ],
+	'PageOwnershipPermissions' => [ 'PageOwnershipPermissions' ],
 ];

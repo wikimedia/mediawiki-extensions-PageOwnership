@@ -1,7 +1,7 @@
 {
 	"name": "PageOwnership",
 	"author": "thomas-topway-it",
-	"version": "1.0.3",
+	"version": "1.1.0",
 	"url": "https://www.mediawiki.org/wiki/Extension:PageOwnership",
 	"descriptionmsg": "pageownership-extension-desc",
 	"license-name": "GPL-2.0-or-later",
@@ -17,7 +17,8 @@
 	"AutoloadClasses": {
 		"PageOwnershipHooks": "includes/PageOwnershipHooks.php",
 		"PageOwnership": "includes/PageOwnership.php",
-		"SpecialPageOwnership": "includes/specials/SpecialPageOwnership.php"
+		"SpecialPageOwnershipPermissions": "includes/specials/SpecialPageOwnershipPermissions.php",
+		"PageOwnershipApiCheckLatestVersion": "includes/api/PageOwnershipApiCheckLatestVersion.php"
 	},
 	"ExtensionMessagesFiles": {
 		"PageOwnershipAlias": "PageOwnership.alias.php",
@@ -44,24 +45,44 @@
 		"SkinBuildSidebar": "PageOwnershipHooks::onSkinBuildSidebar"
 	},
 	"SpecialPages": {
-		"PageOwnership": "SpecialPageOwnership"
+		"PageOwnershipPermissions": "SpecialPageOwnershipPermissions"
+	},
+	"APIModules": {
+		"pageownership-check-latest-version": "PageOwnershipApiCheckLatestVersion"
 	},
 	"GroupPermissions": {
-		"pageownership-admin": {},
-		"pageownership-moderated-user": {}
+		"sysop": {
+			"pageownership-canmanagepermissions": true,
+			"pageownership-caneditpermissions": true
+		},
+		"bureaucrat": {
+			"pageownership-canmanagepermissions": true,
+			"pageownership-caneditpermissions": true
+		},
+		"pageownership-admin": {
+			"pageownership-canmanagepermissions": true,
+			"pageownership-caneditpermissions": true
+		}
 	},
 	"AddGroups": {
 		"pageownership-admin": [
-			"pageownership-admin",
-			"pageownership-moderated-user"
+			"pageownership-admin"
 		]
 	},
 	"RemoveGroups": {
 		"pageownership-admin": [
-			"pageownership-admin",
-			"pageownership-moderated-user"
+			"pageownership-admin"
 		]
 	},
+	"AvailableRights": [
+		"pageownership-canmanagepermissions",
+		"pageownership-caneditpermissions",
+		"pageownership-read-subpages",
+		"pageownership-edit-subpages",
+		"pageownership-create-subpages",
+		"pageownership-move-subpages",
+		"pageownership-delete-subpages"
+	],
 	"ResourceFileModulePaths": {
 		"localBasePath": "resources",
 		"remoteExtPath": "PageOwnership/resources"
@@ -70,7 +91,7 @@
 		"ext.PageOwnership": {
 			"position": "top",
 			"scripts": [
-				"page_ownership.js"
+				"PageOwnership.js"
 			],
 			"styles": [
 				"style.css"
@@ -82,10 +103,52 @@
 				"pageownership-jsmodule-deleteitemconfirm"
 			]
 		},
+		"ext.PageOwnershipPermissions": {
+			"position": "top",
+			"scripts": [
+				"PageOwnershipPermissions.js"
+			],
+			"styles": [
+			],
+			"dependencies": [
+				"oojs-ui-core",
+				"oojs-ui-widgets",
+				"ext.PageOwnership.GroupsUsersMultiselectWidget",
+				"ext.PageOwnership.MenuTagMultiselectWidget",
+				"ext.PageOwnership.MultiToggleButtonWidget"
+			],
+			"messages": [
+				"pageownership-jsmodule-deleteitemconfirm",
+				"pageownership-permissions-actions-label-reading",
+				"pageownership-permissions-actions-label-editing",
+				"pageownership-permissions-actions-label-management",
+				"pageownership-permissions-actions-label-administration",
+				"pageownership-permissions-actions-label-technical",
+				"pageownership-jsmodule-pageproperties-outdated-version"
+			]
+		},
 		"ext.PageOwnership.GroupsUsersMultiselectWidget": {
 			"position": "top",
 			"scripts": [
 				"mw.widgets.GroupsUsersMultiselectWidget.js"
+			],
+			"dependencies": [
+				"oojs-ui-widgets"
+			]
+		},
+		"ext.PageOwnership.MenuTagMultiselectWidget": {
+			"position": "top",
+			"scripts": [
+				"mw.widgets.MenuTagMultiselectWidget.js"
+			],
+			"dependencies": [
+				"oojs-ui-widgets"
+			]
+		},
+		"ext.PageOwnership.MultiToggleButtonWidget": {
+			"position": "top",
+			"scripts": [
+				"mw.widgets.MultiToggleButtonWidget.js"
 			],
 			"dependencies": [
 				"oojs-ui-widgets"

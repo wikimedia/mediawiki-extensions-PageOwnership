@@ -2,12 +2,58 @@
 	"@metadata": {
 		"authors": []
 	},
-	"specialpages-group-pageownership": "A label message",
 
 	"pageownership-extension-desc": "A label message",
 
+	"specialpages-group-pageownership": "A label message",
+
 	"pageownership": "A label message",
+	"pageownershippermissions": "A label message",
+
+	"pageownership-jsmodule-pageproperties-outdated-version": "A label message",
+
+	"mw-widgets-tagmultiselect-placeholder": "A label message",
+
+	"right-pageownership-read-subpages": "A label message",
+	"right-pageownership-create-subpages": "A label message",
+	"right-pageownership-edit-subpages": "A label message",
+	"right-pageownership-move-subpages": "A label message",
+	"right-pageownership-delete-subpages": "A label message",
+
+	"right-pageownership-canmanagepermissions": "A label message",
+	"right-pageownership-caneditpermissions": "A label message",
+
+	"apihelp-pageownership-check-latest-version-example-1": "A label message",
+	"apihelp-pageownership-check-latest-version-summary": "A label message",
+
+	"action-pageownership-read-subpages": "A label message",
+	"action-pageownership-create-subpages": "A label message",
+	"action-pageownership-edit-subpages": "A label message",
+	"action-pageownership-move-subpages": "A label message",
+	"action-pageownership-delete-subpages": "A label message",
+	"action-pageownership-canmanagepermissions": "A label message",
+	"action-pageownership-caneditpermissions": "A label message",
+
+	"pageownership-managepermissions-form-additional-rights-label": "A label message",
+	"pageownership-managepermissions-pager-header-additional-rights": "A label message",
+	"pageownership-managepermissions-pager-header-add-permissions": "A label message",
+	"pageownership-managepermissions-pager-header-remove-permissions": "A label message",
+
+	"pageownership-managepermissions-pager-header-permissions-bytype": "A label message",
+
+	"pageownership-permissions-actions-label-reading": "A label message",
+	"pageownership-permissions-actions-label-editing": "A label message",
+	"pageownership-permissions-actions-label-management": "A label message",
+	"pageownership-permissions-actions-label-administration": "A label message",
+	"pageownership-permissions-actions-label-technical": "A label message",
+
+	"pageownership-permissions-field-info-label": "A label message",
+	"pageownership-permissions-field-info-group": "A label message",
+
+	"pageownership-managepermissions-pager-header-namespaces": "A label message",
+
 	"pageownership-sitenotice-missing-table": "A label message",
+
 	"pageownership-jsmodule-deleteitemconfirm": "A label message",
 
 	"pageownership-navigation": "A label message",
@@ -17,76 +63,68 @@
 	"group-pageownership-admin-member": "A label message",
 	"group-pageownership-admin": "A label message",
 
-	"group-pageownership-moderated-user-member": "A label message",
-	"group-pageownership-moderated-user": "A label message",
+	"pageownership-managepermissions-form-fieldset-permissions-main": "A label message",
 
-	"pageownership-manageownership-form-section-main": "A label message",
-	"pageownership-manageownership-form-section-role": "A label message",
+	"pageownership-managepermissions-form-username-label": "A label message",
+	"pageownership-managepermissions-form-username-help": "A label message",
 
-	"pageownership-manageownership-form-section-main-label": "A label message",
-	"pageownership-manageownership-form-section-role-label": "A label message",
+	"pageownership-managepermissions-form-permissions-bytype-label": "A label message",
+	"pageownership-managepermissions-form-permissions-bytype-help": "A label message",
 
-	"pageownership-manageownership-form-username-label": "A label message",
-	"pageownership-manageownership-form-username-help": "A label message",
+	"pageownership-managepermissions-form-permissions-actions-label": "A label message",
+	"pageownership-managepermissions-form-permissions-pages-label": "A label message",
+	"pageownership-managepermissions-form-permissions-pages-help": "A label message",
+	"pageownership-managepermissions-form-permissions-namespaces-label": "A label message",
+	"pageownership-managepermissions-form-permissions-namespaces-help": "A label message",
 
-	"pageownership-manageownership-form-page-label": "A label message",
-	"pageownership-manageownership-form-page-help": "A label message",
+	"pageownership-managepermissions-form-permissions-addpermissions-label": "A label message",
+	"pageownership-managepermissions-form-permissions-addpermissions-help": "A label message",
+	"pageownership-managepermissions-form-permissions-removepermissions-label": "A label message",
+	"pageownership-managepermissions-form-permissions-removepermissions-help": "A label message",
 
-	"pageownership-manageownership-form-role-label": "A label message",
-	"pageownership-manageownership-form-role-help": "A label message",
+	"pageownership-managepermissions-form-pages-label": "A label message",
+	"pageownership-managepermissions-form-namespaces-label": "A label message",
 
-	"pageownership-manageownership-form-button-submit": "A label message",
-	"pageownership-manageownership-form-button-cancel": "A label message",
-	"pageownership-manageownership-form-button-delete": "A label message",
+	"pageownership-managepermissions-form-button-submit": "A label message",
+	"pageownership-managepermissions-form-button-delete": "A label message",
 
-	"pageownership-manageownership-form-search-legend": "A label message",
-	"pageownership-manageownership-form-search-section": "A label message",
-	"pageownership-manageownership-form-search-editor-label": "A label message",
-	"pageownership-manageownership-form-search-editor-help": "A label message",
-	"pageownership-manageownership-form-search-created_by-label": "A label message",
-	"pageownership-manageownership-form-search-created_by-help": "A label message",
+	"pageownership-managepermissions-form-search-legend": "A label message",
+	"pageownership-managepermissions-form-search-section": "A label message",
+	"pageownership-managepermissions-form-search-editor-label": "A label message",
+	"pageownership-managepermissions-form-search-editor-help": "A label message",
+	"pageownership-managepermissions-form-search-created_by-label": "A label message",
+	"pageownership-managepermissions-form-search-created_by-help": "A label message",
 
-	"pageownership-manageownership-form-search-role-label": "A label message",
-	"pageownership-manageownership-form-search-role-help": "A label message",
-	"pageownership-manageownership-form-search-submit": "A label message",
+	"pageownership-managepermissions-form-search-submit": "A label message",
 
-	"pageownership-manageownership-pager-header-page": "A label message",
-	"pageownership-manageownership-pager-header-usernames": "A label message",
-	"pageownership-manageownership-pager-header-created_by": "A label message",
-	"pageownership-manageownership-pager-header-role": "A label message",
-	"pageownership-manageownership-pager-header-permissions": "A label message",
-	"pageownership-manageownership-pager-header-actions": "A label message",
+	"pageownership-managepermissions-pager-header-page": "A label message",
+	"pageownership-managepermissions-pager-header-usernames": "A label message",
+	"pageownership-managepermissions-pager-header-created_by": "A label message",
+	"pageownership-managepermissions-pager-header-permissions": "A label message",
 
-	"pageownership-manageownership-form-fieldset-main": "A label message",
-	"pageownership-manageownership-form-missing-item": "A label message",
+	"pageownership-managepermissions-pager-header-actions": "A label message",
+	"pageownership-managepermissions-pager-header-pages": "A label message",
 
-	"pageownership-manageownership-form-permissions_edit-label": "A label message",
-	"pageownership-manageownership-form-permissions_edit-help": "A label message",
+	"pageownership-managepermissions-form-button-addpermission": "A label message",
+	"pageownership-managepermissions-form-button-addpermission-legend": "A label message",
 
-	"pageownership-manageownership-form-permissions_create-label": "A label message",
-	"pageownership-manageownership-form-permissions_create-help": "A label message",
+	"pageownership-managepermissions-form-missing-item": "A label message",
 
-	"pageownership-manageownership-form-permissions_manage_properties-label": "A label message",
-	"pageownership-manageownership-form-permissions_manage_properties-help": "A label message",
+	"pageownership-managepermissions-description-specific": "A label message",
 
-	"pageownership-manageownership-form-subpages-label": "A label message",
-	"pageownership-manageownership-form-subpages-help": "A label message",
+	"pageownership-managepermissions-description-generic": "A label message",
 
-	"pageownership-manageownership-form-newrole-legend": "A label message",
-	"pageownership-manageownership-form-button-new_user": "A label message",
+	"pageownership-managepermissions-description-manage-all-permissions": "A label message",
 
-	"pageownership-manageownership-description-specific": "A label message",
-	"pageownership-manageownership-description-generic": "A label message",
+	"pageownership-managepermissions-form-preamble-generic": "A label message",
+	"pageownership-managepermissions-form-preamble-specific": "A label message",
 
-	"pageownership-manageownership-description": "A label message",
+	"pageownership-managepermissions-table-empty": "A label message",
 
-	"pageownership-manageownership-table-empty": "A label message",
+	"pageownership-managepermissions-form-returnlink": "A label message",
 
-	"pageownership-manageownership-form-updated": "A label message",
-
-	"pageownership-manageownership-return": "A label message",
+	"pageownership-managepermissions-return": "A label message",
 
 	"pageownership-denied-transclusion-anonymous": "A label message",
 	"pageownership-denied-transclusion-registered": "A label message"
-
 }

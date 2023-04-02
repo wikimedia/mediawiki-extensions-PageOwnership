@@ -18,7 +18,7 @@
  *
  * @file
  * @ingroup extensions
- * @author thomas-topway-it <business@topway.it>
+ * @author thomas-topway-it <support@topway.it>
  * @copyright Copyright ©2021-2023, https://wikisphere.org
  */
 
@@ -36,8 +36,8 @@ class PageOwnershipHooks {
 		$dbType = $updater->getDB()->getType();
 		$array = [
 			[
-				'table' => 'page_ownership',
-				'filename' => '../' . $dbType . '/page_ownership.sql'
+				'table' => 'pageownership_permissions',
+				'filename' => '../' . $dbType . '/pageownership_permissions.sql'
 			]
 		];
 		foreach ( $array as $value ) {
@@ -66,76 +66,6 @@ class PageOwnershipHooks {
 	}
 
 	/**
-	 * @param WikiPage $wikiPage
-	 * @param MediaWiki\User\UserIdentity $user
-	 * @param string $summary
-	 * @param int $flags
-	 * @param MediaWiki\Revision\RevisionRecord $revisionRecord
-	 * @param MediaWiki\Storage\EditResult $editResult
-	 * @return bool|void
-	 */
-	public static function onPageSaveComplete( WikiPage $wikiPage, MediaWiki\User\UserIdentity $user, string $summary, int $flags, MediaWiki\Revision\RevisionRecord $revisionRecord, MediaWiki\Storage\EditResult $editResult ) {
-		if ( $flags & EDIT_FORCE_BOT || !$editResult->isNew() ) {
-			return;
-		}
-
-		// *** enforce *implicit moderation*
-		$title = $wikiPage->getTitle();
-		$moderatedGroupsOrUsers = \PageOwnership::getGlobalParameterAsArray( 'wgPageOwnershipModeratedGroupsOrUsers' );
-		$isAuthorized = \PageOwnership::isAuthorized( $user, $title );
-
-		if ( !$isAuthorized ) {
-			$userGroupManager = \PageOwnership::getUserGroupManager();
-			$userGroups = \PageOwnership::getUserGroups( $userGroupManager, $user );
-
-			if ( ( \PageOwnership::matchUsernameOrGroup( $user, $moderatedGroupsOrUsers ) || in_array( 'pageownership-moderated-user', $userGroups ) )
-				&& !\PageOwnership::isOwned( $title ) ) {
-
-				// add the current user as editor
-				\PageOwnership::setPageOwnership( 'moderated-user', $title, [ $user->getName() ],
-					[ 'edit', 'create', 'subpages' ], 'editor' );
-
-				// add the content of $wgPageOwnershipModerators
-
-				// returns an array of groups or an associative array
-				// with group => array of supervisors
-				$pageOwnershipModerators = \PageOwnership::getGlobalParameterAsArray( 'wgPageOwnershipModerators' );
-
-				if ( empty( $pageOwnershipModerators ) ) {
-					$pageOwnershipModerators = self::$admins;
-				}
-
-				if ( !\PageOwnership::isAssoc( $pageOwnershipModerators ) ) {
-					$assignee = $pageOwnershipModerators;
-
-				} else {
-					// parse an associative array in this form
-					/*
-						$wgPageOwnershipModerators = [
-							'*' => [ 'sysop' ],
-							'user' => 'bureaucrat',
-							// ...
-						];
-					*/
-					$assignee = [];
-					foreach ( $pageOwnershipModerators as $group => $moderators ) {
-						if ( in_array( $group, $userGroups ) ) {
-							if ( is_array( $moderators ) ) {
-								$assignee = array_merge( $assignee, $moderators );
-							} else {
-								$assignee[] = $moderators;
-							}
-						}
-					}
-
-					$assignee = array_unique( $assignee );
-					\PageOwnership::setPageOwnership( 'moderated-user', $title, $assignee, [], 'admin' );
-				}
-			}
-		}
-	}
-
-	/**
 	 * @param string &$siteNotice
 	 * @param Skin $skin
 	 * @return bool
@@ -149,7 +79,7 @@ class PageOwnershipHooks {
 		if ( count( array_intersect( self::$admins, $userGroups ) ) ) {
 			$dbr = wfGetDB( DB_REPLICA );
 
-			if ( !$dbr->tableExists( 'page_ownership' ) ) {
+			if ( !$dbr->tableExists( 'pageownership_permissions' ) ) {
 				$siteNotice = '<div class="pageownership-sitenotice">' . wfMessage( 'pageownership-sitenotice-missing-table' )->plain() . '</div>';
 				return false;
 			}
@@ -171,89 +101,51 @@ class PageOwnershipHooks {
 	 * @see https://www.mediawiki.org/wiki/Manual:Hooks/getUserPermissionsErrors
 	 */
 	public static function onGetUserPermissionsErrors( $title, $user, $action, &$result ) {
-		$logged_in = $user->isRegistered();
-		$username = $user->getName();
+		global $wgWhitelistRead;
 
-		$read = ( $action === 'read' );
-		$edit = ( $action === 'edit' || $action === 'delete' || $action === 'move' || $action === 'create' );
-
-		$new_page = ( !$title->isKnown() || $action === 'create' );
-
-		// if ( $title->getFullText() === 'Page Forms permissions test' ) {
-		// 	return true;
-		// }
-
-		if ( !$title->isKnown() || $title->isSpecialPage() ) {
+		if ( $action === 'read' && is_array( $wgWhitelistRead )
+			&& in_array( $title->getText, $wgWhitelistRead ) ) {
 			return true;
 		}
 
-		// shows a more adequate message
-		if ( $read && $new_page ) {
+		if ( \PageOwnership::isAuthorized( $user ) ) {
 			return true;
 		}
 
-		$isAuthorized = \PageOwnership::isAuthorized( $user, $title );
+		$ret = \PageOwnership::getPermissions( $title, $user, $action );
 
-		if ( $isAuthorized ) {
+		if ( $ret !== null ) {
+			// @TODO whitelist only if they aren't explicitly
+			// forbidden
+			// *** whitelist other pages ?
+			$whitelistSpecials = [ 'UserLogin', 'CreateAccount' ];
+
+			foreach ( $whitelistSpecials as $value ) {
+				$special = SpecialPage::getTitleFor( $value );
+				if ( $title->getFullText() === $special->getFullText() ) {
+					return true;
+				}
+			}
+		}
+
+		if ( $ret !== false ) {
 			return true;
 		}
-
-		// not an owned page
-		if ( !\PageOwnership::isOwned( $title ) ) {
-
-			// @TODO implement with a proper interface and merge
-			// with $wgPageOwnershipModeratedGroupsOrUsers
-			// and $wgPageOwnershipGuests
-			$guests = \PageOwnership::getGlobalParameterAsArray( 'wgPageOwnershipGuests' );
-
-			if ( \PageOwnership::matchUsernameOrGroup( $user, $guests ) ) {
-				// @TODO show notice redirecting to their page if any
-				return false;
-			}
-
-			return true;
-		}
-
-		// owned page
-		list( $role, $permissions ) = \PageOwnership::permissionsOfPage( $title, $user );
-
-		if ( $read ) {
-			if ( $role != null ) {
-				return true;
-			}
-		}
-
-		if ( $edit ) {
-			if ( $role === 'admin' ) {
-				return true;
-			}
-
-			if ( $new_page && in_array( 'create', $permissions ) ) {
-				return true;
-			}
-
-			if ( in_array( 'edit', $permissions ) ) {
-				return true;
-			}
-
-		}
-
-		// the user is the page's creator
-		// *** it could also be an anonymous user with same ip ?
-		if ( $logged_in ) {
-			$wikiPage = \PageOwnership::getWikiPage( $title );
-			$creator = $wikiPage->getCreator();
-
-			if ( $creator == $username ) {
-				return true;
-			}
-		}
-
-		// \PageOwnership::disableCaching();
 
 		$result = [ 'badaccess-group0' ];
-
 		return false;
+	}
+
+	/**
+	 * @param WikiPage $wikiPage
+	 * @param MediaWiki\User\UserIdentity $user
+	 * @param string $summary
+	 * @param int $flags
+	 * @param MediaWiki\Revision\RevisionRecord $revisionRecord
+	 * @param MediaWiki\Storage\EditResult $editResult
+	 * @return bool|void
+	 */
+	public static function onPageSaveComplete( WikiPage $wikiPage, MediaWiki\User\UserIdentity $user, string $summary, int $flags, MediaWiki\Revision\RevisionRecord $revisionRecord, MediaWiki\Storage\EditResult $editResult ) {
 	}
 
 	/**
@@ -267,14 +159,13 @@ class PageOwnershipHooks {
 	public static function onPageRenderingHash( &$confstr, User $user, &$forOptions ) {
 		// *** see also parserOptions->addExtraKey
 
-		// *** for some reason we cannot rely on $user->isRegistered()
 		if ( $user->isRegistered() ) {
 			$confstr .= '!registered_user';
 		}
 	}
 
 	/**
-	 * *** ignore the cache if a page contains a transcluded owned page
+	 * *** ignore the cache if a page contains a transcluded page with stored permissions
 	 * *** only for cache related to registered users
 	 * @param ParserOutput $parserOutput
 	 * @param WikiPage $wikiPage
@@ -288,7 +179,7 @@ class PageOwnershipHooks {
 			$transcludedTemplates = $title->getTemplateLinksFrom();
 
 			foreach ( $transcludedTemplates as $title_ ) {
-				if ( \PageOwnership::isOwned( $title_ ) ) {
+				if ( \PageOwnership::getPermissions( $title ) === null ) {
 					return false;
 				}
 			}
@@ -328,19 +219,13 @@ class PageOwnershipHooks {
 
 		$user = \PageOwnership::getUser();
 
-		$isAuthorized = \PageOwnership::isAuthorized( $user, $title );
+		$isAuthorized = \PageOwnership::isAuthorized( $user );
 
 		if ( $isAuthorized ) {
 			return true;
 		}
 
-		if ( !\PageOwnership::isOwned( $title ) ) {
-			return true;
-		}
-
-		list( $role, $permissions ) = \PageOwnership::permissionsOfPage( $title, $user );
-
-		if ( !empty( $role ) ) {
+		if ( \PageOwnership::getPermissions( $title, $user ) !== false ) {
 			return true;
 		}
 
@@ -363,19 +248,13 @@ class PageOwnershipHooks {
 	public static function onParserFetchTemplate( $parser, $title, $rev, &$text, &$deps ) {
 		$user = $parser->getUserIdentity() ?? \PageOwnership::getUser();
 
-		$isAuthorized = \PageOwnership::isAuthorized( $user, $title );
+		$isAuthorized = \PageOwnership::isAuthorized( $user );
 
 		if ( $isAuthorized ) {
 			return true;
 		}
 
-		if ( !\PageOwnership::isOwned( $title ) ) {
-			return true;
-		}
-
-		list( $role, $permissions ) = \PageOwnership::permissionsOfPage( $title, $user );
-
-		if ( !empty( $role ) ) {
+		if ( \PageOwnership::getPermissions( $title, $user ) !== false ) {
 			return true;
 		}
 
@@ -422,7 +301,7 @@ class PageOwnershipHooks {
 
 		$user = \PageOwnership::getUser();
 
-		$isAuthorized = \PageOwnership::isAuthorized( $user, null );
+		$isAuthorized = \PageOwnership::isAuthorized( $user );
 
 		if ( $isAuthorized ) {
 			return;
@@ -435,20 +314,12 @@ class PageOwnershipHooks {
 				continue;
 			}
 
-			// not an owned page
-			if ( !\PageOwnership::isOwned( $title ) ) {
+			if ( \PageOwnership::getPermissions( $title, $user ) !== false ) {
 				$filtered[] = $result;
 				continue;
 			}
 
-			list( $role, $permissions ) = \PageOwnership::permissionsOfPage( $title, $user );
-
-			if ( !empty( $role ) ) {
-				$filtered[] = $result;
-
-			} else {
-				$changed = true;
-			}
+			$changed = true;
 		}
 
 		if ( !$changed ) {
@@ -483,7 +354,8 @@ class PageOwnershipHooks {
 		WikiPage $wikiPage, User $user, string $reason, int $id, Content $content,
 		LogEntry $logEntry, int $archivedRevisionCount
 	) {
-		\PageOwnership::deleteOwnershipData( [ 'page_id' => $id ] );
+		// @TODO update to new version
+		// \PageOwnership::deleteOwnershipData( [ 'page_id' => $id ] );
 	}
 
 	/**
@@ -552,21 +424,18 @@ class PageOwnershipHooks {
 			return;
 		}
 
-		$wikiPage = \PageOwnership::getWikiPage( $title );
-		$creator = $wikiPage->getCreator();
-
-		$isAuthorized = \PageOwnership::isAuthorized( $user, $title );
+		$isAuthorized = \PageOwnership::isAuthorized( $user );
 
 		if ( !$isAuthorized ) {
-			list( $role, $permissions ) = \PageOwnership::permissionsOfPage( $title, $user );
+			$isAuthorized = $user->isAllowed( 'pageownership-canmanagepermissions' );
+		}
 
-			if ( $role === 'admin' ) {
-				$isAuthorized = true;
-			}
+		if ( !$isAuthorized ) {
+			$isAuthorized = \PageOwnership::getPermissions( $title, $user, "pageownership-caneditpermissions" );
 		}
 
 		if ( $isAuthorized ) {
-			$url = SpecialPage::getTitleFor( 'PageOwnership', $title )->getLocalURL();
+			$url = SpecialPage::getTitleFor( 'PageOwnershipPermissions', $title )->getLocalURL();
 			$links[ 'actions' ][] = [ 'text' => wfMessage( 'pageownership-navigation' )->text(), 'href' => $url ];
 		}
 	}
@@ -595,14 +464,16 @@ class PageOwnershipHooks {
 		$pages = \PageOwnership::getUserPagesDB( $user );
 
 		foreach ( $pages as $page ) {
-			$title = Title::newFromID( $page['page_id'] );
+			$title = Title::newFromID( $page );
 
 			if ( !$title ) {
 				continue;
 			}
 
 			$bar[ wfMessage( 'pageownership-sidebar-section' )->text() ][] = [
-				'text'   => $title->getText() . ( $page['role'] === 'reader' ? ' (' . wfMessage( 'pageownership-sidebar-role-reader' )->text() . ')' : '' ),
+				// @TODO add "reader"
+				// . ( $page['role'] === 'reader' ? ' (' . wfMessage( 'pageownership-sidebar-role-reader' )->text() . ')' : '' ),
+				'text'   => $title->getText(),
 				'href'   => $title->getLocalURL()
 			];
 		}
