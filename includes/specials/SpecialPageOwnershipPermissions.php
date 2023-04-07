@@ -684,7 +684,7 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 
 	/**
 	 * @param array $data
-	 * @param HtmlForm $htmlForm
+	 * @param HTMLForm $htmlForm
 	 * @return bool
 	 */
 	public function onSubmit( $data, $htmlForm ) {
