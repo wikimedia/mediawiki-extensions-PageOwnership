@@ -113,7 +113,7 @@ $( function () {
 		]
 	};
 
-	$( document ).ready( function () {
+	$( function () {
 		var messages = JSON.parse(
 			mw.config.get( 'pageownership-permissions-groupPermissions-messages' )
 		);
