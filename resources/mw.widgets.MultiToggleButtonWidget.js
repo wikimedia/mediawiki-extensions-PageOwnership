@@ -34,19 +34,6 @@
 				$.extend( {}, config, {} )
 			);
 
-			if ( 'name' in config ) {
-				this.$hiddenInput = $( '<textarea>' )
-					.addClass( 'oo-ui-element-hidden' )
-					.attr( 'name', config.name )
-					.appendTo( this.$element );
-
-				// Update with preset values
-				this.updateHiddenInput();
-
-				// Set the default value (it might be different from just being empty)
-				this.$hiddenInput.prop( 'defaultValue', this.getValue().join( '\n' ) );
-			}
-
 			// Events
 			// When list of selected tags changes, update hidden input
 			this.connect( this, {
@@ -72,6 +59,20 @@
 			for ( var ii in this.items ) {
 				this.$element.append( this.items[ ii ].$element );
 			}
+
+			if ( 'name' in config ) {
+				this.$hiddenInput = $( '<textarea>' )
+					.addClass( 'oo-ui-element-hidden' )
+					.attr( 'name', config.name )
+					.appendTo( this.$element );
+
+				// Update with preset values
+				this.updateHiddenInput();
+
+				// Set the default value (it might be different from just being empty)
+				this.$hiddenInput.prop( 'defaultValue', this.getValue().join( '\n' ) );
+			}
+
 		};
 
 	OO.inheritClass( mw.widgets.MultiToggleButtonWidget, OO.ui.Widget );

@@ -247,7 +247,7 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 					'label' => $this->msg( 'pageownership-managepermissions-form-button-addpermission-legend' )->text(), 'items' => [
 						new OOUI\ButtonWidget(
 							[
-								'href' => $this->localTitle->getLocalURL() . '?edit=new',
+								'href' => wfAppendQuery( $this->localTitle->getLocalURL(), 'edit=new' ),
 								'label' => $this->msg( 'pageownership-managepermissions-form-button-addpermission' )->text(),
 								'infusable' => true,
 								'flags' => [ 'progressive', 'primary' ],
@@ -324,13 +324,13 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 			}
 
 			$row = [
-				'usernames' => null,
-				'permissions_by_type' => null,
-				'additional_rights' => null,
-				'add_permissions' => null,
-				'remove_permissions' => null,
-				'pages' => null,
-				'namespaces' => null,
+				'usernames' => '',
+				'permissions_by_type' => '',
+				'additional_rights' => '',
+				'add_permissions' => '',
+				'remove_permissions' => '',
+				'pages' => '',
+				'namespaces' => '',
 			];
 
 		} else {
@@ -534,7 +534,7 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 			'default' => $row['add_permissions'],
 
 			// create options only for selected tags
-			'options' => array_intersect_key( $this->rightsMessages, array_flip( explode( "\n", $row['add_permissions'] ) ) )
+			'options' => array_intersect_key( $this->rightsMessages, array_flip( explode( "\n", (string)$row['add_permissions'] ) ) )
 		];
 
 		$formDescriptor['remove_permissions'] = [
@@ -548,7 +548,7 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 			'default' => $row['remove_permissions'],
 
 			// create options only for selected tags
-			'options' => array_intersect_key( $this->rightsMessages, array_flip( explode( "\n", $row['remove_permissions'] ) ) )
+			'options' => array_intersect_key( $this->rightsMessages, array_flip( explode( "\n", (string)$row['remove_permissions'] ) ) )
 		];
 
 		if ( !$this->title ) {
@@ -767,7 +767,7 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 			'name' => 'usernames',
 			// 'help-message' => 'pageownership-managepermissions-form-username-help',
 			'options' => array_flip( $this->groups ),
-			'default' => ( !empty( $usernames ) ? $usernames : null ),
+			'default' => ( !empty( $usernames ) ? $usernames : '' ),
 		];
 
 		// @TODO, add other fields ...
@@ -792,7 +792,7 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 			'type' => 'menutagmultiselect',
 			'exists' => true,
 			'name' => 'namespaces',
-			'default' => ( !empty( $namespaces ) ? $namespaces : null ),
+			'default' => ( !empty( $namespaces ) ? $namespaces : '' ),
 			'options' => $this->namespacesOptions(),
 		];
 

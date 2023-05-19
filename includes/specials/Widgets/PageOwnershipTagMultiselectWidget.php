@@ -55,6 +55,8 @@ class PageOwnershipTagMultiselectWidget extends \OOUI\Widget {
 		// ***edited
 		$this->options = $config['options'] ?? null;
 
+		// *** why this is added both here and in
+		// resources/src/mediawiki.widgetsmw.widgets.TagMultiselectWidget.js ?
 		$textarea = new MultilineTextInputWidget( array_merge( [
 			'name' => $this->inputName,
 			'value' => implode( "\n", $this->selectedArray ),
