@@ -516,10 +516,6 @@ print_r($wgAvailableRights);
 				'FIND_IN_SET(' . ( $title_->isContentPage() ? $title_->getArticleID() : $dbr->addQuotes( $title_->getFullText() ) ) . ', pages)',
 			], LIST_OR );
 
-			if ( $key > 0 ) {
-				$conds_[] = 'FIND_IN_SET(' . $dbr->addQuotes( "pageownership-$action-subpages" ) . ', additional_rights)';
-			}
-
 			$rows = $dbr->select(
 				'pageownership_permissions',
 				'*',
@@ -540,6 +536,11 @@ print_r($wgAvailableRights);
 
 			foreach ( $rows as $row ) {
 				$row = (array)$row;
+				$additional_rights = explode( ',', $row['additional_rights'] );
+
+				if ( $key > 0 && !in_array( "pageownership-include-subpages", $additional_rights ) ) {
+					continue;
+				}
 
 				$remove_permissions = ( !empty( $row['remove_permissions'] ) ? explode( ',', $row['remove_permissions'] ) : [] );
 				if ( in_array( $action, $remove_permissions ) ) {
@@ -560,19 +561,11 @@ print_r($wgAvailableRights);
 					break;
 				}
 
-				$additional_rights = explode( ',', $row['additional_rights'] );
 				if ( in_array( $action, $additional_rights ) ) {
 					$ret = true;
 					break;
 				}
-
-				if ( $key > 0 && in_array( "pageownership-$action-subpages", $additional_rights ) ) {
-					$ret = true;
-					break;
-				}
-
 			}
-
 		}
 		self::$$cacheVar[ $cacheKey ] = $ret;
 		return self::$$cacheVar[ $cacheKey ];

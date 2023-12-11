@@ -14,23 +14,14 @@
 
 	"mw-widgets-tagmultiselect-placeholder": "A label message",
 
-	"right-pageownership-read-subpages": "A label message",
-	"right-pageownership-create-subpages": "A label message",
-	"right-pageownership-edit-subpages": "A label message",
-	"right-pageownership-move-subpages": "A label message",
-	"right-pageownership-delete-subpages": "A label message",
-
+	"right-pageownership-include-subpages": "A label message",
 	"right-pageownership-canmanagepermissions": "A label message",
 	"right-pageownership-caneditpermissions": "A label message",
 
 	"apihelp-pageownership-check-latest-version-example-1": "A label message",
 	"apihelp-pageownership-check-latest-version-summary": "A label message",
 
-	"action-pageownership-read-subpages": "A label message",
-	"action-pageownership-create-subpages": "A label message",
-	"action-pageownership-edit-subpages": "A label message",
-	"action-pageownership-move-subpages": "A label message",
-	"action-pageownership-delete-subpages": "A label message",
+	"action-pageownership-include-subpages": "A label message",
 	"action-pageownership-canmanagepermissions": "A label message",
 	"action-pageownership-caneditpermissions": "A label message",
 
