@@ -697,7 +697,7 @@ print_r($wgAvailableRights);
 	 * @return array
 	 */
 	public static function getUserGroups( $user, $replace_asterisk = false ) {
-		$cacheKey = $user->getName();
+		$cacheKey = $user->getName() . (int)$replace_asterisk;
 		if ( array_key_exists( $cacheKey, self::$UserGroupsCache ) ) {
 			return self::$UserGroupsCache[ $cacheKey ];
 		}
