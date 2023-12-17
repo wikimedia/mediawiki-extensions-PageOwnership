@@ -598,7 +598,9 @@ print_r($wgAvailableRights);
 							: [] );
 					}
 					$rows[] = $row;
-					if ( in_array( $titleIdentifier, $row['pages'] ) ) {
+
+					if ( in_array( $titleIdentifier, $row['pages'] )
+						&& count( array_intersect( $user_groups, $row['usernames'] ) ) ) {
 						$found = true;
 					}
 				}
