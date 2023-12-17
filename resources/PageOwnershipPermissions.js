@@ -118,14 +118,6 @@ $( function () {
 			mw.config.get( 'pageownership-permissions-groupPermissions-messages' )
 		);
 
-		var canManagePermissions = JSON.parse(
-			mw.config.get( 'pageownership-canmanagepermissions' )
-		);
-
-		// console.log("actions", actions);
-		// console.log("messages", messages);
-		// console.log("canManagePermissions", canManagePermissions);
-
 		function populateMenus( action, selected ) {
 			var menuTagInputWidget;
 
@@ -224,7 +216,8 @@ $( function () {
 
 		// display every 3 days
 		if (
-			canManagePermissions &&
+			!mw.config.get( 'pageownership-disableVersionCheck' ) &&
+			mw.config.get( 'pageownership-canmanagepermissions' ) &&
 			!mw.cookie.get( 'pageownership-check-latest-version' )
 		) {
 			mw.loader.using( 'mediawiki.api', function () {
@@ -254,7 +247,8 @@ $( function () {
 									$( messageWidget.$element ).parent().remove();
 								};
 								messageWidget.on( 'close', closeFunction );
-								$( '#pageownership-panel-layout' )
+
+								$( '#pageownership-panel-layout,#pageownership-form-permissions' )
 									.first()
 									.prepend(
 										// eslint-disable-next-line no-jquery/no-parse-html-literal

@@ -1,7 +1,7 @@
 {
 	"name": "PageOwnership",
 	"author": "thomas-topway-it",
-	"version": "1.1.0c",
+	"version": "1.2.0",
 	"url": "https://www.mediawiki.org/wiki/Extension:PageOwnership",
 	"descriptionmsg": "pageownership-extension-desc",
 	"license-name": "GPL-2.0-or-later",
@@ -65,13 +65,31 @@
 		}
 	},
 	"AddGroups": {
+		"sysop": [
+			"pageownership-admin"
+		],
+		"bureaucrat": [
+			"pageownership-admin"
+		],
 		"pageownership-admin": [
 			"pageownership-admin"
+		],
+		"pageownership-article-author": [
+			"pageownership-article-author"
 		]
 	},
 	"RemoveGroups": {
+		"sysop": [
+			"pageownership-admin"
+		],
+		"bureaucrat": [
+			"pageownership-admin"
+		],
 		"pageownership-admin": [
 			"pageownership-admin"
+		],
+		"pageownership-article-author": [
+			"pageownership-article-author"
 		]
 	},
 	"AvailableRights": [

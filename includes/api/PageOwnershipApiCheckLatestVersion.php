@@ -42,6 +42,16 @@ class PageOwnershipApiCheckLatestVersion extends ApiBase {
 	 * @inheritDoc
 	 */
 	public function execute() {
+		$user = $this->getUser();
+		$allowedGroups = [ 'sysop', 'bureaucrat', 'pageownership-admin' ];
+		$userGroups = \PageOwnership::getUserGroups( $user, true );
+
+		if ( !$user->isAllowed( 'pageownership-canmanagepermissions' )
+			// execute if user is in the admin group
+			&& !count( array_intersect( $allowedGroups, $userGroups ) ) ) {
+			$this->dieWithError( 'apierror-pageownership-permissions-error' );
+		}
+
 		$result = $this->getResult();
 		$contents = file_get_contents( 'https://www.mediawiki.org/wiki/Extension:PageOwnership' );
 

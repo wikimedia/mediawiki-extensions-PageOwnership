@@ -23,6 +23,7 @@
  */
 
 require_once __DIR__ . '/PageOwnershipPermissionsPager.php';
+require_once __DIR__ . '/SpecialPageOwnershipForm.php';
 
 include_once __DIR__ . '/Widgets/HTMLGroupsUsersMultiselectField.php';
 include_once __DIR__ . '/Widgets/HTMLMenuTagMultiselectField.php';
@@ -163,18 +164,18 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 
 		$title = Title::newFromText( $par );
 
-		if ( $title && ( !$title->isKnown() || !$title->isContentPage() ) ) {
-			$title = null;
+		if ( $title ) {
+			if ( !$title->canExist() || !$title->isKnown()
+				|| $title->getArticleID() === 0 ) {
+				$title = null;
+			}
 		}
 
 		$user = $this->getUser();
-
 		$isAuthorized = \PageOwnership::isAuthorized( $user );
 
 		if ( !$isAuthorized ) {
-
 			if ( !$title ) {
-
 				if ( !$user->isAllowed( 'pageownership-canmanagepermissions' ) ) {
 					$this->displayRestrictionError();
 					return;
@@ -184,7 +185,6 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 				$this->displayRestrictionError();
 				return;
 			}
-
 		}
 
 		$this->localTitle = SpecialPage::getTitleFor( 'PageOwnershipPermissions', $title );
@@ -355,7 +355,7 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 		$formDescriptor = $this->getFormDescriptor( $row, $out );
 
 		$messagePrefix = 'pageownership-managepermissions';
-		$htmlForm = new OOUIHTMLForm( $formDescriptor, $this->getContext(), $messagePrefix );
+		$htmlForm = new SpecialPageOwnershipForm( $formDescriptor, $this->getContext(), $messagePrefix );
 
 		$htmlForm->setId( 'pageownership-form-permissions' );
 
@@ -481,6 +481,7 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 			'type' => 'groupsusersmultiselect',
 			'name' => 'usernames',
 			'required' => true,
+			'exists' => true,
 			'section' => $section_prefix . 'form-fieldset-permissions-main',
 			'help-message' => 'pageownership-managepermissions-form-username-help',
 			'default' => $row['usernames'],
@@ -621,6 +622,7 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 
 		// @TODO is there a better way to add dynamically modules' messages ?
 		$out->addJsConfigVars( [
+			'pageownership-disableVersionCheck' => isset( $GLOBALS['wgPageOwnershipDisableVersionCheck'] ),
 			'pageownership-canmanagepermissions' => $this->user->isAllowed( 'pageownership-canmanagepermissions' ),
 			'pageownership-permissions-groupPermissions-messages' => json_encode( $messages )
 		] );
@@ -796,7 +798,7 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 			'options' => $this->namespacesOptions(),
 		];
 
-		$htmlForm = HTMLForm::factory( 'ooui', $formDescriptor, $this->getContext() );
+		$htmlForm = new SpecialPageOwnershipForm( $formDescriptor, $this->getContext() );
 
 		$htmlForm
 			->setMethod( 'get' )

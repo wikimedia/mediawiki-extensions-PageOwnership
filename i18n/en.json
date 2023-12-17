@@ -13,12 +13,19 @@
 	"apihelp-pageownership-check-latest-version-summary": "check extension's latest version",
 	"pageownership-jsmodule-pageproperties-outdated-version": "This version of PageOwnership is outdated. <a href=\"https://www.mediawiki.org/wiki/Special:ExtensionDistributor/PageOwnership\">Update</a>",
 
-	"right-pageownership-include-subpages": "Include subpages (Page Ownership)",
+	"pageownership-permissions-error": "Permission error: cannot manage or edit page properties",
 
-	"right-pageownership-canmanagepermissions": "Manage permissions (Page Ownership)",
-	"right-pageownership-caneditpermissions": "Edit permissions (Page Ownership)",
+	"group-pageownership-admin-member": "Page Ownership admin",
+	"group-pageownership-admin": "Page Ownership admin",
+	"group-pageownership-editor": "Page Ownership editor",
+	"group-pageownership-article-author": "Article creator (Page Ownership)",
 
-	"action-pageownership-include-subpages": "read subpages (Page Ownership)",
+	"right-pageownership-include-subpages": "Includes subpages (Page Ownership)",
+
+	"right-pageownership-canmanagepermissions": "Can manage permissions (Page Ownership)",
+	"right-pageownership-caneditpermissions": "Can edit permissions (Page Ownership)",
+
+	"action-pageownership-include-subpages": "include subpages (Page Ownership)",
 	"action-pageownership-canmanagepermissions": "manage permissions (Page Ownership)",
 	"action-pageownership-caneditpermissions": "edit permissions (Page Ownership)",
 
@@ -47,9 +54,6 @@
 	"pageownership-navigation": "Permissions",
 	"pageownership-sidebar-section": "My pages",
 	"pageownership-sidebar-role-reader": "reader",
-
-	"group-pageownership-admin-member": "admin (Page Ownership)",
-	"group-pageownership-admin": "admin (Page Ownership)",
 
 	"pageownership-managepermissions-form-fieldset-permissions-main": "Permissions",
 

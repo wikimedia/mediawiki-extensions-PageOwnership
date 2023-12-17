@@ -34,6 +34,9 @@ class PageOwnership {
 	/** @var hasPermissionsCache */
 	public static $hasPermissionsCache = [];
 
+	/** @var UserGroupsCache */
+	public static $UserGroupsCache = [];
+
 	/** @var User */
 	public static $User;
 
@@ -239,7 +242,8 @@ print_r($wgAvailableRights);
 		}
 
 		foreach ( $transcludedTargets as $title_ ) {
-			$title_->invalidateCache();
+			// $title_->invalidateCache();
+			self::doPurge( $title_ );
 		}
 	}
 
@@ -291,9 +295,27 @@ print_r($wgAvailableRights);
 
 		foreach ( $referenceLinks as $subject ) {
 			$title_ = $subject->getTitle();
-			$title_->invalidateCache();
+			// $title_->invalidateCache();
+			self::doPurge( $title_ );
 		}
 	}
+
+	/**
+	 * @param Title $title
+	 * @return null|bool
+	 */
+	 public static function doPurge( $title ) {
+		if ( !$title ) {
+			return false;
+		}
+		$wikiPage = self::getWikiPage( $title );
+		if ( $wikiPage ) {
+			$wikiPage->doPurge();
+			return true;
+		}
+		$title->invalidateCache();
+		return null;
+	 }
 
 	/**
 	 * @see extension lockdown/src/Hooks
@@ -373,7 +395,9 @@ print_r($wgAvailableRights);
 			return [];
 		}
 
-		$conds = array_merge( self::groupsCond( $dbr, $user ), $conds );
+		$user_groups = self::getUserGroups( $user, true );
+		$user_groups[] = $user->getName();
+		$conds = array_merge( self::groupsCond( $dbr, $user_groups, true ), $conds );
 
 		$rows = $dbr->select( 'pageownership_permissions', '*', $conds );
 
@@ -422,13 +446,13 @@ print_r($wgAvailableRights);
 	 */
 	public static function pageIDsToText( $arr ) {
 		return array_filter( array_map( static function ( $value ) {
-				// ContentPage
+				// article
 				if ( is_numeric( $value ) ) {
 					$title = Title::newFromID( $value );
 					if ( $title ) {
 						return $title->getFullText();
 					}
-				// special page
+				// special pages
 				} else {
 					$title = Title::newFromText( $value );
 					if ( $title ) {
@@ -441,15 +465,27 @@ print_r($wgAvailableRights);
 	}
 
 	/**
+	 * @param Title $title
+	 * @return int|string
+	 */
+	public static function titleIdentifier( $title ) {
+		// *** unfortunately we cannot always rely on $title->isContentPage()
+		// @see https://github.com/debtcompliance/EmailPage/pull/4#discussion_r1191646022
+		// or use $title->exists()
+		$isArticle = ( $title && $title->canExist() && $title->getArticleID() > 0
+			&& $title->isKnown() );
+
+		return ( $isArticle ? $title->getArticleID() : $title->getFullText() );
+	}
+
+	/**
 	 * @param array $arr
 	 * @return array
 	 */
 	public static function titleTextsToIDs( $arr ) {
 		return array_filter( array_map( static function ( $value ) {
 					$title = Title::newFromText( $value );
-					if ( $title && $title->isKnown() ) {
-						return ( $title->isContentPage() ? $title->getArticleID() : $title->getFullText() );
-					}
+					return self::titleIdentifier( $title );
 		}, $arr ), static function ( $value ) {
 			return !empty( $value );
 		} );
@@ -457,19 +493,18 @@ print_r($wgAvailableRights);
 
 	/**
 	 * @param \Wikimedia\Rdbms\DBConnRef $dbr
-	 * @param User $user
+	 * @param array $userGroups
+	 * @param bool $authorship false
 	 * @param string|null $field
 	 * @return array
 	 */
-	public static function groupsCond( $dbr, $user, $field = 'usernames' ) {
-		$userGroupManager = self::getUserGroupManager();
-		$user_groups = self::getUserGroups( $userGroupManager, $user, true );
-		$user_groups[] = $user->getName();
-
+	public static function groupsCond( $dbr, $userGroups, $authorship = false, $field = 'usernames' ) {
 		$conds = [];
 		array_map( static function ( $value ) use ( &$conds, $dbr, $field ) {
 			$conds[] = 'FIND_IN_SET(' . $dbr->addQuotes( $value ) . ', ' . $field . ')';
-		}, $user_groups );
+		}, $userGroups );
+
+		$conds[] = 'FIND_IN_SET(' . $dbr->addQuotes( 'pageownership-article-author' ) . ', ' . $field . ')';
 
 		return [ $dbr->makeList( $conds, LIST_OR ) ];
 	}
@@ -488,6 +523,15 @@ print_r($wgAvailableRights);
 			return self::$$cacheVar[ $cacheKey ];
 		}
 
+		$right = $action;
+		$nsInfo = MediaWikiServices::getInstance()->getNamespaceInfo();
+
+		// @see PermissionManager
+		if ( $action === 'create' ) {
+			$right = ( !$nsInfo->isTalk( $title->getNamespace() ) ?
+				'createpage' : 'createtalk' );
+		}
+
 		$conds = [];
 
 		$dbr = wfGetDB( DB_REPLICA );
@@ -498,7 +542,10 @@ print_r($wgAvailableRights);
 		$page_ancestors = self::page_ancestors( $title, false );
 		$page_ancestors = array_reverse( $page_ancestors );
 
-		$conds = ( $user ? self::groupsCond( $dbr, $user ) : [] );
+		$user_groups = self::getUserGroups( $user, true );
+		$user_groups[] = $user->getName();
+
+		$conds = ( $user ? self::groupsCond( $dbr, $user_groups ) : [] );
 
 		$conds[] = $dbr->makeList( [
 			'namespaces = ""',
@@ -506,62 +553,118 @@ print_r($wgAvailableRights);
 		], LIST_OR );
 
 		$ret = null;
-
+		$subpage = null;
 		// closest (deepest) first
 		foreach ( $page_ancestors as $key => $title_ ) {
+			if ( $key > 0 ) {
+				$subpage = $page_ancestors[$key - 1];
+			}
+
 			$conds_ = $conds;
+			$titleIdentifier = self::titleIdentifier( $title_ );
 
 			$conds_[] = $dbr->makeList( [
 				'pages = ""',
+				'FIND_IN_SET(' . $dbr->addQuotes( $titleIdentifier ) . ', pages)',
+
+				// back-compatibility
 				'FIND_IN_SET(' . ( $title_->isContentPage() ? $title_->getArticleID() : $dbr->addQuotes( $title_->getFullText() ) ) . ', pages)',
 			], LIST_OR );
 
-			$rows = $dbr->select(
+			$rows_ = $dbr->select(
 				'pageownership_permissions',
 				'*',
 				$conds_,
 				__METHOD__
 			);
 
-			// initialize to false if a row matched the current
-			// title or user/group
-			if ( $rows->numRows() ) {
+			$rows = [];
+			if ( $rows_->numRows() ) {
+				$fields = [
+					'pages',
+					'usernames',
+					'additional_rights',
+					'permissions_by_type',
+					'remove_permissions',
+					'add_permissions'
+				];
+
+				$found = false;
+				foreach ( $rows_ as $k => $v ) {
+					$row = (array)$v;
+					foreach ( $fields as $field ) {
+						$row[$field] = ( !empty( $row[$field] )
+							? explode( ',', $row[$field] )
+							: [] );
+					}
+					$rows[] = $row;
+					if ( in_array( $titleIdentifier, $row['pages'] ) ) {
+						$found = true;
+					}
+				}
+
+				// remove generic entry if one specific
+				// has been found
+				if ( $found ) {
+					foreach ( $rows as $k => $v ) {
+						if ( !in_array( $titleIdentifier, $v['pages'] ) ) {
+							unset( $rows[$k] );
+						}
+					}
+				}
+
+				// initialize to false if a row matched the current
+				// title or user/group
 				$ret = false;
 			}
 
 			// we only need to know if a condition matched
+			// all the "continue" statements indicate
+			// that we keep the output to false, without
+			// evaluating further the set of permissions
 			if ( !$user ) {
 				continue;
 			}
 
 			foreach ( $rows as $row ) {
-				$row = (array)$row;
-				$additional_rights = explode( ',', $row['additional_rights'] );
 
-				if ( $key > 0 && !in_array( "pageownership-include-subpages", $additional_rights ) ) {
+				if ( in_array( 'pageownership-article-author', $row['usernames'] )
+					// only 'pageownership-article-author' matched
+					&& !count( array_intersect( $user_groups, $row['usernames'] ) ) ) {
+
+					if ( $subpage ) {
+						if ( !in_array( "pageownership-include-subpages", $row['additional_rights'] ) ) {
+							continue;
+						}
+
+						if ( $subpage->isKnown() && !self::isAuthor( $subpage, $user ) ) {
+							continue;
+						}
+
+					} else {
+						if ( $title_->isKnown() && !self::isAuthor( $title_, $user ) ) {
+							continue;
+						}
+					}
+				}
+
+				if ( in_array( $right, $row['remove_permissions'] ) ) {
 					continue;
 				}
 
-				$remove_permissions = ( !empty( $row['remove_permissions'] ) ? explode( ',', $row['remove_permissions'] ) : [] );
-				if ( in_array( $action, $remove_permissions ) ) {
-					continue;
-				}
-
-				$permissions_by_type = ( !empty( $row['permissions_by_type'] ) ? explode( ',', $row['permissions_by_type'] ) : [] );
-				foreach ( $permissions_by_type as $type ) {
-					if ( in_array( $action, self::$PermissionsByType[$type] ) ) {
+				foreach ( $row['permissions_by_type'] as $type ) {
+					if ( in_array( $right, self::$PermissionsByType[$type] ) ) {
 						$ret = true;
 						break 2;
 					}
 				}
 
-				$add_permissions = explode( ',', $row['add_permissions'] );
-				if ( in_array( $action, $add_permissions ) ) {
+				if ( in_array( $right, $row['add_permissions'] ) ) {
 					$ret = true;
 					break;
 				}
 
-				if ( in_array( $action, $additional_rights ) ) {
+				if ( in_array( $right, $row['additional_rights'] ) ) {
 					$ret = true;
 					break;
 				}
@@ -572,25 +675,48 @@ print_r($wgAvailableRights);
 	}
 
 	/**
-	 * @param MediaWiki\User\UserGroupManager $userGroupManager
+	 * *** credits https://gerrit.wikimedia.org/r/plugins/gitiles/mediawiki/extensions/LockAuthor/+/refs/heads/master/includes/LockAuthor.php
+	 * @param Title $title
+	 * @param User $user
+	 * @return bool
+	 */
+	public static function isAuthor( $title, $user ) {
+		$rev = MediaWikiServices::getInstance()->getRevisionLookup()->getFirstRevision( $title );
+		if ( !$rev ) {
+			return true;
+		}
+		if ( $user->getName() == $rev->getUser()->getName() ) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
 	 * @param User $user
 	 * @param bool $replace_asterisk
 	 * @return array
 	 */
-	public static function getUserGroups( $userGroupManager, $user, $replace_asterisk = false ) {
-		$user_groups = $userGroupManager->getUserEffectiveGroups( $user );
-		// $user_groups[] = $user->getName();
+	public static function getUserGroups( $user, $replace_asterisk = false ) {
+		$cacheKey = $user->getName();
+		if ( array_key_exists( $cacheKey, self::$UserGroupsCache ) ) {
+			return self::$UserGroupsCache[ $cacheKey ];
+		}
 
-		if ( array_search( '*', $user_groups ) === false ) {
-			$user_groups[] = '*';
+		$userGroupManager = self::getUserGroupManager();
+		$userGroups = $userGroupManager->getUserEffectiveGroups( $user );
+		// $userGroups[] = $user->getName();
+
+		if ( array_search( '*', $userGroups ) === false ) {
+			$userGroups[] = '*';
 		}
 
 		if ( $replace_asterisk ) {
-			$key = array_search( '*', $user_groups );
-			$user_groups[ $key ] = 'all';
+			$key = array_search( '*', $userGroups );
+			$userGroups[ $key ] = 'all';
 		}
 
-		return $user_groups;
+		self::$UserGroupsCache[ $cacheKey ] = $userGroups;
+		return self::$UserGroupsCache[ $cacheKey ];
 	}
 
 	/**
@@ -661,7 +787,7 @@ print_r($wgAvailableRights);
 
 		$authorized_groups = array_intersect( $groups, $all_groups );
 
-		$user_groups = self::getUserGroups( $userGroupManager, $user );
+		$user_groups = self::getUserGroups( $user );
 
 		$isAuthorized = count( array_intersect( $authorized_groups, $user_groups ) );
 

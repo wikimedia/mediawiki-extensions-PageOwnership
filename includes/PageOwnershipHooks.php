@@ -72,9 +72,7 @@ class PageOwnershipHooks {
 	 */
 	public static function onSiteNoticeBefore( &$siteNotice, $skin ) {
 		$user = \PageOwnership::getUser();
-
-		$userGroupManager = \PageOwnership::getUserGroupManager();
-		$userGroups = \PageOwnership::getUserGroups( $userGroupManager, $user, true );
+		$userGroups = \PageOwnership::getUserGroups( $user, true );
 
 		if ( count( array_intersect( self::$admins, $userGroups ) ) ) {
 			$dbr = wfGetDB( DB_REPLICA );
@@ -111,7 +109,6 @@ class PageOwnershipHooks {
 		if ( \PageOwnership::isAuthorized( $user ) ) {
 			return true;
 		}
-
 		$ret = \PageOwnership::getPermissions( $title, $user, $action );
 
 		if ( $ret !== null ) {
@@ -280,6 +277,7 @@ class PageOwnershipHooks {
 			[ 'stylesheet', $wgResourceBasePath . '/extensions/PageOwnership/resources/style.css' ],
 		] );
 
+		// this is used only if DOMDocument is not available
 		$outputPage->addHeadItem( 'pageownership_groupsusersmultiselectwidget_input',
 			'<style>#pageownership-form .mw-widgets-tagMultiselectWidget-multilineTextInputWidget{ display: none; } </style>' );
 	}
@@ -455,6 +453,10 @@ class PageOwnershipHooks {
 	 * @return bool|void
 	 */
 	public static function onSkinBuildSidebar( $skin, &$bar ) {
+		if ( isset( $GLOBALS['wgPageOwnershipDisableSidebarPages'] ) ) {
+			return;
+		}
+
 		$user = $skin->getUser();
 
 		if ( !$user || !$user->isRegistered() ) {

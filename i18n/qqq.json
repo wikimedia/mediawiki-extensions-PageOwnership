@@ -21,6 +21,8 @@
 	"apihelp-pageownership-check-latest-version-example-1": "A label message",
 	"apihelp-pageownership-check-latest-version-summary": "A label message",
 
+	"pageownership-permissions-error": "A label message",
+
 	"action-pageownership-include-subpages": "A label message",
 	"action-pageownership-canmanagepermissions": "A label message",
 	"action-pageownership-caneditpermissions": "A label message",
@@ -53,6 +55,9 @@
 
 	"group-pageownership-admin-member": "A label message",
 	"group-pageownership-admin": "A label message",
+
+	"group-pageownership-editor": "A label message",
+	"group-pageownership-article-author": "A label message",
 
 	"pageownership-managepermissions-form-fieldset-permissions-main": "A label message",
 
