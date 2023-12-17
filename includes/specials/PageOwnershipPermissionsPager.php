@@ -131,7 +131,14 @@ class PageOwnershipPermissionsPager extends TablePager {
 				break;
 
 			case 'pages':
-				$formatted = implode( ', ', \PageOwnership::pageIDsToText( explode( ',', $row->pages ) ) );
+				$titlesText = \PageOwnership::pageIDsToText( explode( ',', $row->pages ) );
+				$arr = [];
+				foreach ( $titlesText as $titleText ) {
+					$title_ = Title::newFromText( $titleText );
+					$arr[] = ( $title_ ? Linker::link( $title_, $title_->getText() )
+						: $titleText );
+				}
+				$formatted = implode( ', ', $arr );
 				break;
 
 			case 'namespaces':
