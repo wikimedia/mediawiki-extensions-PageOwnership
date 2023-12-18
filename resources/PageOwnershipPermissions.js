@@ -113,172 +113,103 @@ $( function () {
 		]
 	};
 
-	$( function () {
-		var messages = JSON.parse(
-			mw.config.get( 'pageownership-permissions-groupPermissions-messages' )
-		);
+	var messages = JSON.parse(
+		mw.config.get( 'pageownership-permissions-groupPermissions-messages' )
+	);
 
-		function populateMenus( action, selected ) {
-			var menuTagInputWidget;
+	function populateMenus( action, selected ) {
+		var menuTagInputWidget;
 
-			if ( action === 'add' ) {
-				menuTagInputWidget = OO.ui.infuse(
-					$( '#pageownership-permissions-field-add-permissions' )
-				);
-			} else if ( action === 'remove' ) {
-				menuTagInputWidget = OO.ui.infuse(
-					$( '#pageownership-permissions-field-remove-permissions' )
-				);
-			}
-
-			var selectedItems = menuTagInputWidget.getValue();
-
-			menuTagInputWidget.menu.clearItems();
-
-			var options = [];
-			for ( var i in actions ) {
-				if ( action === 'add' && selected.indexOf( i ) !== -1 ) {
-					continue;
-				}
-
-				if ( action === 'remove' && selected.indexOf( i ) === -1 ) {
-					continue;
-				}
-
-				options.push(
-					new OO.ui.MenuOptionWidget( {
-						disabled: true,
-						classes: [ 'pageownership-permissions-options-optgroup' ],
-						data: i,
-						// The following messages are used here:
-						// * pageownership-permissions-actions-label-reading
-						// * pageownership-permissions-actions-label-editing
-						// * pageownership-permissions-actions-label-management
-						// * pageownership-permissions-actions-label-administration
-						// * pageownership-permissions-actions-label-technical
-						label: mw.msg( 'pageownership-permissions-actions-label-' + i )
-					} )
-				);
-
-				for ( var ii in actions[ i ] ) {
-					options.push(
-						new OO.ui.MenuOptionWidget( {
-							classes: [ 'pageownership-permissions-options-option' ],
-							data: actions[ i ][ ii ],
-							label: actions[ i ][ ii ] in messages ?
-								messages[ actions[ i ][ ii ] ] :
-								actions[ i ][ ii ],
-							// mw.msg( 'right-' + actions[i][ii] ),
-							selected: selectedItems.indexOf( actions[ i ][ ii ] ) !== -1
-						} )
-					);
-				}
-			}
-
-			menuTagInputWidget.menu.addItems( options );
+		if ( action === 'add' ) {
+			menuTagInputWidget = OO.ui.infuse(
+				$( '#pageownership-permissions-field-add-permissions' )
+			);
+		} else if ( action === 'remove' ) {
+			menuTagInputWidget = OO.ui.infuse(
+				$( '#pageownership-permissions-field-remove-permissions' )
+			);
 		}
 
-		if ( $( '#pageownership-permissions-field-permissions-bytype' ).get( 0 ) ) {
-			var multiToggleButtonWidget = OO.ui.infuse(
-				$( '#pageownership-permissions-field-permissions-bytype' )
+		var selectedItems = menuTagInputWidget.getValue();
+
+		menuTagInputWidget.menu.clearItems();
+
+		var options = [];
+		for ( var i in actions ) {
+			if ( action === 'add' && selected.indexOf( i ) !== -1 ) {
+				continue;
+			}
+
+			if ( action === 'remove' && selected.indexOf( i ) === -1 ) {
+				continue;
+			}
+
+			options.push(
+				new OO.ui.MenuOptionWidget( {
+					disabled: true,
+					classes: [ 'pageownership-permissions-options-optgroup' ],
+					data: i,
+					// The following messages are used here:
+					// * pageownership-permissions-actions-label-reading
+					// * pageownership-permissions-actions-label-editing
+					// * pageownership-permissions-actions-label-management
+					// * pageownership-permissions-actions-label-administration
+					// * pageownership-permissions-actions-label-technical
+					label: mw.msg( 'pageownership-permissions-actions-label-' + i )
+				} )
 			);
 
-			multiToggleButtonWidget.on( 'change', function ( value ) {
-				populateMenus( 'add', value );
-				populateMenus( 'remove', value );
-			} );
-
-			populateMenus( 'add', multiToggleButtonWidget.getValue() );
-			populateMenus( 'remove', multiToggleButtonWidget.getValue() );
+			for ( var ii in actions[ i ] ) {
+				options.push(
+					new OO.ui.MenuOptionWidget( {
+						classes: [ 'pageownership-permissions-options-option' ],
+						data: actions[ i ][ ii ],
+						label: actions[ i ][ ii ] in messages ?
+							messages[ actions[ i ][ ii ] ] :
+							actions[ i ][ ii ],
+						// mw.msg( 'right-' + actions[i][ii] ),
+						selected: selectedItems.indexOf( actions[ i ][ ii ] ) !== -1
+					} )
+				);
+			}
 		}
 
-		// eslint-disable-next-line no-jquery/no-global-selector
-		$( '#pageownership-form-permissions button[type="submit"]' ).on(
-			'click',
-			// eslint-disable-next-line no-unused-vars
-			function ( val ) {
-				if ( $( this ).val() === 'delete' ) {
-					// eslint-disable-next-line no-alert
-					if ( !confirm( mw.msg( 'pageownership-jsmodule-deleteitemconfirm' ) ) ) {
-						return false;
-					}
+		menuTagInputWidget.menu.addItems( options );
+	}
 
-					// eslint-disable-next-line no-jquery/no-sizzle
-					$( this )
-						.closest( 'form' )
-						.find( ':input' )
-						.each( function ( i, el ) {
-							$( el ).removeAttr( 'required' );
-						} );
-				}
-			}
+	if ( $( '#pageownership-permissions-field-permissions-bytype' ).get( 0 ) ) {
+		var multiToggleButtonWidget = OO.ui.infuse(
+			$( '#pageownership-permissions-field-permissions-bytype' )
 		);
 
-		// display every 3 days
-		if (
-			!mw.config.get( 'pageownership-disableVersionCheck' ) &&
-			mw.config.get( 'pageownership-canmanagepermissions' ) &&
-			!mw.cookie.get( 'pageownership-check-latest-version' )
-		) {
-			mw.loader.using( 'mediawiki.api', function () {
-				new mw.Api()
-					.postWithToken( 'csrf', {
-						action: 'pageownership-check-latest-version'
-					} )
-					.done( function ( res ) {
-						if ( 'pageownership-check-latest-version' in res ) {
-							if ( res[ 'pageownership-check-latest-version' ].result === 2 ) {
-								var messageWidget = new OO.ui.MessageWidget( {
-									type: 'warning',
-									label: new OO.ui.HtmlSnippet(
-										mw.msg(
-											'pageownership-jsmodule-pageproperties-outdated-version'
-										)
-									),
-									// *** this does not work before ooui v0.43.0
-									showClose: true
-								} );
-								var closeFunction = function () {
-									var three_days = 3 * 86400;
-									mw.cookie.set( 'pageownership-check-latest-version', true, {
-										path: '/',
-										expires: three_days
-									} );
-									$( messageWidget.$element ).parent().remove();
-								};
-								messageWidget.on( 'close', closeFunction );
+		multiToggleButtonWidget.on( 'change', function ( value ) {
+			populateMenus( 'add', value );
+			populateMenus( 'remove', value );
+		} );
 
-								$( '#pageownership-panel-layout,#pageownership-form-permissions' )
-									.first()
-									.prepend(
-										// eslint-disable-next-line no-jquery/no-parse-html-literal
-										$( '<div><br/></div>' ).prepend( messageWidget.$element )
-									);
-								if (
-									// eslint-disable-next-line no-jquery/no-class-state
-									!messageWidget.$element.hasClass(
-										'oo-ui-messageWidget-showClose'
-									)
-								) {
-									messageWidget.$element.addClass(
-										'oo-ui-messageWidget-showClose'
-									);
-									var closeButton = new OO.ui.ButtonWidget( {
-										classes: [ 'oo-ui-messageWidget-close' ],
-										framed: false,
-										icon: 'close',
-										label: OO.ui.msg(
-											'ooui-popup-widget-close-button-aria-label'
-										),
-										invisibleLabel: true
-									} );
-									closeButton.on( 'click', closeFunction );
-									messageWidget.$element.append( closeButton.$element );
-								}
-							}
-						}
+		populateMenus( 'add', multiToggleButtonWidget.getValue() );
+		populateMenus( 'remove', multiToggleButtonWidget.getValue() );
+	}
+
+	// eslint-disable-next-line no-jquery/no-global-selector
+	$( '#pageownership-form-permissions button[type="submit"]' ).on(
+		'click',
+		// eslint-disable-next-line no-unused-vars
+		function ( val ) {
+			if ( $( this ).val() === 'delete' ) {
+				// eslint-disable-next-line no-alert
+				if ( !confirm( mw.msg( 'pageownership-jsmodule-deleteitemconfirm' ) ) ) {
+					return false;
+				}
+
+				// eslint-disable-next-line no-jquery/no-sizzle
+				$( this )
+					.closest( 'form' )
+					.find( ':input' )
+					.each( function ( i, el ) {
+						$( el ).removeAttr( 'required' );
 					} );
-			} );
+			}
 		}
-	} );
+	);
 } );

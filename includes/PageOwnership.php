@@ -510,14 +510,74 @@ print_r($wgAvailableRights);
 	}
 
 	/**
+	 * @see PageOwnershipHooks -> onRejectParserCacheValue
 	 * @param Title $title
-	 * @param User|null $user
+	 * @return bool
+	 */
+	public static function permissionsExist( $title ) {
+		$cacheKey = $title->getFullText();
+		$cacheVar = 'hasPermissionsCache';
+
+		if ( array_key_exists( $cacheKey, self::$$cacheVar ) ) {
+			return self::$$cacheVar[ $cacheKey ];
+		}
+
+		$dbr = wfGetDB( DB_REPLICA );
+		if ( !$dbr->tableExists( 'pageownership_permissions' ) ) {
+			self::$$cacheVar[ $cacheKey ] = false;
+			return self::$$cacheVar[ $cacheKey ];
+		}
+		$conds = [];
+		$conds[] = $dbr->makeList( [
+			'namespaces = ""',
+			'FIND_IN_SET(' . $title->getNamespace() . ', namespaces)',
+		], LIST_OR );
+
+		$page_ancestors = self::page_ancestors( $title, false );
+		$page_ancestors = array_reverse( $page_ancestors );
+
+		$ret = false;
+		// closest (deepest) first
+		foreach ( $page_ancestors as $key => $title_ ) {
+			$conds_ = $conds;
+			$titleIdentifier = self::titleIdentifier( $title_ );
+
+			$conds_[] = $dbr->makeList( [
+				'pages = ""',
+				'FIND_IN_SET(' . $dbr->addQuotes( $titleIdentifier ) . ', pages)',
+
+				// back-compatibility
+				'FIND_IN_SET(' . ( $title_->isContentPage() ? $title_->getArticleID()
+					: $dbr->addQuotes( $title_->getFullText() ) ) . ', pages)',
+			], LIST_OR );
+
+			$rows = $dbr->select(
+				'pageownership_permissions',
+				'*',
+				$conds_,
+				__METHOD__
+			);
+
+			if ( $rows->numRows() ) {
+				$ret = true;
+				break;
+			}
+		}
+
+		self::$$cacheVar[ $cacheKey ] = $ret;
+		return self::$$cacheVar[ $cacheKey ];
+	}
+
+	/**
+	 * @param Title $title
+	 * @param User $user
 	 * @param string|null $action
 	 * @return bool
 	 */
-	public static function getPermissions( $title, $user = null, $action = "read" ) {
-		$cacheKey = $title->getFullText() . ( $user ? $user->getName() : '' ) . $action;
-		$cacheVar = ( $user ? 'permissionsCache' : 'hasPermissionsCache' );
+	public static function getPermissions( $title, $user, $action = "read" ) {
+		$cacheKey = $title->getFullText() . $user->getName() . $action;
+		// $cacheVar = ( $user ? 'permissionsCache' : 'hasPermissionsCache' );
+		$cacheVar = 'permissionsCache';
 
 		if ( array_key_exists( $cacheKey, self::$$cacheVar ) ) {
 			return self::$$cacheVar[ $cacheKey ];
@@ -532,11 +592,10 @@ print_r($wgAvailableRights);
 				'createpage' : 'createtalk' );
 		}
 
-		$conds = [];
-
 		$dbr = wfGetDB( DB_REPLICA );
 		if ( !$dbr->tableExists( 'pageownership_permissions' ) ) {
-			return null;
+			self::$$cacheVar[ $cacheKey ] = null;
+			return self::$$cacheVar[ $cacheKey ];
 		}
 
 		$page_ancestors = self::page_ancestors( $title, false );
@@ -545,7 +604,7 @@ print_r($wgAvailableRights);
 		$user_groups = self::getUserGroups( $user, true );
 		$user_groups[] = $user->getName();
 
-		$conds = ( $user ? self::groupsCond( $dbr, $user_groups ) : [] );
+		$conds = self::groupsCond( $dbr, $user_groups );
 
 		$conds[] = $dbr->makeList( [
 			'namespaces = ""',
@@ -568,7 +627,8 @@ print_r($wgAvailableRights);
 				'FIND_IN_SET(' . $dbr->addQuotes( $titleIdentifier ) . ', pages)',
 
 				// back-compatibility
-				'FIND_IN_SET(' . ( $title_->isContentPage() ? $title_->getArticleID() : $dbr->addQuotes( $title_->getFullText() ) ) . ', pages)',
+				'FIND_IN_SET(' . ( $title_->isContentPage() ? $title_->getArticleID()
+					: $dbr->addQuotes( $title_->getFullText() ) ) . ', pages)',
 			], LIST_OR );
 
 			$rows_ = $dbr->select(

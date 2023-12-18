@@ -9,9 +9,8 @@
 
 	"pageownership": "Page Ownership",
 	"pageownershippermissions": "Manage permissions",
-	"apihelp-pageownership-check-latest-version-example-1": "check extension's latest version",
 	"apihelp-pageownership-check-latest-version-summary": "check extension's latest version",
-	"pageownership-jsmodule-pageproperties-outdated-version": "This version of PageOwnership is outdated. <a href=\"https://www.mediawiki.org/wiki/Special:ExtensionDistributor/PageOwnership\">Update</a>",
+	"pageownership-jsmodule-outdated-version": "This version of PageOwnership is outdated. <a href=\"https://www.mediawiki.org/wiki/Special:ExtensionDistributor/PageOwnership\">Update</a>",
 
 	"pageownership-permissions-error": "Permission error: cannot manage or edit page properties",
 

@@ -176,7 +176,7 @@ class PageOwnershipHooks {
 			$transcludedTemplates = $title->getTemplateLinksFrom();
 
 			foreach ( $transcludedTemplates as $title_ ) {
-				if ( \PageOwnership::getPermissions( $title ) === null ) {
+				if ( \PageOwnership::permissionsExist( $title ) ) {
 					return false;
 				}
 			}

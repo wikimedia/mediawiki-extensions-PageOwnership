@@ -120,7 +120,8 @@
 		"ext.PageOwnershipPermissions": {
 			"position": "top",
 			"scripts": [
-				"PageOwnershipPermissions.js"
+				"PageOwnershipPermissions.js",
+				"VersionCheck.js"
 			],
 			"styles": [
 			],
@@ -138,7 +139,7 @@
 				"pageownership-permissions-actions-label-management",
 				"pageownership-permissions-actions-label-administration",
 				"pageownership-permissions-actions-label-technical",
-				"pageownership-jsmodule-pageproperties-outdated-version"
+				"pageownership-jsmodule-outdated-version"
 			]
 		},
 		"ext.PageOwnership.GroupsUsersMultiselectWidget": {

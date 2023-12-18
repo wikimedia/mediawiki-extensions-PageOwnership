@@ -89,9 +89,7 @@ class PageOwnershipApiCheckLatestVersion extends ApiBase {
 		}
 
 		$installedVersion = ExtensionRegistry::getInstance()->getAllThings()['PageOwnership']['version'];
-
 		$updated = ( strpos( $latestVersion, $installedVersion ) === 0 );
-
 		$result->addValue( [ $this->getModuleName() ], 'result', ( $updated ? 1 : 2 ), ApiResult::NO_VALIDATE );
 	}
 
@@ -112,10 +110,7 @@ class PageOwnershipApiCheckLatestVersion extends ApiBase {
 	/**
 	 * @inheritDoc
 	 */
-	protected function getExamplesMessages() {
-		return [
-			'action=pageownership-check-latest-version'
-			=> 'apihelp-pageownership-check-latest-version-example-1'
-		];
+	protected function getExamples() {
+		return false;
 	}
 }
