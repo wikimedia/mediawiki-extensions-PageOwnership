@@ -8,7 +8,6 @@
 	"rules": {
 		"camelcase": "off",
 		"no-var": "off",
-		"no-jquery/no-global-selector": "warn",
-		"no-jquery/no-sizzle": "warn"
+		"no-jquery/no-global-selector": "warn"
 	}
 }
