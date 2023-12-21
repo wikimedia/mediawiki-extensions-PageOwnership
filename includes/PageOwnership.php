@@ -304,7 +304,7 @@ print_r($wgAvailableRights);
 	 * @param Title $title
 	 * @return null|bool
 	 */
-	 public static function doPurge( $title ) {
+	public static function doPurge( $title ) {
 		if ( !$title ) {
 			return false;
 		}
@@ -315,7 +315,7 @@ print_r($wgAvailableRights);
 		}
 		$title->invalidateCache();
 		return null;
-	 }
+	}
 
 	/**
 	 * @see extension lockdown/src/Hooks
@@ -446,19 +446,19 @@ print_r($wgAvailableRights);
 	 */
 	public static function pageIDsToText( $arr ) {
 		return array_filter( array_map( static function ( $value ) {
-				// article
-				if ( is_numeric( $value ) ) {
-					$title = Title::newFromID( $value );
-					if ( $title ) {
-						return $title->getFullText();
-					}
-				// special pages
-				} else {
-					$title = Title::newFromText( $value );
-					if ( $title ) {
-						return $title->getFullText();
-					}
+			// article
+			if ( is_numeric( $value ) ) {
+				$title = Title::newFromID( $value );
+				if ( $title ) {
+					return $title->getFullText();
 				}
+			// special pages
+			} else {
+				$title = Title::newFromText( $value );
+				if ( $title ) {
+					return $title->getFullText();
+				}
+			}
 		}, $arr ), static function ( $value ) {
 			return !empty( $value );
 		} );
@@ -789,7 +789,7 @@ print_r($wgAvailableRights);
 	public static function addHeaditem( $outputPage, $items ) {
 		foreach ( $items as $key => $val ) {
 
-			list( $type, $url ) = $val;
+			[ $type, $url ] = $val;
 
 			switch ( $type ) {
 				case 'stylesheet':
