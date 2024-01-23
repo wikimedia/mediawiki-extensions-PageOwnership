@@ -26,13 +26,13 @@ use MediaWiki\Linker\LinkRenderer;
 
 class PageOwnershipPermissionsPager extends TablePager {
 
-	/** @var title */
+	/** @var Title */
 	private $title;
 
-	/** @var request */
+	/** @var Request */
 	private $request;
 
-	/** @var parentClass */
+	/** @var SpecialPageOwnershipPermissions */
 	private $parentClass;
 
 	/**

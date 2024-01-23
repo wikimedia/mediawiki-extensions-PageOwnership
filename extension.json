@@ -1,7 +1,7 @@
 {
 	"name": "PageOwnership",
 	"author": "thomas-topway-it",
-	"version": "1.2.0",
+	"version": "1.2.1",
 	"url": "https://www.mediawiki.org/wiki/Extension:PageOwnership",
 	"descriptionmsg": "pageownership-extension-desc",
 	"license-name": "GPL-2.0-or-later",
@@ -18,7 +18,9 @@
 		"PageOwnershipHooks": "includes/PageOwnershipHooks.php",
 		"PageOwnership": "includes/PageOwnership.php",
 		"SpecialPageOwnershipPermissions": "includes/specials/SpecialPageOwnershipPermissions.php",
-		"PageOwnershipApiCheckLatestVersion": "includes/api/PageOwnershipApiCheckLatestVersion.php"
+		"PageOwnershipApiCheckLatestVersion": "includes/api/PageOwnershipApiCheckLatestVersion.php",
+		"PageOwnershipApiSetPermissions": "includes/api/PageOwnershipApiSetPermissions.php",
+		"PageOwnershipApiGetPermissions": "includes/api/PageOwnershipApiGetPermissions.php"
 	},
 	"ExtensionMessagesFiles": {
 		"PageOwnershipAlias": "PageOwnership.alias.php",
@@ -48,7 +50,9 @@
 		"PageOwnershipPermissions": "SpecialPageOwnershipPermissions"
 	},
 	"APIModules": {
-		"pageownership-check-latest-version": "PageOwnershipApiCheckLatestVersion"
+		"pageownership-check-latest-version": "PageOwnershipApiCheckLatestVersion",
+		"pageownership-set-permissions": "PageOwnershipApiSetPermissions",
+		"pageownership-get-permissions": "PageOwnershipApiGetPermissions"
 	},
 	"GroupPermissions": {
 		"sysop": {

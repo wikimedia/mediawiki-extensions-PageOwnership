@@ -25,26 +25,29 @@
 use MediaWiki\MediaWikiServices;
 
 class PageOwnership {
-	/** @var UserPagesCache */
+	/** @var array */
 	public static $UserPagesCache = [];
 
-	/** @var permissionsCache */
+	/** @var array */
 	public static $permissionsCache = [];
 
-	/** @var hasPermissionsCache */
+	/** @var array */
 	public static $hasPermissionsCache = [];
 
-	/** @var UserGroupsCache */
+	/** @var array */
 	public static $UserGroupsCache = [];
 
 	/** @var User */
 	public static $User;
 
-	/** @var userGroupManager */
+	/** @var UserGroupManager */
 	public static $userGroupManager;
 
 	/** @var Parser */
 	public static $Parser;
+
+	/** @var int */
+	public static $queryLimit = 500;
 
 	/**
 	 * @see https://www.mediawiki.org/wiki/Manual:User_rights
@@ -226,6 +229,146 @@ print_r($wgAvailableRights);
 	}
 
 	/**
+	 * @param User $user
+	 * @param Context $context
+	 * @param array|string $usernames
+	 * @param array|string $permissionsByType
+	 * @param array|string $additionalRights
+	 * @param array|string $addPermissions
+	 * @param array|string $removePermissions
+	 * @param array|int $pageids
+	 * @param array|int $namespaces
+	 * @param int|null $id
+	 * @param array|null &$errors []
+	 * @return array
+	 */
+	public static function setPermissionsApiCall(
+		$user,
+		$context,
+		$usernames,
+		$permissionsByType,
+		// $permissionsByGroup,
+		$additionalRights,
+		$addPermissions,
+		$removePermissions,
+		$pageids,
+		$namespaces,
+		$id = null,
+		&$errors = []
+	) {
+		$row = [
+			'usernames' => $usernames,
+			'permissions-by-type' => $permissionsByType,
+			// 'permissions-by-group' => $permissionsByGroup,
+			'additional-right' => $additionalRights,
+			'add-permissions' => $addPermissions,
+			'remove-permissions' => $removePermissions,
+			'pageids' => $pageids,
+			'namespaces' => $namespaces
+		];
+
+		foreach ( $row as $key => $value ) {
+			$row[$key] = ( is_array( $value ) ? implode( ',', $value )
+				 : $value );
+		}
+
+		$row['id'] = $id;
+		$row['action'] = 'pageownership-set-permissions';
+		$row['token'] = $user->getEditToken();
+
+		$req = new DerivativeRequest(
+			$context->getRequest(),
+			$row,
+			true
+		);
+
+		try {
+			$api = new ApiMain( $req, true );
+			$api->execute();
+
+		} catch ( \Exception $e ) {
+			// $this->setLastError( get_class( $e ) . ": " . $e->getMessage() );
+			$errors[] = $e->getMessage();
+			return false;
+		}
+
+		$ret = $api->getResult()->getResultData();
+
+		if ( !is_array( $pageids ) ) {
+			$pageids = preg_split( "/\s*,\s*/", $pageids, -1, PREG_SPLIT_NO_EMPTY );
+		}
+
+		foreach ( $pageids as $value ) {
+			$title_ = Title::newFromID( $value );
+			if ( $title_ && $title_->isKnown() ) {
+				self::invalidateCacheOfPagesWithAskQueriesRelatedToTitle( $title_ );
+				self::invalidateCacheOfPagesWithTemplateLinksTo( $title_ );
+			}
+		}
+
+		return isset( $ret[$row['action']]['result'] );
+	}
+
+	/**
+	 * @param User $user
+	 * @param Context $context
+	 * @param array|string $usernames
+	 * @param array|int $pageids
+	 * @param array|int $namespaces
+	 * @param array|int $created_by
+	 * @param int|null $id
+	 * @param array|null &$errors []
+	 * @return array
+	 */
+	public static function getPermissionsApiCall(
+		$user,
+		$context,
+		$usernames,
+		$pageids,
+		$namespaces,
+		$created_by,
+		$id = null,
+		&$errors = []
+	) {
+		$row = [
+			'usernames' => $usernames,
+			'pageids' => $pageids,
+			'namespaces' => $namespaces,
+			'created-by' => $created_by
+		];
+
+		foreach ( $row as $key => $value ) {
+			$row[$key] = ( is_array( $value ) ? implode( ',', $value )
+				 : $value );
+		}
+
+		$row['id'] = $id;
+		$row['action'] = 'pageownership-get-permissions';
+		$row['token'] = $user->getEditToken();
+
+		$req = new DerivativeRequest(
+			$context->getRequest(),
+			$row,
+			true
+		);
+
+		try {
+			$api = new ApiMain( $req, true );
+			$api->execute();
+
+		} catch ( \Exception $e ) {
+			// $this->setLastError( get_class( $e ) . ": " . $e->getMessage() );
+			$errors[] = $e->getMessage();
+			return false;
+		}
+
+		$ret = $api->getResult()->getResultData();
+
+		return ( isset( $ret[$row['action']]['result'] ) ? $ret[$row['action']]['result']
+			: [] );
+	}
+
+	/**
 	 * *** invalidate cache of all pages in which this page has been transcluded
 	 * @param Title $title
 	 * @return void
@@ -345,7 +488,15 @@ print_r($wgAvailableRights);
 			return false;
 		}
 
-		$row['pages'] = self::titleTextsToIDs( $row['pages'] );
+		if ( !array_key_exists( 'pageids', $row ) ) {
+			$row['pages'] = self::titleTextsToIDs( $row['pages'] );
+		} else {
+			$row['pages'] = $row['pageids'];
+		}
+
+		// filter permissions_by_type
+		$row['permissions_by_type'] = array_intersect( $row['permissions_by_type'],
+			array_keys( self::$PermissionsByType ) );
 
 		foreach ( $row as $key => $value ) {
 			$row[$key] = implode( ',', $value );
@@ -395,18 +546,57 @@ print_r($wgAvailableRights);
 			return [];
 		}
 
-		$user_groups = self::getUserGroups( $user, true );
+		// $user_groups = self::getUserGroups( $user, true );
+		$user_groups = [];
 		$user_groups[] = $user->getName();
 		$conds = array_merge( self::groupsCond( $dbr, $user_groups, true ), $conds );
 
-		$rows = $dbr->select( 'pageownership_permissions', '*', $conds );
+		$res = $dbr->select( 'pageownership_permissions', '*', $conds );
 
 		$output = [];
-		foreach ( $rows as $row ) {
+		foreach ( $res as $row ) {
 			$row = (array)$row;
+
+			$usernames = explode( ',', $row[ 'usernames' ] );
+			if ( in_array( 'pageownership-article-author', $usernames )
+				// only 'pageownership-article-author' matched
+				&& !count( array_intersect( $user_groups, $usernames ) ) ) {
+					continue;
+			}
 
 			if ( !empty( $row['permissions_by_type'] ) ) {
 				$output = array_merge( $output, ( !empty( $row[ 'pages' ] ) ? explode( ',', $row[ 'pages' ] ) : [] ) );
+			}
+		}
+
+		// retrieve all pages assigned to users as authors
+		$conds = [ 'FIND_IN_SET(' . $dbr->addQuotes( 'pageownership-article-author' ) . ', usernames)' ];
+		$res = $dbr->select( 'pageownership_permissions', '*', $conds );
+
+		foreach ( $res as $row ) {
+			$row = (array)$row;
+
+			// $titleIdentifier = self::titleIdentifier( $title_ );
+			$pages = explode( ',', $row['pages'] );
+			foreach ( $pages as $pageID ) {
+				$title_ = Title::newFromID( $pageID );
+				// legacy identifier, remove in future versions
+				if ( !$title_ ) {
+					$title_ = Title::newFromText( $pageID );
+				}
+				if ( self::isAuthor( $title_, $user ) ) {
+					$output[] = $title_->getArticleID();
+				}
+				$additional_rights = explode( ',', $row['additional_rights'] );
+				if ( in_array( "pageownership-include-subpages", $additional_rights ) ) {
+					$subpages = self::getPagesWithPrefix( $title_->getText(), $title_->getNamespace() );
+
+					foreach ( $subpages as $title_ ) {
+						if ( self::isAuthor( $title_, $user ) ) {
+							$output[] = $title_->getArticleID();
+						}
+					}
+				}
 			}
 		}
 
@@ -414,6 +604,52 @@ print_r($wgAvailableRights);
 
 		self::$UserPagesCache[ $cache_key ] = $output;
 		return self::$UserPagesCache[ $cache_key ];
+	}
+
+	/**
+	 * @param string $prefix
+	 * @param int|null $namespace
+	 * @return array
+	 */
+	public static function getPagesWithPrefix( $prefix, $namespace = null ) {
+		$dbr = wfGetDB( DB_REPLICA );
+		$conds = [ 'page_is_redirect' => 0 ];
+
+		if ( is_int( $namespace ) ) {
+			$conds['page_namespace'] = $namespace;
+		}
+
+		if ( !empty( $prefix ) ) {
+			$conds[] = 'page_title' . $dbr->buildLike( $prefix, $dbr->anyString() );
+		}
+
+		$res = $dbr->select(
+			'page',
+			[ 'page_namespace', 'page_title', 'page_id' ],
+			$conds,
+			__METHOD__,
+			[
+				'LIMIT' => self::$queryLimit,
+				'ORDER BY' => 'page_title',
+				// @see here https://doc.wikimedia.org/mediawiki-core/
+				'USE INDEX' => ( version_compare( MW_VERSION, '1.36', '<' ) ? 'name_title' : 'page_name_title' ),
+			]
+		);
+
+		if ( !$res->numRows() ) {
+			return [];
+		}
+
+		$ret = [];
+		foreach ( $res as $row ) {
+			$title = Title::newFromRow( $row );
+
+			if ( $title->isKnown() ) {
+				$ret[] = $title;
+			}
+		}
+
+		return $ret;
 	}
 
 	/**
@@ -551,14 +787,14 @@ print_r($wgAvailableRights);
 					: $dbr->addQuotes( $title_->getFullText() ) ) . ', pages)',
 			], LIST_OR );
 
-			$rows = $dbr->select(
+			$res = $dbr->select(
 				'pageownership_permissions',
 				'*',
 				$conds_,
 				__METHOD__
 			);
 
-			if ( $rows->numRows() ) {
+			if ( $res->numRows() ) {
 				$ret = true;
 				break;
 			}
@@ -631,15 +867,15 @@ print_r($wgAvailableRights);
 					: $dbr->addQuotes( $title_->getFullText() ) ) . ', pages)',
 			], LIST_OR );
 
-			$rows_ = $dbr->select(
+			$res_ = $dbr->select(
 				'pageownership_permissions',
 				'*',
 				$conds_,
 				__METHOD__
 			);
 
-			$rows = [];
-			if ( $rows_->numRows() ) {
+			$rows_ = [];
+			if ( $res_->numRows() ) {
 				$fields = [
 					'pages',
 					'usernames',
@@ -650,14 +886,14 @@ print_r($wgAvailableRights);
 				];
 
 				$found = false;
-				foreach ( $rows_ as $k => $v ) {
+				foreach ( $res_ as $k => $v ) {
 					$row = (array)$v;
 					foreach ( $fields as $field ) {
 						$row[$field] = ( !empty( $row[$field] )
 							? explode( ',', $row[$field] )
 							: [] );
 					}
-					$rows[] = $row;
+					$rows_[] = $row;
 
 					if ( in_array( $titleIdentifier, $row['pages'] )
 						&& count( array_intersect( $user_groups, $row['usernames'] ) ) ) {
@@ -668,9 +904,9 @@ print_r($wgAvailableRights);
 				// remove generic entry if one specific
 				// has been found
 				if ( $found ) {
-					foreach ( $rows as $k => $v ) {
+					foreach ( $rows_ as $k => $v ) {
 						if ( !in_array( $titleIdentifier, $v['pages'] ) ) {
-							unset( $rows[$k] );
+							unset( $rows_[$k] );
 						}
 					}
 				}
@@ -688,7 +924,7 @@ print_r($wgAvailableRights);
 				continue;
 			}
 
-			foreach ( $rows as $row ) {
+			foreach ( $rows_ as $row ) {
 
 				if ( in_array( 'pageownership-article-author', $row['usernames'] )
 					// only 'pageownership-article-author' matched

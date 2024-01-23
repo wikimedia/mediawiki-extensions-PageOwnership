@@ -39,28 +39,28 @@ use Wikimedia\IPUtils;
  */
 class SpecialPageOwnershipPermissions extends SpecialPage {
 
-	/** @var title */
+	/** @var Title */
 	public $title;
 
-	/** @var localTitle */
+	/** @var Title */
 	public $localTitle;
 
-	/** @var user */
+	/** @var User */
 	private $user;
 
-	/** @var request */
+	/** @var Request */
 	private $request;
 
-	/** @var latest_id */
+	/** @var int */
 	private $latest_id;
 
-	/** @var groups */
+	/** @var array */
 	private $groups;
 
-	/** @var rightsMessages */
+	/** @var array */
 	public $rightsMessages;
 
-	/** @var allRights */
+	/** @var array */
 	private $allRights = [
 		"read",
 		"applychangetags",
@@ -763,7 +763,6 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 		$usernames = $request->getVal( 'usernames' );
 
 		$formDescriptor['usernames'] = [
-			// 'id' => "abc",
 			'label-message' => 'pageownership-managepermissions-form-username-label',
 			'type' => 'groupsusersmultiselect',
 			'name' => 'usernames',

@@ -58,10 +58,10 @@ class PageOwnershipHooks {
 	 * @param OutputPage $output
 	 * @param User $user
 	 * @param WebRequest $request
-	 * @param MediaWiki $mediaWiki
+	 * @param MediaWiki|MediaWiki\Actions\ActionEntryPoint $mediaWiki $mediaWiki
 	 * @return void
 	 */
-	public static function onBeforeInitialize( \Title &$title, $unused, \OutputPage $output, \User $user, \WebRequest $request, \MediaWiki $mediaWiki ) {
+	public static function onBeforeInitialize( \Title &$title, $unused, \OutputPage $output, \User $user, \WebRequest $request, $mediaWiki ) {
 		\PageOwnership::initialize( $user );
 	}
 

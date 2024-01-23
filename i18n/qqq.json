@@ -19,6 +19,29 @@
 	"right-pageownership-caneditpermissions": "A label message",
 
 	"apihelp-pageownership-check-latest-version-summary": "A label message",
+	"apihelp-pageownership-set-permissions-summary": "A label message",
+	"apihelp-pageownership-get-permissions-summary": "A label message",
+
+	"apihelp-pageownership-get-permissions": "A label message",
+	"apihelp-pageownership-get-permissions-example-1": "A label message",
+	"apihelp-pageownership-set-permissions": "A label message",
+	"apihelp-pageownership-set-permissions-example-1": "A label message",
+	"apierror-pageownership-api-nousernames": "A label message",
+
+	"apihelp-pageownership-get-permissions-param-usernames": "A label message",
+	"apihelp-pageownership-get-permissions-param-pageids": "A label message",
+	"apihelp-pageownership-get-permissions-param-namespaces": "A label message",
+	"apihelp-pageownership-get-permissions-param-created-by": "A label message",
+	"apihelp-pageownership-get-permissions-param-id": "A label message",
+	"apihelp-pageownership-set-permissions-param-usernames": "A label message",
+	"apihelp-pageownership-set-permissions-param-permissions-by-type": "A label message",
+	"apihelp-pageownership-set-permissions-param-additional-right": "A label message",
+	"apihelp-pageownership-set-permissions-param-add-permissions": "A label message",
+	"apihelp-pageownership-set-permissions-param-remove-permissions": "A label message",
+	"apihelp-pageownership-set-permissions-param-pageids": "A label message",
+	"apihelp-pageownership-set-permissions-param-namespaces": "A label message",
+	"apihelp-pageownership-set-permissions-param-id": "A label message",
+
 	"pageownership-permissions-error": "A label message",
 
 	"action-pageownership-include-subpages": "A label message",
