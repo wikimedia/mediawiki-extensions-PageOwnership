@@ -1120,7 +1120,7 @@ print_r($wgAvailableRights);
 
 			} else {
 				$title_ = Title::newFromText( $title_text );
-				if ( $title_->isKnown() ) {
+				if ( $title_ && $title_->isKnown() ) {
 					$output[] = $title_;
 				}
 			}
