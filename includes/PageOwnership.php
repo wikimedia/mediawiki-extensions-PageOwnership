@@ -953,18 +953,18 @@ print_r($wgAvailableRights);
 				foreach ( $row['permissions_by_type'] as $type ) {
 					if ( in_array( $right, self::$PermissionsByType[$type] ) ) {
 						$ret = true;
-						break 2;
+						break 3;
 					}
 				}
 
 				if ( in_array( $right, $row['add_permissions'] ) ) {
 					$ret = true;
-					break;
+					break 2;
 				}
 
 				if ( in_array( $right, $row['additional_rights'] ) ) {
 					$ret = true;
-					break;
+					break 2;
 				}
 			}
 		}
