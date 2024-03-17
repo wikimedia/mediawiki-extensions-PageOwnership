@@ -523,7 +523,7 @@ print_r($wgAvailableRights);
 		$dbw = wfGetDB( DB_PRIMARY );
 
 		$dbw->delete(
-			'pageownership_permissions',  $conds,
+			'pageownership_permissions', $conds,
 			__METHOD__
 		);
 	}
