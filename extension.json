@@ -44,7 +44,8 @@
 		"ParserGetVariableValueSwitch": "PageOwnershipHooks::onParserGetVariableValueSwitch",
 		"SkinTemplateNavigation::Universal": "PageOwnershipHooks::onSkinTemplateNavigation",
 		"ParserFirstCallInit": "PageOwnershipHooks::onParserFirstCallInit",
-		"SkinBuildSidebar": "PageOwnershipHooks::onSkinBuildSidebar"
+		"SkinBuildSidebar": "PageOwnershipHooks::onSkinBuildSidebar",
+		"TitleQuickPermissions": "PageOwnershipHooks::onTitleQuickPermissions"
 	},
 	"SpecialPages": {
 		"PageOwnershipPermissions": "SpecialPageOwnershipPermissions"

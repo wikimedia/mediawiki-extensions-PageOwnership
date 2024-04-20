@@ -290,7 +290,7 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 		$action = $request->getVal( 'action' );
 		$new = ( $id && $id === 'new' );
 
-		$dbr = wfGetDB( DB_MASTER );
+		$dbr = \PageOwnership::wfGetDB( DB_MASTER );
 
 		if ( !empty( $action ) ) {
 
@@ -311,7 +311,7 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 		$row = [];
 
 		if ( !$new ) {
-			$dbr = wfGetDB( DB_REPLICA );
+			$dbr = \PageOwnership::wfGetDB( DB_REPLICA );
 			$row = $dbr->selectRow( 'pageownership_permissions', '*', [ 'id' => $id ], __METHOD__ );
 			$row = (array)$row;
 		}
@@ -714,7 +714,7 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 		\PageOwnership::setPermissions( $this->user->getName(), $row, ( !$new ? $id : null ) );
 
 		if ( $new ) {
-			$dbr = wfGetDB( DB_MASTER );
+			$dbr = \PageOwnership::wfGetDB( DB_MASTER );
 			$this->latest_id = $dbr->selectField(
 				'pageownership_permissions',
 				'id',

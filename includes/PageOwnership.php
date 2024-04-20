@@ -195,9 +195,9 @@ print_r($wgAvailableRights);
 	 */
 	public static function getLinksTo( $title, $options = [], $table = 'pagelinks', $prefix = 'pl' ) {
 		if ( count( $options ) > 0 ) {
-			$db = wfGetDB( DB_PRIMARY );
+			$db = self::wfGetDB( DB_PRIMARY );
 		} else {
-			$db = wfGetDB( DB_REPLICA );
+			$db = self::wfGetDB( DB_REPLICA );
 		}
 
 		$res = $db->select(
@@ -482,7 +482,7 @@ print_r($wgAvailableRights);
 	 * @return bool
 	 */
 	public static function setPermissions( $creatorUsername, $row, $id = null ) {
-		$dbr = wfGetDB( DB_MASTER );
+		$dbr = self::wfGetDB( DB_MASTER );
 
 		if ( !count( $row['usernames'] ) ) {
 			return false;
@@ -520,7 +520,7 @@ print_r($wgAvailableRights);
 	 * @return void
 	 */
 	public static function deletePermissions( $conds ) {
-		$dbw = wfGetDB( DB_PRIMARY );
+		$dbw = self::wfGetDB( DB_PRIMARY );
 
 		$dbw->delete(
 			'pageownership_permissions', $conds,
@@ -540,7 +540,7 @@ print_r($wgAvailableRights);
 			return self::$UserPagesCache[ $cache_key ];
 		}
 
-		$dbr = wfGetDB( DB_REPLICA );
+		$dbr = self::wfGetDB( DB_REPLICA );
 
 		if ( !$dbr->tableExists( 'pageownership_permissions' ) ) {
 			return [];
@@ -612,7 +612,7 @@ print_r($wgAvailableRights);
 	 * @return array
 	 */
 	public static function getPagesWithPrefix( $prefix, $namespace = null ) {
-		$dbr = wfGetDB( DB_REPLICA );
+		$dbr = self::wfGetDB( DB_REPLICA );
 		$conds = [ 'page_is_redirect' => 0 ];
 
 		if ( is_int( $namespace ) ) {
@@ -758,7 +758,7 @@ print_r($wgAvailableRights);
 			return self::$$cacheVar[ $cacheKey ];
 		}
 
-		$dbr = wfGetDB( DB_REPLICA );
+		$dbr = self::wfGetDB( DB_REPLICA );
 		if ( !$dbr->tableExists( 'pageownership_permissions' ) ) {
 			self::$$cacheVar[ $cacheKey ] = false;
 			return self::$$cacheVar[ $cacheKey ];
@@ -819,6 +819,11 @@ print_r($wgAvailableRights);
 			return self::$$cacheVar[ $cacheKey ];
 		}
 
+		$retSuccess = static function () use ( $cacheVar, $cacheKey ) {
+			self::$$cacheVar[ $cacheKey ] = true;
+			return true;
+		};
+
 		$right = $action;
 		$nsInfo = MediaWikiServices::getInstance()->getNamespaceInfo();
 
@@ -828,7 +833,7 @@ print_r($wgAvailableRights);
 				'createpage' : 'createtalk' );
 		}
 
-		$dbr = wfGetDB( DB_REPLICA );
+		$dbr = self::wfGetDB( DB_REPLICA );
 		if ( !$dbr->tableExists( 'pageownership_permissions' ) ) {
 			self::$$cacheVar[ $cacheKey ] = null;
 			return self::$$cacheVar[ $cacheKey ];
@@ -925,16 +930,15 @@ print_r($wgAvailableRights);
 			}
 
 			foreach ( $rows_ as $row ) {
+				if ( $subpage && !in_array( "pageownership-include-subpages", $row['additional_rights'] ) ) {
+					continue;
+				}
 
 				if ( in_array( 'pageownership-article-author', $row['usernames'] )
 					// only 'pageownership-article-author' matched
 					&& !count( array_intersect( $user_groups, $row['usernames'] ) ) ) {
 
 					if ( $subpage ) {
-						if ( !in_array( "pageownership-include-subpages", $row['additional_rights'] ) ) {
-							continue;
-						}
-
 						if ( $subpage->isKnown() && !self::isAuthor( $subpage, $user ) ) {
 							continue;
 						}
@@ -952,19 +956,16 @@ print_r($wgAvailableRights);
 
 				foreach ( $row['permissions_by_type'] as $type ) {
 					if ( in_array( $right, self::$PermissionsByType[$type] ) ) {
-						$ret = true;
-						break 3;
+						return $retSuccess();
 					}
 				}
 
 				if ( in_array( $right, $row['add_permissions'] ) ) {
-					$ret = true;
-					break 2;
+					return $retSuccess();
 				}
 
 				if ( in_array( $right, $row['additional_rights'] ) ) {
-					$ret = true;
-					break 2;
+					return $retSuccess();
 				}
 			}
 		}
@@ -1163,6 +1164,26 @@ print_r($wgAvailableRights);
 			$output->disableClientCache();
 		} else {
 			$output->enableClientCache( false );
+		}
+	}
+
+	/**
+	 * @fixme use the suggested method since MW 1.39
+	 * @param int $db
+	 * @param string|string[] $groups
+	 * @param string|false $wiki
+	 * @return \Wikimedia\Rdbms\DBConnRef
+	 */
+	public static function wfGetDB( $db, $groups = [], $wiki = false ) {
+		if ( $wiki === false ) {
+			return MediaWikiServices::getInstance()
+				->getDBLoadBalancer()
+				->getMaintenanceConnectionRef( $db, $groups, $wiki );
+		} else {
+			return MediaWikiServices::getInstance()
+				->getDBLoadBalancerFactory()
+				->getMainLB( $wiki )
+				->getMaintenanceConnectionRef( $db, $groups, $wiki );
 		}
 	}
 

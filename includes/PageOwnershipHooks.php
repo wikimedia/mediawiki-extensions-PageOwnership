@@ -75,7 +75,7 @@ class PageOwnershipHooks {
 		$userGroups = \PageOwnership::getUserGroups( $user, true );
 
 		if ( count( array_intersect( self::$admins, $userGroups ) ) ) {
-			$dbr = wfGetDB( DB_REPLICA );
+			$dbr = \PageOwnership::wfGetDB( DB_REPLICA );
 
 			if ( !$dbr->tableExists( 'pageownership_permissions' ) ) {
 				$siteNotice = '<div class="pageownership-sitenotice">' . wfMessage( 'pageownership-sitenotice-missing-table' )->plain() . '</div>';
@@ -86,15 +86,25 @@ class PageOwnershipHooks {
 	}
 
 	/**
-	 * Fetch an appropriate permission error (or none!)
-	 *
-	 * @param Title $title being checked
-	 * @param User $user whose access is being checked
-	 * @param string $action being checked
+	 * @param Title $title
+	 * @param User $user
+	 * @param string $action
+	 * @param array &$errors
+	 * @param bool $doExpensiveQueries
+	 * @param bool $short
+	 * @return bool|void
+	 * @see https://www.mediawiki.org/wiki/Manual:Hooks/getUserPermissionsErrors
+	 */
+	public static function onTitleQuickPermissions( $title, $user, $action, &$errors, $doExpensiveQueries, $short ) {
+		// disable MediaWiki\Permissions\PermissionManager -> checkQuickPermissions
+		return false;
+	}
+
+	/**
+	 * @param Title $title
+	 * @param User $user
+	 * @param string $action
 	 * @param array|string|MessageSpecifier &$result User
-	 *   permissions error to add. If none, return true. $result can be
-	 *   returned as a single error message key (string), or an array of
-	 *   error message keys when multiple messages are needed
 	 * @return bool
 	 * @see https://www.mediawiki.org/wiki/Manual:Hooks/getUserPermissionsErrors
 	 */
