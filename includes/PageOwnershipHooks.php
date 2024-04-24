@@ -112,7 +112,7 @@ class PageOwnershipHooks {
 		global $wgWhitelistRead;
 
 		if ( $action === 'read' && is_array( $wgWhitelistRead )
-			&& in_array( $title->getText, $wgWhitelistRead ) ) {
+			&& in_array( $title->getText(), $wgWhitelistRead ) ) {
 			return true;
 		}
 
