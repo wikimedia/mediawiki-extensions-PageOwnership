@@ -220,9 +220,9 @@ config.inputWidget = new OO.ui.TextInputWidget({
 								// ***edited
 								suggestions = suggestions.concat(
 									mw.widgets.GroupsUsersMultiselectWidget.prototype.originalOptions
-										.filter( function ( val ) {
-											return val.data.indexOf( inputValue ) === 0;
-										} )
+										// .filter( function ( val ) {
+										// return val.data.indexOf( inputValue ) === 0;
+										// } )
 										.map( function ( x ) {
 											return new OO.ui.MenuOptionWidget( {
 												data: x.data,
