@@ -75,7 +75,7 @@ class PageOwnershipHooks {
 		$userGroups = \PageOwnership::getUserGroups( $user, true );
 
 		if ( count( array_intersect( self::$admins, $userGroups ) ) ) {
-			$dbr = \PageOwnership::wfGetDB( DB_REPLICA );
+			$dbr = \PageOwnership::getDB( DB_REPLICA );
 
 			if ( !$dbr->tableExists( 'pageownership_permissions' ) ) {
 				$siteNotice = '<div class="pageownership-sitenotice">' . wfMessage( 'pageownership-sitenotice-missing-table' )->plain() . '</div>';

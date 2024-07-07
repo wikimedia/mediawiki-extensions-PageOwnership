@@ -194,11 +194,7 @@ print_r($wgAvailableRights);
 	 * @return void
 	 */
 	public static function getLinksTo( $title, $options = [], $table = 'pagelinks', $prefix = 'pl' ) {
-		if ( count( $options ) > 0 ) {
-			$db = self::wfGetDB( DB_PRIMARY );
-		} else {
-			$db = self::wfGetDB( DB_REPLICA );
-		}
+		$db = self::getDB( count( $options ) > 0 ? DB_PRIMARY : DB_REPLICA );
 
 		$res = $db->select(
 			[ 'page', $table ],
@@ -482,7 +478,7 @@ print_r($wgAvailableRights);
 	 * @return bool
 	 */
 	public static function setPermissions( $creatorUsername, $row, $id = null ) {
-		$dbr = self::wfGetDB( DB_MASTER );
+		$dbr = self::getDB( DB_MASTER );
 
 		if ( !count( $row['usernames'] ) ) {
 			return false;
@@ -520,7 +516,7 @@ print_r($wgAvailableRights);
 	 * @return void
 	 */
 	public static function deletePermissions( $conds ) {
-		$dbw = self::wfGetDB( DB_PRIMARY );
+		$dbw = self::getDB( DB_PRIMARY );
 
 		$dbw->delete(
 			'pageownership_permissions', $conds,
@@ -540,7 +536,7 @@ print_r($wgAvailableRights);
 			return self::$UserPagesCache[ $cache_key ];
 		}
 
-		$dbr = self::wfGetDB( DB_REPLICA );
+		$dbr = self::getDB( DB_REPLICA );
 
 		if ( !$dbr->tableExists( 'pageownership_permissions' ) ) {
 			return [];
@@ -612,7 +608,7 @@ print_r($wgAvailableRights);
 	 * @return array
 	 */
 	public static function getPagesWithPrefix( $prefix, $namespace = null ) {
-		$dbr = self::wfGetDB( DB_REPLICA );
+		$dbr = self::getDB( DB_REPLICA );
 		$conds = [ 'page_is_redirect' => 0 ];
 
 		if ( is_int( $namespace ) ) {
@@ -758,7 +754,7 @@ print_r($wgAvailableRights);
 			return self::$$cacheVar[ $cacheKey ];
 		}
 
-		$dbr = self::wfGetDB( DB_REPLICA );
+		$dbr = self::getDB( DB_REPLICA );
 		if ( !$dbr->tableExists( 'pageownership_permissions' ) ) {
 			self::$$cacheVar[ $cacheKey ] = false;
 			return self::$$cacheVar[ $cacheKey ];
@@ -805,12 +801,21 @@ print_r($wgAvailableRights);
 	}
 
 	/**
-	 * @param Title $title
+	 * @param Title &$title
 	 * @param User $user
 	 * @param string|null $action
 	 * @return bool
 	 */
-	public static function getPermissions( $title, $user, $action = "read" ) {
+	public static function getPermissions( &$title, $user, $action = "read" ) {
+		// remove title parameter for special pages
+		if ( $title->isSpecialPage() ) {
+			$prefixedText = $title->getPrefixedText();
+			$pos = strpos( $prefixedText, '/' );
+			if ( $pos !== false ) {
+				$title = Title::newFromText( substr( $prefixedText, 0, $pos ) );
+			}
+		}
+
 		$cacheKey = $title->getFullText() . $user->getName() . $action;
 		// $cacheVar = ( $user ? 'permissionsCache' : 'hasPermissionsCache' );
 		$cacheVar = 'permissionsCache';
@@ -833,7 +838,7 @@ print_r($wgAvailableRights);
 				'createpage' : 'createtalk' );
 		}
 
-		$dbr = self::wfGetDB( DB_REPLICA );
+		$dbr = self::getDB( DB_REPLICA );
 		if ( !$dbr->tableExists( 'pageownership_permissions' ) ) {
 			self::$$cacheVar[ $cacheKey ] = null;
 			return self::$$cacheVar[ $cacheKey ];
@@ -1168,22 +1173,22 @@ print_r($wgAvailableRights);
 	}
 
 	/**
-	 * @fixme use the suggested method since MW 1.39
 	 * @param int $db
-	 * @param string|string[] $groups
-	 * @param string|false $wiki
 	 * @return \Wikimedia\Rdbms\DBConnRef
 	 */
-	public static function wfGetDB( $db, $groups = [], $wiki = false ) {
-		if ( $wiki === false ) {
-			return MediaWikiServices::getInstance()
-				->getDBLoadBalancer()
-				->getMaintenanceConnectionRef( $db, $groups, $wiki );
-		} else {
-			return MediaWikiServices::getInstance()
-				->getDBLoadBalancerFactory()
-				->getMainLB( $wiki )
-				->getMaintenanceConnectionRef( $db, $groups, $wiki );
+	public static function getDB( $db ) {
+		if ( !method_exists( MediaWikiServices::class, 'getConnectionProvider' ) ) {
+			// @see https://gerrit.wikimedia.org/r/c/mediawiki/extensions/PageEncryption/+/1038754/comment/4ccfc553_58a41db8/
+			return MediaWikiServices::getInstance()->getDBLoadBalancer()->getConnection( $db );
+		}
+		$connectionProvider = MediaWikiServices::getInstance()->getConnectionProvider();
+		switch ( $db ) {
+			case DB_PRIMARY:
+			case DB_MASTER:
+				return $connectionProvider->getPrimaryDatabase();
+			case DB_REPLICA:
+			default:
+				return $connectionProvider->getReplicaDatabase();
 		}
 	}
 

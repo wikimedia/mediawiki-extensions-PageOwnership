@@ -135,7 +135,7 @@ class PageOwnershipPermissionsPager extends TablePager {
 				$arr = [];
 				foreach ( $titlesText as $titleText ) {
 					$title_ = Title::newFromText( $titleText );
-					$arr[] = ( $title_ ? Linker::link( $title_, $title_->getText() )
+					$arr[] = ( $title_ ? Linker::link( $title_, $title_->getFullText() )
 						: $titleText );
 				}
 				$formatted = implode( ', ', $arr );

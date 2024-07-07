@@ -80,7 +80,7 @@ class PageOwnershipApiGetPermissions extends ApiBase {
 			$conds['id'] = $params['id'];
 		}
 
-		$db = \PageOwnership::wfGetDB( DB_REPLICA );
+		$db = \PageOwnership::getDB( DB_REPLICA );
 		foreach ( $row as $key => $value ) {
 			if ( !empty( $value ) ) {
 				$sql = [];
