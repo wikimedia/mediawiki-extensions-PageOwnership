@@ -133,14 +133,14 @@ class PageOwnershipHooks {
 					return true;
 				}
 			}
-		}
 
-		if ( $ret !== false ) {
-			return true;
-		}
+			if ( $ret === true ) {
+				return true;
+			}
 
-		$result = [ 'badaccess-group0' ];
-		return false;
+			$result = [ 'badaccess-group0' ];
+			return false;
+		}
 	}
 
 	/**

@@ -804,7 +804,7 @@ print_r($wgAvailableRights);
 	 * @param Title &$title
 	 * @param User $user
 	 * @param string|null $action
-	 * @return bool
+	 * @return bool|null
 	 */
 	public static function getPermissions( &$title, $user, $action = "read" ) {
 		// remove title parameter for special pages
