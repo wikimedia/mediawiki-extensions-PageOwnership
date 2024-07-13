@@ -97,7 +97,10 @@ class PageOwnershipHooks {
 	 */
 	public static function onTitleQuickPermissions( $title, $user, $action, &$errors, $doExpensiveQueries, $short ) {
 		// disable MediaWiki\Permissions\PermissionManager -> checkQuickPermissions
-		return false;
+		$ret = \PageOwnership::getPermissions( $title, $user, $action );
+		if ( $ret !== null ) {
+			return false;
+		}
 	}
 
 	/**
@@ -119,28 +122,28 @@ class PageOwnershipHooks {
 		if ( \PageOwnership::isAuthorized( $user ) ) {
 			return true;
 		}
-		$ret = \PageOwnership::getPermissions( $title, $user, $action );
 
-		if ( $ret !== null ) {
-			// @TODO whitelist only if they aren't explicitly
-			// forbidden
-			// *** whitelist other pages ?
-			$whitelistSpecials = [ 'UserLogin', 'CreateAccount' ];
+		// @TODO whitelist only if they aren't explicitly
+		// forbidden
+		// *** whitelist other pages ?
+		$whitelistSpecials = [ 'Userlogin', 'CreateAccount', 'Preferences' ];
 
-			foreach ( $whitelistSpecials as $value ) {
-				$special = SpecialPage::getTitleFor( $value );
-				if ( $title->getFullText() === $special->getFullText() ) {
-					return true;
-				}
-			}
-
-			if ( $ret === true ) {
+		foreach ( $whitelistSpecials as $value ) {
+			$special = SpecialPage::getTitleFor( $value );
+			if ( $title->getFullText() === $special->getFullText() ) {
 				return true;
 			}
-
-			$result = [ 'badaccess-group0' ];
-			return false;
 		}
+
+		$ret = \PageOwnership::getPermissions( $title, $user, $action );
+
+		if ( $ret === null || $ret === true ) {
+			// no error added
+			return true;
+		}
+
+		$result = [ 'badaccess-group0' ];
+		return false;
 	}
 
 	/**
