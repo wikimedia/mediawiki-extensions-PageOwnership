@@ -175,5 +175,19 @@
 			]
 		}
 	},
-	"manifest_version": 1
+	"config": {
+		"PageOwnershipDisableSidebarPages": {
+			"value": false
+		},
+		"PageOwnershipAdmins": {
+			"value": [ "sysop" ]
+		},
+		"PageOwnershipDisableVersionCheck": {
+			"value": false
+		},
+		"PageOwnershipWhitelistSpecials": {
+			"value": [ "Search", "Userlogin", "CreateAccount", "Preferences" ]
+		}
+	},
+	"manifest_version": 2
 }

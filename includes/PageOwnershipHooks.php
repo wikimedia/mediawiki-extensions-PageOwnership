@@ -119,20 +119,17 @@ class PageOwnershipHooks {
 			return true;
 		}
 
-		if ( \PageOwnership::isAuthorized( $user ) ) {
-			return true;
+		if ( $action === 'read' && is_array( $GLOBALS['wgPageOwnershipWhitelistSpecials'] ) ) {
+			foreach ( $GLOBALS['wgPageOwnershipWhitelistSpecials'] as $value ) {
+				$special = SpecialPage::getTitleFor( $value );
+				if ( $title->getFullText() === $special->getFullText() ) {
+					return true;
+				}
+			}
 		}
 
-		// @TODO whitelist only if they aren't explicitly
-		// forbidden
-		// *** whitelist other pages ?
-		$whitelistSpecials = [ 'Userlogin', 'CreateAccount', 'Preferences' ];
-
-		foreach ( $whitelistSpecials as $value ) {
-			$special = SpecialPage::getTitleFor( $value );
-			if ( $title->getFullText() === $special->getFullText() ) {
-				return true;
-			}
+		if ( \PageOwnership::isAuthorized( $user ) ) {
+			return true;
 		}
 
 		$ret = \PageOwnership::getPermissions( $title, $user, $action );
