@@ -681,6 +681,8 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 			$ret[$groupnameLocalized] = $groupname;
 		}
 
+		ksort( $ret );
+
 		return $ret;
 	}
 
