@@ -114,6 +114,11 @@ class PageOwnershipHooks {
 	public static function onGetUserPermissionsErrors( $title, $user, $action, &$result ) {
 		global $wgWhitelistRead;
 
+		// ignore on maintenance scripts
+		if ( defined( 'MW_ENTRY_POINT' ) && MW_ENTRY_POINT === 'cli' ) {
+			return true;
+		}
+
 		if ( $action === 'read' && is_array( $wgWhitelistRead )
 			&& in_array( $title->getFullText(), $wgWhitelistRead ) ) {
 			return true;
