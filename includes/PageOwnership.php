@@ -478,7 +478,7 @@ print_r($wgAvailableRights);
 	 * @return bool
 	 */
 	public static function setPermissions( $creatorUsername, $row, $id = null ) {
-		$dbr = self::getDB( DB_MASTER );
+		$dbr = self::getDB( DB_PRIMARY );
 
 		if ( !count( $row['usernames'] ) ) {
 			return false;
@@ -1184,7 +1184,6 @@ print_r($wgAvailableRights);
 		$connectionProvider = MediaWikiServices::getInstance()->getConnectionProvider();
 		switch ( $db ) {
 			case DB_PRIMARY:
-			case DB_MASTER:
 				return $connectionProvider->getPrimaryDatabase();
 			case DB_REPLICA:
 			default:
