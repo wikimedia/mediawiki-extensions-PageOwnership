@@ -41,7 +41,7 @@
 				config.options;
 
 			// Config initialization
-			config = $.extend(
+			config = Object.assign(
 				{
 					limit: 10,
 					ipAllowed: false,
@@ -77,13 +77,13 @@ config.inputWidget = new OO.ui.TextInputWidget({
 			// Parent constructor
 			mw.widgets.GroupsUsersMultiselectWidget.parent.call(
 				this,
-				$.extend( {}, config, {} )
+				Object.assign( {}, config, {} )
 			);
 
 			// Mixin constructors
 			OO.ui.mixin.PendingElement.call(
 				this,
-				$.extend( {}, config, { $pending: this.$handle } )
+				Object.assign( {}, config, { $pending: this.$handle } )
 			);
 
 			// Properties
@@ -197,13 +197,13 @@ config.inputWidget = new OO.ui.TextInputWidget({
 							aulimit: this.limit
 						} )
 						.done(
-							function ( response ) {
+							( response ) => {
 								var suggestions = response.query.allusers,
 									selected = this.getSelectedUsernames();
 
 								// Remove usernames, which are already selected from suggestions
 								suggestions = suggestions
-									.map( function ( user ) {
+									.map( ( user ) => {
 										if ( selected.indexOf( user.name ) === -1 ) {
 											return new OO.ui.MenuOptionWidget( {
 												data: user.name,
@@ -213,9 +213,7 @@ config.inputWidget = new OO.ui.TextInputWidget({
 										}
 										return undefined;
 									} )
-									.filter( function ( item ) {
-										return item !== undefined;
-									} );
+									.filter( ( item ) => item !== undefined );
 
 								// ***edited
 								suggestions = suggestions.concat(
@@ -223,12 +221,10 @@ config.inputWidget = new OO.ui.TextInputWidget({
 										// .filter( function ( val ) {
 										// return val.data.indexOf( inputValue ) === 0;
 										// } )
-										.map( function ( x ) {
-											return new OO.ui.MenuOptionWidget( {
-												data: x.data,
-												label: x.label
-											} );
-										} )
+										.map( ( x ) => new OO.ui.MenuOptionWidget( {
+											data: x.data,
+											label: x.label
+										} ) )
 								);
 
 								// Remove all items from menu add fill it with new
@@ -247,7 +243,7 @@ config.inputWidget = new OO.ui.TextInputWidget({
 								this.menu.toggle( true );
 
 								this.popPending();
-							}.bind( this )
+							}
 						)
 						.fail( this.popPending.bind( this ) );
 				}
@@ -257,12 +253,10 @@ config.inputWidget = new OO.ui.TextInputWidget({
 				// ***edited
 				this.menu.addItems(
 					mw.widgets.GroupsUsersMultiselectWidget.prototype.originalOptions.map(
-						function ( x ) {
-							return new OO.ui.MenuOptionWidget( {
-								data: x.data,
-								label: x.label
-							} );
-						}
+						( x ) => new OO.ui.MenuOptionWidget( {
+							data: x.data,
+							label: x.label
+						} )
 					)
 				);
 			}

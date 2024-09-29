@@ -19,7 +19,7 @@
  * @copyright Copyright © 2021-2022, https://wikisphere.org
  */
 
-$( function () {
+$( () => {
 
 	function infused( id ) {
 		if ( $( '#' + id ).get( 0 ) ) {
@@ -65,7 +65,7 @@ $( function () {
 
 	}
 
-	input_role.on( 'change', function ( val ) {
+	input_role.on( 'change', ( val ) => {
 		updateCheckboxes( val );
 	} );
 
@@ -83,7 +83,7 @@ $( function () {
 			$( this )
 				.closest( 'form' )
 				.find( ':input' )
-				.each( function ( i, el ) {
+				.each( ( i, el ) => {
 					$( el ).removeAttr( 'required' );
 				} );
 		}

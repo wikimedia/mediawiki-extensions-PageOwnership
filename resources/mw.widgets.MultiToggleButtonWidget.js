@@ -31,7 +31,7 @@
 			// Parent constructor
 			mw.widgets.MultiToggleButtonWidget.parent.call(
 				this,
-				$.extend( {}, config, {} )
+				Object.assign( {}, config, {} )
 			);
 
 			// Events
@@ -51,7 +51,7 @@
 					value: config.selected.indexOf( i ) !== -1
 				} );
 
-				this.items[ i ].on( 'change', function () {
+				this.items[ i ].on( 'change', () => {
 					self.emit( 'change', self.getValue() );
 				} );
 			}

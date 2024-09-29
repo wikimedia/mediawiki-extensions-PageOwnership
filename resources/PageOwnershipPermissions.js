@@ -19,7 +19,7 @@
  * @copyright Copyright © 2021-2023, https://wikisphere.org
  */
 
-$( function () {
+$( () => {
 	//  @see https://www.mediawiki.org/wiki/Manual:User_rights
 	var actions = {
 		reading: [ 'read' ],
@@ -182,7 +182,7 @@ $( function () {
 			$( '#pageownership-permissions-field-permissions-bytype' )
 		);
 
-		multiToggleButtonWidget.on( 'change', function ( value ) {
+		multiToggleButtonWidget.on( 'change', ( value ) => {
 			populateMenus( 'add', value );
 			populateMenus( 'remove', value );
 		} );
@@ -206,7 +206,7 @@ $( function () {
 				$( this )
 					.closest( 'form' )
 					.find( ':input' )
-					.each( function ( i, el ) {
+					.each( ( i, el ) => {
 						$( el ).removeAttr( 'required' );
 					} );
 			}

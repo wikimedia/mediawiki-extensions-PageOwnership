@@ -19,7 +19,7 @@
  * @copyright Copyright © 2021-2023, https://wikisphere.org
  */
 
-$( function () {
+$( () => {
 
 	// display every 3 days
 	if (
@@ -27,12 +27,12 @@ $( function () {
 		mw.config.get( 'pageownership-canmanagepermissions' ) &&
 		!mw.cookie.get( 'pageownership-check-latest-version' )
 	) {
-		mw.loader.using( 'mediawiki.api', function () {
+		mw.loader.using( 'mediawiki.api', () => {
 			new mw.Api()
 				.postWithToken( 'csrf', {
 					action: 'pageownership-check-latest-version'
 				} )
-				.done( function ( res ) {
+				.done( ( res ) => {
 					if ( 'pageownership-check-latest-version' in res ) {
 						if ( res[ 'pageownership-check-latest-version' ].result === 2 ) {
 							var messageWidget = new OO.ui.MessageWidget( {
