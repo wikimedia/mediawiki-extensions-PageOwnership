@@ -186,7 +186,7 @@
 			"value": false
 		},
 		"PageOwnershipWhitelistSpecials": {
-			"value": [ "Search", "Userlogin", "CreateAccount", "Preferences" ]
+			"value": [ "Search", "Userlogin", "CreateAccount", "Preferences", "ChangeEmail", "Confirmemail" ]
 		}
 	},
 	"manifest_version": 2

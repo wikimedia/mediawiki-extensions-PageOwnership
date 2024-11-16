@@ -22,6 +22,8 @@
  * @copyright Copyright ©2021-2023, https://wikisphere.org
  */
 
+use MediaWiki\MediaWikiServices;
+
 class PageOwnershipHooks {
 
 	/** @var admins */
@@ -124,10 +126,19 @@ class PageOwnershipHooks {
 			return true;
 		}
 
+		// @see MediaWiki\Permissions\PermissionManager -> getAllPermissions
+		$permissionManager = MediaWikiServices::getInstance()->getPermissionManager();
+		if ( method_exists( $permissionManager, 'getImplicitRights' )
+			&& in_array( $action, $permissionManager->getImplicitRights(), true )
+		) {
+			return true;
+		}
+
 		if ( $action === 'read' && is_array( $GLOBALS['wgPageOwnershipWhitelistSpecials'] ) ) {
 			foreach ( $GLOBALS['wgPageOwnershipWhitelistSpecials'] as $value ) {
 				$special = SpecialPage::getTitleFor( $value );
-				if ( $title->getFullText() === $special->getFullText() ) {
+				[ $text_ ] = explode( '/', $title->getFullText(), 2 );
+				if ( $text_ === $special->getFullText() ) {
 					return true;
 				}
 			}
@@ -468,7 +479,7 @@ class PageOwnershipHooks {
 	 * @return bool|void
 	 */
 	public static function onSkinBuildSidebar( $skin, &$bar ) {
-		if ( isset( $GLOBALS['wgPageOwnershipDisableSidebarPages'] ) ) {
+		if ( !empty( $GLOBALS['wgPageOwnershipDisableSidebarPages'] ) ) {
 			return;
 		}
 
