@@ -144,6 +144,16 @@ class PageOwnershipHooks {
 			}
 		}
 
+		if ( $action === 'createaccount' && is_array( $GLOBALS['wgPageOwnershipWhitelistSpecials'] )
+			&& in_array( 'CreateAccount', $GLOBALS['wgPageOwnershipWhitelistSpecials'] )
+		) {
+			$special = SpecialPage::getTitleFor( 'CreateAccount' );
+			[ $text_ ] = explode( '/', $title->getFullText(), 2 );
+			if ( $text_ === $special->getFullText() ) {
+				return true;
+			}
+		}
+
 		if ( \PageOwnership::isAuthorized( $user ) ) {
 			return true;
 		}
