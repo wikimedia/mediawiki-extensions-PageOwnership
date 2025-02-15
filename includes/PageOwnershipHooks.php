@@ -237,9 +237,18 @@ class PageOwnershipHooks {
 	 * @return bool
 	 */
 	public static function onBeforeParserFetchTemplateRevisionRecord( $contextTitle, $title, &$skip, &$revRecord ) {
+		// @Attention!! this hook is called from Parser -> fetchTemplateAndTitle
+		// -> statelessFetchTemplate and LuaEngine -> expandTemplate will fail
+		// when returning false !!
+
 		// if ( interface_exists('\\MediaWiki\\Hook\\ParserFetchTemplateHook') ) {
 		// 	return;
 		// }
+
+		// ignore on maintenance scripts
+		if ( defined( 'MW_ENTRY_POINT' ) && MW_ENTRY_POINT === 'cli' ) {
+			return true;
+		}
 
 		// *** prevents the following error
 		// http://127.0.0.1/mediawiki/load.php?lang=en&modules=startup&only=scripts&raw=1&skin=vector
