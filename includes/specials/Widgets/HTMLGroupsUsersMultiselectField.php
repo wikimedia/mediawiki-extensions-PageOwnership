@@ -66,8 +66,7 @@ class HTMLGroupsUsersMultiselectField extends HTMLUsersMultiselectField {
 				}
 			} else {
 				$canonicalUser = $userNameUtils->getCanonical(
-					$user, version_compare( MW_VERSION, '1.36', '>=' ) ? \MediaWiki\User\UserRigorOptions::RIGOR_NONE
-					: \MediaWiki\User\UserNameUtils::RIGOR_NONE );
+					$user, \MediaWiki\User\UserRigorOptions::RIGOR_NONE );
 			}
 			if ( $canonicalUser !== false ) {
 				$normalizedUsers[] = $canonicalUser;
@@ -144,13 +143,7 @@ class HTMLGroupsUsersMultiselectField extends HTMLUsersMultiselectField {
 		);
 		asort( $allGroups );
 
-		if ( method_exists( Language::class, 'getGroupName' ) ) {
-			// MW 1.38+
-			// $lang = $this->getLanguage();
-			$lang = $context->getLanguage();
-		} else {
-			$lang = null;
-		}
+		$lang = $context->getLanguage();
 
 		foreach ( $allGroups as $group ) {
 			$permissions = $groupPermissions[ $group ] ?? [];
@@ -159,12 +152,7 @@ class HTMLGroupsUsersMultiselectField extends HTMLUsersMultiselectField {
 			$groupname = ( $group == '*' )
 			? 'all' : $group;
 
-			if ( $lang !== null ) {
-				// MW 1.38+
-				$groupnameLocalized = $lang->getGroupName( $groupname );
-			} else {
-				$groupnameLocalized = UserGroupMembership::getGroupName( $groupname );
-			}
+			$groupnameLocalized = $lang->getGroupName( $groupname );
 
 			$ret[$groupnameLocalized] = $groupname;
 		}

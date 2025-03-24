@@ -24,6 +24,7 @@
 
 use MediaWiki\Extension\PageOwnership\Aliases\Title as TitleClass;
 use MediaWiki\MediaWikiServices;
+use MediaWiki\Title\Title;
 
 class PageOwnership {
 	/** @var array */
@@ -178,52 +179,12 @@ class PageOwnership {
 	}
 
 	/**
-	 * @see includes/Title.php
-	 * *** the standard method fails when $row->page_title is null
-	 * @param Title|MediaWiki\Title\Title $title
-	 * @param array $options
-	 * @param string $table
-	 * @param string $prefix
-	 * @return void
-	 */
-	public static function getLinksTo( $title, $options = [], $table = 'pagelinks', $prefix = 'pl' ) {
-		$db = self::getDB( count( $options ) > 0 ? DB_PRIMARY : DB_REPLICA );
-
-		$res = $db->select(
-			[ 'page', $table ],
-			LinkCache::getSelectFields(),
-			[
-				"{$prefix}_from=page_id",
-				// ***edited
-				"{$prefix}_namespace" => $title->getNamespace(),
-				"{$prefix}_title" => $title->getDBkey() ],
-			__METHOD__,
-			$options
-		);
-
-		$retVal = [];
-		if ( $res->numRows() ) {
-			// $linkCache = MediaWikiServices::getInstance()->getLinkCache();
-			foreach ( $res as $row ) {
-				// ***edited
-				// $titleObj = self::makeTitle( $row->page_namespace, $row->page_title );
-				$titleObj = TitleClass::newFromID( $row->page_id );
-				if ( $titleObj ) {
-					// $linkCache->addGoodLinkObjFromRow( $titleObj, $row );
-					$retVal[] = $titleObj;
-				}
-			}
-		}
-		return $retVal;
-	}
-
-	/**
 	 * @param array|string $usernames
 	 * @param array|int $pageIDs
-	 * @param array|int $namespaces
+	 * @param array|int|null $namespaces
 	 * @param array|int $created_by
 	 * @param int|null $id
-	 * @param array|null &$errors []
+	 * @param array|null &$errors
 	 * @return array
 	 */
 	public static function getPermissions(
@@ -378,11 +339,7 @@ class PageOwnership {
 		$config = $context->getConfig();
 		$options = [ 'LIMIT' => $config->get( 'PageInfoTransclusionLimit' ) ];
 
-		if ( version_compare( MW_VERSION, '1.39', '<' ) ) {
-			$transcludedTargets = self::getLinksTo( $title, $options, 'templatelinks', 'tl' );
-		} else {
-			$transcludedTargets = $title->getTemplateLinksTo( $options );
-		}
+		$transcludedTargets = $title->getTemplateLinksTo( $options );
 
 		foreach ( $transcludedTargets as $title_ ) {
 			// $title_->invalidateCache();
@@ -592,7 +549,7 @@ class PageOwnership {
 				'LIMIT' => self::$queryLimit,
 				'ORDER BY' => 'page_title',
 				// @see here https://doc.wikimedia.org/mediawiki-core/
-				'USE INDEX' => ( version_compare( MW_VERSION, '1.36', '<' ) ? 'name_title' : 'page_name_title' ),
+				'USE INDEX' => 'page_name_title',
 			]
 		);
 
@@ -1109,11 +1066,7 @@ class PageOwnership {
 	 * @return void
 	 */
 	public static function getWikiPage( $title ) {
-		// MW 1.36+
-		if ( method_exists( MediaWikiServices::class, 'getWikiPageFactory' ) ) {
-			return MediaWikiServices::getInstance()->getWikiPageFactory()->newFromTitle( $title );
-		}
-		return WikiPage::factory( $title );
+		return MediaWikiServices::getInstance()->getWikiPageFactory()->newFromTitle( $title );
 	}
 
 	/**
@@ -1133,12 +1086,7 @@ class PageOwnership {
 
 		// @credits Zabe
 		$output = RequestContext::getMain()->getOutput();
-		if ( method_exists( $output, 'disableClientCache' ) ) {
-			// MW 1.38+
-			$output->disableClientCache();
-		} else {
-			$output->enableClientCache( false );
-		}
+		$output->disableClientCache();
 	}
 
 	/**

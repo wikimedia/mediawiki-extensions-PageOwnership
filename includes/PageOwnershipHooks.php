@@ -24,6 +24,7 @@
 
 use MediaWiki\Extension\PageOwnership\Aliases\Title as TitleClass;
 use MediaWiki\MediaWikiServices;
+use MediaWiki\Title\Title;
 
 class PageOwnershipHooks {
 
@@ -64,7 +65,7 @@ class PageOwnershipHooks {
 	 * @param MediaWiki|MediaWiki\Actions\ActionEntryPoint $mediaWiki $mediaWiki
 	 * @return void
 	 */
-	public static function onBeforeInitialize( &$title, $unused, \OutputPage $output, \User $user, \WebRequest $request, $mediaWiki ) {
+	public static function onBeforeInitialize( Title &$title, $unused, \OutputPage $output, \User $user, \WebRequest $request, $mediaWiki ) {
 		\PageOwnership::initialize( $user );
 	}
 

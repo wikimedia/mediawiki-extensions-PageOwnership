@@ -25,6 +25,7 @@
 use MediaWiki\Extension\PageOwnership\Aliases\Linker as LinkerClass;
 use MediaWiki\Extension\PageOwnership\Aliases\Title as TitleClass;
 use MediaWiki\Linker\LinkRenderer;
+use MediaWiki\Title\Title;
 
 class PageOwnershipPermissionsPager extends TablePager {
 
