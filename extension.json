@@ -30,6 +30,7 @@
 		"BeforeInitialize": "PageOwnershipHooks::onBeforeInitialize",
 		"SiteNoticeBefore": "PageOwnershipHooks::onSiteNoticeBefore",
 		"getUserPermissionsErrors": "PageOwnershipHooks::onGetUserPermissionsErrors",
+		"TitleReadWhitelist": "PageOwnershipHooks::onTitleReadWhitelist",
 		"PageSaveComplete": "PageOwnershipHooks::onPageSaveComplete",
 		"PageRenderingHash": "PageOwnershipHooks::onPageRenderingHash",
 		"RejectParserCacheValue": "PageOwnershipHooks::onRejectParserCacheValue",

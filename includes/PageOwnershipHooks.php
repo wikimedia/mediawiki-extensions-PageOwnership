@@ -108,6 +108,22 @@ class PageOwnershipHooks {
 	/**
 	 * @param Title $title
 	 * @param User $user
+	 * @param bool &$whitelisted
+	 */
+	public static function onTitleReadWhitelist( $title, $user, &$whitelisted ) {
+		// *** ensure that PermissionManager -> checkReadPermissions
+		// does not return false if the user is allowed
+		// (required for anonymous users enabled from the PageOwnership
+		// control panel)
+		$ret = \PageOwnership::getPermissions( $title, $user, 'read' );
+		if ( $ret === true ) {
+			$whitelisted = true;
+		}
+	}
+
+	/**
+	 * @param Title $title
+	 * @param User $user
 	 * @param string $action
 	 * @param array|string|MessageSpecifier &$result User
 	 * @return bool
