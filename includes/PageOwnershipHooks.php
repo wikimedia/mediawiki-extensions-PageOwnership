@@ -22,6 +22,7 @@
  * @copyright Copyright ©2021-2023, https://wikisphere.org
  */
 
+use MediaWiki\Extension\PageOwnership\Aliases\Title as TitleClass;
 use MediaWiki\MediaWikiServices;
 
 class PageOwnershipHooks {
@@ -55,7 +56,7 @@ class PageOwnershipHooks {
 	}
 
 	/**
-	 * @param Title &$title
+	 * @param Title|Mediawiki\Title\Title &$title
 	 * @param null $unused
 	 * @param OutputPage $output
 	 * @param User $user
@@ -63,7 +64,7 @@ class PageOwnershipHooks {
 	 * @param MediaWiki|MediaWiki\Actions\ActionEntryPoint $mediaWiki $mediaWiki
 	 * @return void
 	 */
-	public static function onBeforeInitialize( \Title &$title, $unused, \OutputPage $output, \User $user, \WebRequest $request, $mediaWiki ) {
+	public static function onBeforeInitialize( &$title, $unused, \OutputPage $output, \User $user, \WebRequest $request, $mediaWiki ) {
 		\PageOwnership::initialize( $user );
 	}
 
@@ -88,7 +89,7 @@ class PageOwnershipHooks {
 	}
 
 	/**
-	 * @param Title $title
+	 * @param Title|Mediawiki\Title\Title $title
 	 * @param User $user
 	 * @param string $action
 	 * @param array &$errors
@@ -106,7 +107,7 @@ class PageOwnershipHooks {
 	}
 
 	/**
-	 * @param Title $title
+	 * @param Title|Mediawiki\Title\Title $title
 	 * @param User $user
 	 * @param bool &$whitelisted
 	 */
@@ -122,7 +123,7 @@ class PageOwnershipHooks {
 	}
 
 	/**
-	 * @param Title $title
+	 * @param Title|Mediawiki\Title\Title $title
 	 * @param User $user
 	 * @param string $action
 	 * @param array|string|MessageSpecifier &$result User
@@ -150,23 +151,16 @@ class PageOwnershipHooks {
 			return true;
 		}
 
-		if ( $action === 'read' && is_array( $GLOBALS['wgPageOwnershipWhitelistSpecials'] ) ) {
+		// @see https://gerrit.wikimedia.org/r/c/mediawiki/extensions/PageOwnership/+/1073546
+		if ( $title->getNamespace() === NS_SPECIAL &&
+			is_array( $GLOBALS['wgPageOwnershipWhitelistSpecials'] )
+		) {
 			foreach ( $GLOBALS['wgPageOwnershipWhitelistSpecials'] as $value ) {
 				$special = SpecialPage::getTitleFor( $value );
 				[ $text_ ] = explode( '/', $title->getFullText(), 2 );
 				if ( $text_ === $special->getFullText() ) {
 					return true;
 				}
-			}
-		}
-
-		if ( $action === 'createaccount' && is_array( $GLOBALS['wgPageOwnershipWhitelistSpecials'] )
-			&& in_array( 'CreateAccount', $GLOBALS['wgPageOwnershipWhitelistSpecials'] )
-		) {
-			$special = SpecialPage::getTitleFor( 'CreateAccount' );
-			[ $text_ ] = explode( '/', $title->getFullText(), 2 );
-			if ( $text_ === $special->getFullText() ) {
-				return true;
 			}
 		}
 
@@ -246,8 +240,8 @@ class PageOwnershipHooks {
 
 	/**
 	 * *** Mediawiki >= 1.37
-	 * @param Title $contextTitle
-	 * @param Title $title
+	 * @param Title|Mediawiki\Title\Title $contextTitle
+	 * @param Title|Mediawiki\Title\Title $title
 	 * @param bool &$skip
 	 * @param RevisionRecord &$revRecord
 	 * @return bool
@@ -297,7 +291,7 @@ class PageOwnershipHooks {
 	 * *** Mediawiki < 1.37
 	 * @see SemanticACL/SemanticACL.class.php
 	 * @param Parser|bool $parser
-	 * @param Title $title
+	 * @param Title|Mediawiki\Title\Title $title
 	 * @param Revision $rev
 	 * @param string|bool|null &$text
 	 * @param array &$deps
@@ -418,23 +412,20 @@ class PageOwnershipHooks {
 	}
 
 	/**
+	 * Credits: Jforrester - https://gerrit.wikimedia.org/r/c/mediawiki/extensions/PageOwnership/+/1143773
 	 * @see https://www.mediawiki.org/wiki/Manual:Variable
 	 * @see https://www.mediawiki.org/wiki/Manual:Hooks/GetMagicVariableIDs
-	 * @param string[] &$aCustomVariableIds
+	 * @param string[] &$variableIds
 	 * @return bool
 	 */
-	public static function onMagicWordwgVariableIDs( &$aCustomVariableIds ) {
+	public static function onGetMagicVariableIDs( &$variableIds ): void {
 		$variables = [
 			'pageownership_userpages',
 		];
 
 		foreach ( $variables as $var ) {
-			$aCustomVariableIds[] = $var;
+			$variableIds[] = $var;
 		}
-
-		// Permit future callbacks to run for this hook.
-		// never return false since this will prevent further callbacks AND indicate we found no value!
-		return true;
 	}
 
 	/**
@@ -527,7 +518,7 @@ class PageOwnershipHooks {
 		$pages = \PageOwnership::getUserPagesDB( $user );
 
 		foreach ( $pages as $page ) {
-			$title = Title::newFromID( $page );
+			$title = TitleClass::newFromID( $page );
 
 			if ( !$title ) {
 				continue;

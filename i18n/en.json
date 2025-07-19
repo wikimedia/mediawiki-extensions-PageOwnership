@@ -138,7 +138,9 @@
 	"pageownership-managepermissions-form-returnlink": "← [[$1|List of permissions]]",
 
 	"pageownership-managepermissions-return": "← [[$1|$2]]",
-
+	"pageownership-managepermissions-pager-pageid-not-found": "pageid <span style=\"color:red\">$1</span> not found",
+	"pageownership-managepermissions-pager-invalid-title": "title <span style=\"color:red\">$1</span> not valid",
+	"pageownership-managepermissions-pager-pageid-old-title": " (old title: <span style=\"color:red\">$1</span>)",
 	"pageownership-denied-transclusion-anonymous": "<div class=\"pageownership-denied-transclusion\">Denied transclusion ([[Special:UserLogin|log in]])</div>",
 	"pageownership-denied-transclusion-registered": "<div class=\"pageownership-denied-transclusion\">Denied transclusion</div>"
 

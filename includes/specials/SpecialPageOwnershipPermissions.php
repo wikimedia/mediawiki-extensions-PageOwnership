@@ -29,6 +29,7 @@ include_once __DIR__ . '/Widgets/HTMLGroupsUsersMultiselectField.php';
 include_once __DIR__ . '/Widgets/HTMLMenuTagMultiselectField.php';
 include_once __DIR__ . '/Widgets/HTMLMultiToggleButtonField.php';
 
+use MediaWiki\Extension\PageOwnership\Aliases\Title as TitleClass;
 use MediaWiki\MediaWikiServices;
 use Wikimedia\IPUtils;
 
@@ -39,10 +40,10 @@ use Wikimedia\IPUtils;
  */
 class SpecialPageOwnershipPermissions extends SpecialPage {
 
-	/** @var Title */
+	/** @var Title|Mediawiki\Title\Title */
 	public $title;
 
-	/** @var Title */
+	/** @var Title|Mediawiki\Title\Title */
 	public $localTitle;
 
 	/** @var User */
@@ -162,7 +163,7 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 		$this->setHeaders();
 		$this->outputHeader();
 
-		$title = Title::newFromText( $par );
+		$title = TitleClass::newFromText( $par );
 
 		if ( $title ) {
 			if ( !$title->canExist() || !$title->isKnown()
@@ -727,7 +728,7 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 		}
 
 		foreach ( $row['pages'] as $value ) {
-			$title_ = Title::newFromText( $value );
+			$title_ = TitleClass::newFromText( $value );
 			if ( $title_ && $title_->isKnown() ) {
 				\PageOwnership::invalidateCacheOfPagesWithAskQueriesRelatedToTitle( $title_ );
 				\PageOwnership::invalidateCacheOfPagesWithTemplateLinksTo( $title_ );

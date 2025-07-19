@@ -22,6 +22,9 @@
 		"PageOwnershipApiSetPermissions": "includes/api/PageOwnershipApiSetPermissions.php",
 		"PageOwnershipApiGetPermissions": "includes/api/PageOwnershipApiGetPermissions.php"
 	},
+	"AutoloadNamespaces": {
+		"MediaWiki\\Extension\\PageOwnership\\Aliases\\": "includes/aliases/"
+	},
 	"ExtensionMessagesFiles": {
 		"PageOwnershipAlias": "PageOwnership.alias.php",
 		"PageOwnershipMagic": "PageOwnershipMagic.i18n.magic.php"
@@ -41,7 +44,7 @@
 		"LoadExtensionSchemaUpdates": "PageOwnershipHooks::onLoadExtensionSchemaUpdates",
 		"BeforePageDisplay": "PageOwnershipHooks::onBeforePageDisplay",
 		"ArticleDeleteComplete": "PageOwnershipHooks::onArticleDeleteComplete",
-		"MagicWordwgVariableIDs": "PageOwnershipHooks::onMagicWordwgVariableIDs",
+		"GetMagicVariableIDs": "PageOwnershipHooks::onGetMagicVariableIDs",
 		"ParserGetVariableValueSwitch": "PageOwnershipHooks::onParserGetVariableValueSwitch",
 		"SkinTemplateNavigation::Universal": "PageOwnershipHooks::onSkinTemplateNavigation",
 		"ParserFirstCallInit": "PageOwnershipHooks::onParserFirstCallInit",

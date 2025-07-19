@@ -19,14 +19,16 @@
  * @file
  * @ingroup extensions
  * @author thomas-topway-it <support@topway.it>
- * @copyright Copyright ©2021-2023, https://wikisphere.org
+ * @copyright Copyright ©2021-2025, https://wikisphere.org
  */
 
+use MediaWiki\Extension\PageOwnership\Aliases\Linker as LinkerClass;
+use MediaWiki\Extension\PageOwnership\Aliases\Title as TitleClass;
 use MediaWiki\Linker\LinkRenderer;
 
 class PageOwnershipPermissionsPager extends TablePager {
 
-	/** @var Title */
+	/** @var Title|Mediawiki\Title\Title */
 	private $title;
 
 	/** @var Request */
@@ -131,14 +133,8 @@ class PageOwnershipPermissionsPager extends TablePager {
 				break;
 
 			case 'pages':
-				$titlesText = \PageOwnership::pageIDsToText( explode( ',', $row->pages ) );
-				$arr = [];
-				foreach ( $titlesText as $titleText ) {
-					$title_ = Title::newFromText( $titleText );
-					$arr[] = ( $title_ ? Linker::link( $title_, $title_->getFullText() )
-						: $titleText );
-				}
-				$formatted = implode( ', ', $arr );
+				$list = self::pageIDsToList( explode( ',', $row->pages ) );
+				$formatted = implode( ', ', $list );
 				break;
 
 			case 'namespaces':
@@ -156,7 +152,7 @@ class PageOwnershipPermissionsPager extends TablePager {
 				$link = '<span class="mw-ui-button mw-ui-progressive">edit</span>';
 				$title = SpecialPage::getTitleFor( 'PageOwnershipPermissions', $this->title );
 				$query = [ 'edit' => $row->id ];
-				$formatted = Linker::link( $title, $link, [], $query );
+				$formatted = LinkerClass::link( $title, $link, [], $query );
 				break;
 
 			default:
@@ -164,6 +160,153 @@ class PageOwnershipPermissionsPager extends TablePager {
 		}
 
 		return $formatted;
+	}
+
+	/**
+	 * @param string $pageid
+	 * @return string|null
+	 */
+	private static function titleTextOfDeletedPage( $pageid ) {
+		$dbr = \PageOwnership::getDB( DB_REPLICA );
+
+		$conds = [ 'ar_page_id' => $pageid ];
+		$options = [ 'ORDER BY' => 'ar_timestamp DESC', 'LIMIT' => 1 ];
+
+		$res = $dbr->select(
+			'archive',
+			'*',
+			$conds,
+			__METHOD__,
+			$options
+		);
+
+		// phpcs:ignore Generic.CodeAnalysis.AssignmentInCondition.Found
+		if ( $res && $row = $res->fetchObject() ) {
+			$title = TitleClass::makeTitleSafe( $row->ar_namespace, $row->ar_title );
+			return $title->getFullText();
+		}
+
+		return null;
+	}
+
+	/**
+	 * @param array $pageIDs
+	 * @return string|null
+	 */
+	private static function titleTextOfDeletedPages( array $pageIDs ) {
+		$dbr = \PageOwnership::getDB( DB_REPLICA );
+
+		$conds = [ 'ar_page_id' => $pageIDs ];
+		$options = [
+			'ORDER BY' => 'ar_page_id ASC, ar_timestamp DESC'
+		];
+		$fields = [ 'ar_page_id', 'ar_namespace', 'ar_title' ];
+
+		$res = $dbr->select(
+			'archive',
+			$fields,
+			$conds,
+			__METHOD__,
+			$options
+		);
+
+		$seen = [];
+		$ret = [];
+		foreach ( $res as $row ) {
+			$pageid = (int)$row->ar_page_id;
+			if ( isset( $seen[$pageid] ) ) {
+				continue;
+			}
+			$seen[$pageid] = true;
+
+			$title = TitleClass::makeTitleSafe( $row->ar_namespace, $row->ar_title );
+			$ret[$pageid] = $title ? $title->getFullText() : null;
+		}
+
+		return $ret;
+	}
+
+	/**
+	 * @see PageOwnership -> pageIDsToText
+	 * @param array $arr
+	 * @return array
+	 */
+	private static function pageIDsToList( $arr ) {
+		$missingPageIDs = [];
+		$ret = [];
+		foreach ( $arr as $value ) {
+			if ( empty( $value ) ) {
+				continue;
+			}
+			if ( is_numeric( $value ) ) {
+				$title = TitleClass::newFromID( $value );
+				if ( $title ) {
+					$ret[] = LinkerClass::link( $title, $title->getFullText() );
+				} else {
+					$missingPageIDs[] = $value;
+				}
+
+			// special pages
+			} else {
+				$title = TitleClass::newFromText( $value );
+				if ( $title ) {
+					$ret[] = LinkerClass::link( $title, $title->getFullText() );
+				} else {
+					$ret[] = wfMessage( 'pageownership-managepermissions-pager-invalid-title', $value )->text();
+				}
+			}
+		}
+
+		if ( count( $missingPageIDs ) ) {
+			$res = self::titleTextOfDeletedPages( $missingPageIDs );
+			foreach ( $missingPageIDs as $pageId ) {
+				$msg = wfMessage( 'pageownership-managepermissions-pager-pageid-not-found', $pageId )->text();
+
+				if ( isset( $res[$pageId] ) && !empty( $res[$pageId] ) ) {
+					$msg .= wfMessage( 'pageownership-managepermissions-pager-pageid-old-title', $res[$pageId] )->text();
+				}
+				$ret[] = $msg;
+			}
+		}
+
+		return $ret;
+	}
+
+	/**
+	 * @see PageOwnership -> pageIDsToText
+	 * @param array $arr
+	 * @return array
+	 */
+	private static function pageIDsToList_( $arr ) {
+		return array_filter( array_map( static function ( $value ) {
+			// article
+			if ( is_numeric( $value ) ) {
+				$title = TitleClass::newFromID( $value );
+				if ( $title ) {
+					return LinkerClass::link( $title, $title->getFullText() );
+
+				} else {
+					$ret_ = wfMessage( 'pageownership-managepermissions-pager-pageid-not-found', $value )->text();
+
+					$titleText = self::titleTextOfDeletedPage( $value );
+					if ( $titleText ) {
+						$ret_ .= wfMessage( 'pageownership-managepermissions-pager-pageid-old-title', $titleText )->text();
+					}
+
+					return $ret_;
+				}
+			// special pages
+			} else {
+				$title = TitleClass::newFromText( $value );
+				if ( $title ) {
+					return LinkerClass::link( $title, $title->getFullText() );
+				} else {
+					return wfMessage( 'pageownership-managepermissions-pager-invalid-title', $value )->text();
+				}
+			}
+		}, $arr ), static function ( $value ) {
+			return !empty( $value );
+		} );
 	}
 
 	/**

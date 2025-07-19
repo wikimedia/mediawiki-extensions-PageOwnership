@@ -22,6 +22,8 @@
  * @copyright Copyright ©2021-2023, https://wikisphere.org
  */
 
+use MediaWiki\Extension\PageOwnership\Aliases\DerivativeRequest as DerivativeRequestClass;
+use MediaWiki\Extension\PageOwnership\Aliases\Title as TitleClass;
 use MediaWiki\MediaWikiServices;
 
 class PageOwnership {
@@ -187,7 +189,7 @@ print_r($wgAvailableRights);
 	/**
 	 * @see includes/Title.php
 	 * *** the standard method fails when $row->page_title is null
-	 * @param Title $title
+	 * @param Title|Mediawiki\Title\Title $title
 	 * @param array $options
 	 * @param string $table
 	 * @param string $prefix
@@ -214,7 +216,7 @@ print_r($wgAvailableRights);
 			foreach ( $res as $row ) {
 				// ***edited
 				// $titleObj = self::makeTitle( $row->page_namespace, $row->page_title );
-				$titleObj = Title::newFromID( $row->page_id );
+				$titleObj = TitleClass::newFromID( $row->page_id );
 				if ( $titleObj ) {
 					// $linkCache->addGoodLinkObjFromRow( $titleObj, $row );
 					$retVal[] = $titleObj;
@@ -272,7 +274,7 @@ print_r($wgAvailableRights);
 		$row['action'] = 'pageownership-set-permissions';
 		$row['token'] = $user->getEditToken();
 
-		$req = new DerivativeRequest(
+		$req = new DerivativeRequestClass(
 			$context->getRequest(),
 			$row,
 			true
@@ -295,7 +297,7 @@ print_r($wgAvailableRights);
 		}
 
 		foreach ( $pageids as $value ) {
-			$title_ = Title::newFromID( $value );
+			$title_ = TitleClass::newFromID( $value );
 			if ( $title_ && $title_->isKnown() ) {
 				self::invalidateCacheOfPagesWithAskQueriesRelatedToTitle( $title_ );
 				self::invalidateCacheOfPagesWithTemplateLinksTo( $title_ );
@@ -342,7 +344,7 @@ print_r($wgAvailableRights);
 		$row['action'] = 'pageownership-get-permissions';
 		$row['token'] = $user->getEditToken();
 
-		$req = new DerivativeRequest(
+		$req = new DerivativeRequestClass(
 			$context->getRequest(),
 			$row,
 			true
@@ -366,7 +368,7 @@ print_r($wgAvailableRights);
 
 	/**
 	 * *** invalidate cache of all pages in which this page has been transcluded
-	 * @param Title $title
+	 * @param Title|Mediawiki\Title\Title $title
 	 * @return void
 	 */
 	public static function invalidateCacheOfPagesWithTemplateLinksTo( $title ) {
@@ -387,7 +389,7 @@ print_r($wgAvailableRights);
 	}
 
 	/**
-	 * @param Title $title
+	 * @param Title|Mediawiki\Title\Title $title
 	 * @return void
 	 */
 	public static function invalidateCacheOfPagesWithAskQueriesRelatedToTitle( $title ) {
@@ -440,7 +442,7 @@ print_r($wgAvailableRights);
 	}
 
 	/**
-	 * @param Title $title
+	 * @param Title|Mediawiki\Title\Title $title
 	 * @return null|bool
 	 */
 	public static function doPurge( $title ) {
@@ -575,10 +577,10 @@ print_r($wgAvailableRights);
 			// $titleIdentifier = self::titleIdentifier( $title_ );
 			$pages = explode( ',', $row['pages'] );
 			foreach ( $pages as $pageID ) {
-				$title_ = Title::newFromID( $pageID );
+				$title_ = TitleClass::newFromID( $pageID );
 				// legacy identifier, remove in future versions
 				if ( !$title_ ) {
-					$title_ = Title::newFromText( $pageID );
+					$title_ = TitleClass::newFromText( $pageID );
 				}
 				if ( self::isAuthor( $title_, $user ) ) {
 					$output[] = $title_->getArticleID();
@@ -638,7 +640,7 @@ print_r($wgAvailableRights);
 
 		$ret = [];
 		foreach ( $res as $row ) {
-			$title = Title::newFromRow( $row );
+			$title = TitleClass::newFromRow( $row );
 
 			if ( $title->isKnown() ) {
 				$ret[] = $title;
@@ -680,13 +682,13 @@ print_r($wgAvailableRights);
 		return array_filter( array_map( static function ( $value ) {
 			// article
 			if ( is_numeric( $value ) ) {
-				$title = Title::newFromID( $value );
+				$title = TitleClass::newFromID( $value );
 				if ( $title ) {
 					return $title->getFullText();
 				}
 			// special pages
 			} else {
-				$title = Title::newFromText( $value );
+				$title = TitleClass::newFromText( $value );
 				if ( $title ) {
 					return $title->getFullText();
 				}
@@ -697,7 +699,7 @@ print_r($wgAvailableRights);
 	}
 
 	/**
-	 * @param Title $title
+	 * @param Title|Mediawiki\Title\Title $title
 	 * @return int|string
 	 */
 	public static function titleIdentifier( $title ) {
@@ -716,7 +718,7 @@ print_r($wgAvailableRights);
 	 */
 	public static function titleTextsToIDs( $arr ) {
 		return array_filter( array_map( static function ( $value ) {
-					$title = Title::newFromText( $value );
+					$title = TitleClass::newFromText( $value );
 					return self::titleIdentifier( $title );
 		}, $arr ), static function ( $value ) {
 			return !empty( $value );
@@ -743,7 +745,7 @@ print_r($wgAvailableRights);
 
 	/**
 	 * @see PageOwnershipHooks -> onRejectParserCacheValue
-	 * @param Title $title
+	 * @param Title|Mediawiki\Title\Title $title
 	 * @return bool
 	 */
 	public static function permissionsExist( $title ) {
@@ -801,7 +803,7 @@ print_r($wgAvailableRights);
 	}
 
 	/**
-	 * @param Title &$title
+	 * @param Title|Mediawiki\Title\Title &$title
 	 * @param User $user
 	 * @param string|null $action
 	 * @return bool|null
@@ -812,7 +814,7 @@ print_r($wgAvailableRights);
 			$prefixedText = $title->getPrefixedText();
 			$pos = strpos( $prefixedText, '/' );
 			if ( $pos !== false ) {
-				$title = Title::newFromText( substr( $prefixedText, 0, $pos ) );
+				$title = TitleClass::newFromText( substr( $prefixedText, 0, $pos ) );
 			}
 		}
 
@@ -980,7 +982,7 @@ print_r($wgAvailableRights);
 
 	/**
 	 * *** credits https://gerrit.wikimedia.org/r/plugins/gitiles/mediawiki/extensions/LockAuthor/+/refs/heads/master/includes/LockAuthor.php
-	 * @param Title $title
+	 * @param Title|Mediawiki\Title\Title $title
 	 * @param User $user
 	 * @return bool
 	 */
@@ -1103,7 +1105,7 @@ print_r($wgAvailableRights);
 	}
 
 	/**
-	 * @param Title $title
+	 * @param Title|Mediawiki\Title\Title $title
 	 * @param bool $exclude_current
 	 * @return array
 	 */
@@ -1125,7 +1127,7 @@ print_r($wgAvailableRights);
 				$output[] = $title;
 
 			} else {
-				$title_ = Title::newFromText( $title_text );
+				$title_ = TitleClass::newFromText( $title_text );
 				if ( $title_ && $title_->isKnown() ) {
 					$output[] = $title_;
 				}
@@ -1136,7 +1138,7 @@ print_r($wgAvailableRights);
 	}
 
 	/**
-	 * @param Title $title
+	 * @param Title|Mediawiki\Title\Title $title
 	 * @return void
 	 */
 	public static function getWikiPage( $title ) {

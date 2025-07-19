@@ -141,6 +141,9 @@
 	"pageownership-managepermissions-form-returnlink": "A label message",
 
 	"pageownership-managepermissions-return": "A label message",
+	"pageownership-managepermissions-pager-pageid-not-found": "A label message",
+	"pageownership-managepermissions-pager-invalid-title": "A label message",
+	"pageownership-managepermissions-pager-pageid-old-title": "A label message",
 
 	"pageownership-denied-transclusion-anonymous": "A label message",
 	"pageownership-denied-transclusion-registered": "A label message"
