@@ -100,7 +100,7 @@ class PageOwnershipHooks {
 	 */
 	public static function onTitleQuickPermissions( $title, $user, $action, &$errors, $doExpensiveQueries, $short ) {
 		// disable MediaWiki\Permissions\PermissionManager -> checkQuickPermissions
-		$ret = \PageOwnership::getPermissions( $title, $user, $action );
+		$ret = \PageOwnership::checkPermissions( $title, $user, $action );
 		if ( $ret !== null ) {
 			return false;
 		}
@@ -116,7 +116,7 @@ class PageOwnershipHooks {
 		// does not return false if the user is allowed
 		// (required for anonymous users enabled from the PageOwnership
 		// control panel)
-		$ret = \PageOwnership::getPermissions( $title, $user, 'read' );
+		$ret = \PageOwnership::checkPermissions( $title, $user, 'read' );
 		if ( $ret === true ) {
 			$whitelisted = true;
 		}
@@ -168,7 +168,7 @@ class PageOwnershipHooks {
 			return true;
 		}
 
-		$ret = \PageOwnership::getPermissions( $title, $user, $action );
+		$ret = \PageOwnership::checkPermissions( $title, $user, $action );
 
 		if ( $ret === null || $ret === true ) {
 			// no error added
@@ -277,7 +277,7 @@ class PageOwnershipHooks {
 			return true;
 		}
 
-		if ( \PageOwnership::getPermissions( $title, $user ) !== false ) {
+		if ( \PageOwnership::checkPermissions( $title, $user ) !== false ) {
 			return true;
 		}
 
@@ -306,7 +306,7 @@ class PageOwnershipHooks {
 			return true;
 		}
 
-		if ( \PageOwnership::getPermissions( $title, $user ) !== false ) {
+		if ( \PageOwnership::checkPermissions( $title, $user ) !== false ) {
 			return true;
 		}
 
@@ -367,7 +367,7 @@ class PageOwnershipHooks {
 				continue;
 			}
 
-			if ( \PageOwnership::getPermissions( $title, $user ) !== false ) {
+			if ( \PageOwnership::checkPermissions( $title, $user ) !== false ) {
 				$filtered[] = $result;
 				continue;
 			}
@@ -481,7 +481,7 @@ class PageOwnershipHooks {
 		}
 
 		if ( !$isAuthorized ) {
-			$isAuthorized = \PageOwnership::getPermissions( $title, $user, "pageownership-caneditpermissions" );
+			$isAuthorized = \PageOwnership::checkPermissions( $title, $user, "pageownership-caneditpermissions" );
 		}
 
 		if ( $isAuthorized ) {

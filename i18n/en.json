@@ -124,9 +124,9 @@
 
 	"pageownership-managepermissions-form-missing-item": "Missing data",
 
-	"pageownership-managepermissions-description-specific": "Here you can add multiple sets of permissions to this page and its subpages based on specific users or groups. To restrict access from specific users or groups, assign to the user or groups you want to deny access  an entry without rights, then create a different entry with a more permissive set of permissions.$1",
+	"pageownership-managepermissions-description-specific": "Here you can add multiple sets of permissions to this page and its subpages for specific users or groups. <b>To restrict access to specific users or groups, first assign an entry without rights for the users or groups you want to deny access, then create a different entry with a more permissive set of permissions for the granted users or groups.</b> Subpages can be managed via the right \"Include subpages\" within \"Additional rights\". Pages granted to specific users will appear in the dedicated section \"My pages\" of their navigation panel.$1",
 
-	"pageownership-managepermissions-description-generic": "Here you can add multiple sets of permissions to any page and namespace based on specific users or groups. To restrict access to a page or namespace, assign to the user or groups you want to deny access an entry without rights, then create another entry with a more permissive set of permissions for different users or groups related to the same page or namespace.",
+	"pageownership-managepermissions-description-generic": "Here you can add multiple sets of permissions to any page and namespace for specific users or groups. <b>To restrict access to specific users or groups, first assign an entry without rights for the users or groups you want to deny access, then create a different entry with a more permissive set of permissions for the granted users or groups.</b> Subpages can be managed via the right \"Include subpages\" within \"Additional rights\". Pages granted to specific users will appear in the dedicated section \"My pages\" of their navigation panel.",
 
 	"pageownership-managepermissions-description-manage-all-permissions": " To manage all permissions go [[Special:PageOwnershipPermissions|here]].",
 

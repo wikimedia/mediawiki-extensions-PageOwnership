@@ -182,7 +182,7 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 					return;
 				}
 
-			} elseif ( !\PageOwnership::getPermissions( $title, $user, "pageownership-caneditpermissions" ) ) {
+			} elseif ( !\PageOwnership::checkPermissions( $title, $user, "pageownership-caneditpermissions" ) ) {
 				$this->displayRestrictionError();
 				return;
 			}
@@ -714,7 +714,10 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 			$row[$value] = preg_split( "/[\r\n]+/", $data[$value], -1, PREG_SPLIT_NO_EMPTY );
 		}
 
-		\PageOwnership::setPermissions( $this->user->getName(), $row, ( !$new ? $id : null ) );
+		$errors = [];
+		if ( !$this->setPermissions( $this->user, $row, ( !$new ? $id : null ), $errors ) ) {
+			return false;
+		}
 
 		if ( $new ) {
 			$dbr = \PageOwnership::getDB( DB_PRIMARY );
@@ -740,7 +743,31 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 		// return true;
 	}
 
-	public function onSuccess() {
+	/**
+	 * @param \User $user
+	 * @param array $row
+	 * @param int|null $id
+	 * @param array &$errors
+	 * @return bool
+	 */
+	private function setPermissions( $user, $row, $id, &$errors ) {
+		$row['pages'] = \PageOwnership::titleTextsToIDs( $row['pages'] );
+		$errors = [];
+		$ret = \PageOwnership::setPermissions(
+			$user,
+			$row['usernames'],
+			$row['permissions_by_type'],
+			// $row['permissions_by_group'],
+			$row['additional_rights'],
+			$row['add_permissions'],
+			$row['remove_permissions'],
+			$row['pages'],
+			$row['namespaces'],
+			$id,
+			$errors
+		);
+
+		return ( !count( $errors ) && $ret );
 	}
 
 	/**

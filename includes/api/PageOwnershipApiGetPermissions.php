@@ -19,7 +19,7 @@
  * @file
  * @ingroup extensions
  * @author thomas-topway-it <support@topway.it>
- * @copyright Copyright ©2021-2024, https://wikisphere.org
+ * @copyright Copyright ©2021-2025, https://wikisphere.org
  */
 
 class PageOwnershipApiGetPermissions extends ApiBase {
@@ -63,60 +63,23 @@ class PageOwnershipApiGetPermissions extends ApiBase {
 		];
 
 		$row = [];
-		foreach ( $params as $key => $value ) {
-			if ( !array_key_exists( $key, $map ) ) {
-				continue;
-			}
-			$row[$map[$key]] = preg_split( '/\s*,\s*/', $value, -1, PREG_SPLIT_NO_EMPTY );
-		}
-
-		$tables = [ 'pageownership_permissions' ];
-		$fields = [ '*' ];
-		$joinConds = [];
-		$conds = [];
-		$options = [];
-
-		if ( !empty( $params['id'] ) ) {
-			$conds['id'] = $params['id'];
-		}
-
-		$db = \PageOwnership::getDB( DB_REPLICA );
-		foreach ( $row as $key => $value ) {
-			if ( !empty( $value ) ) {
-				$sql = [];
-				array_map( static function ( $val ) use ( $db, &$sql, $key ) {
-					$sql[] = 'FIND_IN_SET(' . $db->addQuotes( $val ) . ', ' . $key . ')';
-				}, $value );
-
-				$conds[] = $db->makeList( $sql, LIST_OR );
+		foreach ( $map as $key => $value ) {
+			if ( isset( $params[$key] ) ) {
+				$row[$value] = preg_split( '/\s*,\s*/', $params[$key], -1, PREG_SPLIT_NO_EMPTY );
+			} else {
+				$row[$value] = null;
 			}
 		}
 
-		array_unique( $tables );
-
-		$ret['tables'] = $tables;
-		$ret['fields'] = $fields;
-		$ret['join_conds'] = $joinConds;
-		$ret['conds'] = $conds;
-		$ret['options'] = $options;
-
-		$res = $db->select(
-			$tables,
-			$fields,
-			$conds,
-			__METHOD__,
-			$options,
-			$joinConds
+		$errors = [];
+		$output = \PageOwnership::getPermissions(
+			$row['usernames'],
+			$row['pages'],
+			$row['namespaces'],
+			$row['created_by'],
+			$params['id'] ?? null,
+			$errors
 		);
-
-		$output = [];
-		foreach ( $res as $row ) {
-			$output[] = (array)$row;
-		}
-
-		if ( !empty( $params['id'] ) && count( $output ) ) {
-			$output = current( $output );
-		}
 
 		$result->addValue( [ $this->getModuleName() ], 'result', $output, ApiResult::NO_VALIDATE );
 	}

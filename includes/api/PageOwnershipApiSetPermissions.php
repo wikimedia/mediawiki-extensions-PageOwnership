@@ -19,7 +19,7 @@
  * @file
  * @ingroup extensions
  * @author thomas-topway-it <support@topway.it>
- * @copyright Copyright ©2021-2024, https://wikisphere.org
+ * @copyright Copyright ©2021-2025, https://wikisphere.org
  */
 
 class PageOwnershipApiSetPermissions extends ApiBase {
@@ -67,19 +67,32 @@ class PageOwnershipApiSetPermissions extends ApiBase {
 		];
 
 		$row = [];
-		foreach ( $params as $key => $value ) {
-			if ( !array_key_exists( $key, $map ) ) {
-				continue;
+		foreach ( $map as $paramKey => $rowKey ) {
+			if ( isset( $params[$paramKey] ) ) {
+				$row[$rowKey] = preg_split( '/\s*,\s*/', $params[$paramKey], -1, PREG_SPLIT_NO_EMPTY );
+			} else {
+				$row[$rowKey] = [];
 			}
-			$row[$map[$key]] = preg_split( '/\s*,\s*/', $value, -1, PREG_SPLIT_NO_EMPTY );
 		}
 
 		if ( empty( $row['usernames'] ) ) {
 			$this->dieWithError( 'apierror-pageownership-api-nousernames' );
 		}
 
-		$id = ( !empty( $params['id'] ) ? $params['id'] : null );
-		$result_ = \PageOwnership::setPermissions( $user->getName(), $row, $id );
+		$errors = [];
+		$result_ = \PageOwnership::setPermissions(
+			$user,
+			$row['usernames'],
+			$row['permissions_by_type'],
+			// $row['permissions_by_group'],
+			$row['additional_rights'],
+			$row['add_permissions'],
+			$row['remove_permissions'],
+			$row['pages'],
+			$row['namespaces'],
+			$params['id'] ?? null,
+			$errors
+		);
 
 		$result->addValue( [ $this->getModuleName() ], 'result', $result_, ApiResult::NO_VALIDATE );
 	}
