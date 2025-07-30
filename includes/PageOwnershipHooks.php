@@ -96,7 +96,7 @@ class PageOwnershipHooks {
 	 * @param bool $doExpensiveQueries
 	 * @param bool $short
 	 * @return bool|void
-	 * @see https://www.mediawiki.org/wiki/Manual:Hooks/getUserPermissionsErrors
+	 * @see https://www.mediawiki.org/wiki/Manual:Hooks/TitleQuickPermissions
 	 */
 	public static function onTitleQuickPermissions( $title, $user, $action, &$errors, $doExpensiveQueries, $short ) {
 		// disable MediaWiki\Permissions\PermissionManager -> checkQuickPermissions

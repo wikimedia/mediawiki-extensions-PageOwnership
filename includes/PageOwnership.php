@@ -55,96 +55,96 @@ class PageOwnership {
 	 * @var PermissionsByType
 	 */
 	public static $PermissionsByType = [
-		"reading" => [
-			"read"
+		'reading' => [
+			'read'
 		],
-		"editing" => [
-			"applychangetags",
-			"autocreateaccount",
-			"createaccount",
-			"createpage",
-			"createtalk",
-			"delete-redirect",
-			"edit",
-			"editsemiprotected",
-			"editprotected",
-			"minoredit",
-			"move",
-			"move-categorypages",
-			"move-rootuserpages",
-			"move-subpages",
-			"movefile",
-			"reupload",
-			"reupload-own",
-			"reupload-shared",
-			"sendemail",
-			"upload",
-			"upload_by_url"
+		'editing' => [
+			'applychangetags',
+			'autocreateaccount',
+			'createaccount',
+			'createpage',
+			'createtalk',
+			'delete-redirect',
+			'edit',
+			'editsemiprotected',
+			'editprotected',
+			'minoredit',
+			'move',
+			'move-categorypages',
+			'move-rootuserpages',
+			'move-subpages',
+			'movefile',
+			'reupload',
+			'reupload-own',
+			'reupload-shared',
+			'sendemail',
+			'upload',
+			'upload_by_url'
 		],
-		"management" => [
-			"bigdelete",
-			"block",
-			"blockemail",
-			"browsearchive",
-			"changetags",
-			"delete",
-			"deletedhistory",
-			"deletedtext",
-			"deletelogentry",
-			"deleterevision",
-			"editcontentmodel",
-			"editinterface",
-			"editmyoptions",
-			"editmyprivateinfo",
-			"editmyusercss",
-			"editmyuserjs",
-			"editmyuserjsredirect",
-			"editmyuserjson",
-			"editmywatchlist",
-			"editsitecss",
-			"editsitejs",
-			"editsitejson",
-			"editusercss",
-			"edituserjs",
-			"edituserjson",
-			"hideuser",
-			"markbotedits",
-			"mergehistory",
-			"pagelang",
-			"patrol",
-			"patrolmarks",
-			"protect",
-			"rollback",
-			"suppressionlog",
-			"suppressrevision",
-			"unblockself",
-			"undelete",
-			"userrights",
-			"userrights-interwiki",
-			"viewmyprivateinfo",
-			"viewmywatchlist",
-			"viewsuppressed"
+		'management' => [
+			'bigdelete',
+			'block',
+			'blockemail',
+			'browsearchive',
+			'changetags',
+			'delete',
+			'deletedhistory',
+			'deletedtext',
+			'deletelogentry',
+			'deleterevision',
+			'editcontentmodel',
+			'editinterface',
+			'editmyoptions',
+			'editmyprivateinfo',
+			'editmyusercss',
+			'editmyuserjs',
+			'editmyuserjsredirect',
+			'editmyuserjson',
+			'editmywatchlist',
+			'editsitecss',
+			'editsitejs',
+			'editsitejson',
+			'editusercss',
+			'edituserjs',
+			'edituserjson',
+			'hideuser',
+			'markbotedits',
+			'mergehistory',
+			'pagelang',
+			'patrol',
+			'patrolmarks',
+			'protect',
+			'rollback',
+			'suppressionlog',
+			'suppressrevision',
+			'unblockself',
+			'undelete',
+			'userrights',
+			'userrights-interwiki',
+			'viewmyprivateinfo',
+			'viewmywatchlist',
+			'viewsuppressed'
 		],
-		"administration" => [
-			"autopatrol",
-			"deletechangetags",
-			"import",
-			"importupload",
-			"managechangetags",
-			"siteadmin",
-			"unwatchedpages",
+		'administration' => [
+			'autopatrol',
+			'deletechangetags',
+			'import',
+			'importupload',
+			'managechangetags',
+			'siteadmin',
+			'unwatchedpages',
 		],
-		"technical" => [
-			"apihighlimits",
-			"autoconfirmed",
-			"bot",
-			"ipblock-exempt",
-			"nominornewtalk",
-			"noratelimit",
-			"override-export-depth",
-			"purge",
-			"suppressredirect",
-			"writeapi"
+		'technical' => [
+			'apihighlimits',
+			'autoconfirmed',
+			'bot',
+			'ipblock-exempt',
+			'nominornewtalk',
+			'noratelimit',
+			'override-export-depth',
+			'purge',
+			'suppressredirect',
+			'writeapi'
 		]
 	];
 
@@ -770,7 +770,7 @@ class PageOwnership {
 	 * @param string|null $action
 	 * @return bool|null
 	 */
-	public static function checkPermissions( &$title, $user, $action = "read" ) {
+	public static function checkPermissions( &$title, $user, $action = 'read' ) {
 		// remove title parameter for special pages
 		if ( $title->isSpecialPage() ) {
 			$prefixedText = $title->getPrefixedText();
@@ -800,6 +800,11 @@ class PageOwnership {
 		if ( $action === 'create' ) {
 			$right = ( !$nsInfo->isTalk( $title->getNamespace() ) ?
 				'createpage' : 'createtalk' );
+		}
+
+		// or add in the obj PermissionsByType
+		if ( $action === 'move-target' ) {
+			$right = 'move';
 		}
 
 		$dbr = self::getDB( DB_REPLICA );
