@@ -31,6 +31,7 @@ include_once __DIR__ . '/Widgets/HTMLMultiToggleButtonField.php';
 
 use MediaWiki\Extension\PageOwnership\Aliases\Title as TitleClass;
 use MediaWiki\MediaWikiServices;
+use MediaWiki\Parser\ParserOptions;
 use Wikimedia\IPUtils;
 
 /**
@@ -40,10 +41,10 @@ use Wikimedia\IPUtils;
  */
 class SpecialPageOwnershipPermissions extends SpecialPage {
 
-	/** @var Title|Mediawiki\Title\Title */
+	/** @var Title|MediaWiki\Title\Title */
 	public $title;
 
-	/** @var Title|Mediawiki\Title\Title */
+	/** @var Title|MediaWiki\Title\Title */
 	public $localTitle;
 
 	/** @var User */
@@ -269,7 +270,10 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 		}
 
 		if ( $pager->getNumRows() ) {
-			$out->addParserOutputContent( $pager->getFullOutput() );
+			$out->addParserOutputContent(
+				$pager->getFullOutput(),
+				ParserOptions::newFromContext( $this->getContext() )
+			);
 
 		} else {
 			$out->addWikiMsg( 'pageownership-managepermissions-table-empty' );

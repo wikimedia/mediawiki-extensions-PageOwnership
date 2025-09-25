@@ -180,7 +180,7 @@ class PageOwnership {
 	/**
 	 * @see includes/Title.php
 	 * *** the standard method fails when $row->page_title is null
-	 * @param Title|Mediawiki\Title\Title $title
+	 * @param Title|MediaWiki\Title\Title $title
 	 * @param array $options
 	 * @param string $table
 	 * @param string $prefix
@@ -370,7 +370,7 @@ class PageOwnership {
 
 	/**
 	 * *** invalidate cache of all pages in which this page has been transcluded
-	 * @param Title|Mediawiki\Title\Title $title
+	 * @param Title|MediaWiki\Title\Title $title
 	 * @return void
 	 */
 	public static function invalidateCacheOfPagesWithTemplateLinksTo( $title ) {
@@ -391,7 +391,7 @@ class PageOwnership {
 	}
 
 	/**
-	 * @param Title|Mediawiki\Title\Title $title
+	 * @param Title|MediaWiki\Title\Title $title
 	 * @return void
 	 */
 	public static function invalidateCacheOfPagesWithAskQueriesRelatedToTitle( $title ) {
@@ -444,7 +444,7 @@ class PageOwnership {
 	}
 
 	/**
-	 * @param Title|Mediawiki\Title\Title $title
+	 * @param Title|MediaWiki\Title\Title $title
 	 * @return null|bool
 	 */
 	public static function doPurge( $title ) {
@@ -661,7 +661,7 @@ class PageOwnership {
 	}
 
 	/**
-	 * @param Title|Mediawiki\Title\Title $title
+	 * @param Title|MediaWiki\Title\Title $title
 	 * @return int|string
 	 */
 	public static function titleIdentifier( $title ) {
@@ -707,7 +707,7 @@ class PageOwnership {
 
 	/**
 	 * @see PageOwnershipHooks -> onRejectParserCacheValue
-	 * @param Title|Mediawiki\Title\Title $title
+	 * @param Title|MediaWiki\Title\Title $title
 	 * @return bool
 	 */
 	public static function permissionsExist( $title ) {
@@ -765,7 +765,7 @@ class PageOwnership {
 	}
 
 	/**
-	 * @param Title|Mediawiki\Title\Title &$title
+	 * @param Title|MediaWiki\Title\Title &$title
 	 * @param User $user
 	 * @param string|null $action
 	 * @return bool|null
@@ -949,7 +949,7 @@ class PageOwnership {
 
 	/**
 	 * *** credits https://gerrit.wikimedia.org/r/plugins/gitiles/mediawiki/extensions/LockAuthor/+/refs/heads/master/includes/LockAuthor.php
-	 * @param Title|Mediawiki\Title\Title $title
+	 * @param Title|MediaWiki\Title\Title $title
 	 * @param User $user
 	 * @return bool
 	 */
@@ -1072,7 +1072,7 @@ class PageOwnership {
 	}
 
 	/**
-	 * @param Title|Mediawiki\Title\Title $title
+	 * @param Title|MediaWiki\Title\Title $title
 	 * @param bool $exclude_current
 	 * @return array
 	 */
@@ -1105,7 +1105,7 @@ class PageOwnership {
 	}
 
 	/**
-	 * @param Title|Mediawiki\Title\Title $title
+	 * @param Title|MediaWiki\Title\Title $title
 	 * @return void
 	 */
 	public static function getWikiPage( $title ) {

@@ -28,7 +28,7 @@ use MediaWiki\Linker\LinkRenderer;
 
 class PageOwnershipPermissionsPager extends TablePager {
 
-	/** @var Title|Mediawiki\Title\Title */
+	/** @var Title|MediaWiki\Title\Title */
 	private $title;
 
 	/** @var Request */

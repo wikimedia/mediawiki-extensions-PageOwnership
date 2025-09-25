@@ -40,7 +40,11 @@ class SpecialPageOwnershipForm extends OOUIHTMLForm {
 
 		libxml_use_internal_errors( true );
 		$dom = new DOMDocument;
-		$dom->loadHTML( mb_convert_encoding( $html, 'HTML-ENTITIES', 'UTF-8' ) );
+		$dom->loadHTML(
+			'<?xml encoding="utf-8" ?>' . $html,
+			LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD
+		);
+
 		$finder = new DomXPath( $dom );
 		$classname = 'mw-widgets-tagMultiselectWidget-multilineTextInputWidget';
 		$nodes = $finder->query( "//*[contains(concat(' ', normalize-space(@class), ' '), ' $classname ')]" );

@@ -8,10 +8,11 @@
 	"specialpages-group-pageownership": "A label message",
 
 	"pageownership": "A label message",
+	"pageownership-sidebar-section": "A label message",
+	"pageownership-manage-permissions-sidebar": "A label message",
+
 	"pageownershippermissions": "A label message",
-
 	"pageownership-jsmodule-outdated-version": "A label message",
-
 	"mw-widgets-tagmultiselect-placeholder": "A label message",
 
 	"right-pageownership-include-subpages": "A label message",
@@ -71,7 +72,7 @@
 	"pageownership-jsmodule-deleteitemconfirm": "A label message",
 
 	"pageownership-navigation": "A label message",
-	"pageownership-sidebar-section": "A label message",
+	"pageownership-sidebar-section-user": "A label message",
 	"pageownership-sidebar-role-reader": "A label message",
 
 	"group-pageownership-admin-member": "A label message",

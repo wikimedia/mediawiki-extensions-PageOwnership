@@ -29,6 +29,6 @@ if ( class_exists( 'Linker' ) ) {
 	}
 } else {
 	// phpcs:ignore Generic.Classes.DuplicateClassName.Found
-	class Linker extends \Mediawiki\Linker\Linker {
+	class Linker extends \MediaWiki\Linker\Linker {
 	}
 }

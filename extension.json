@@ -1,7 +1,7 @@
 {
 	"name": "PageOwnership",
 	"author": "thomas-topway-it",
-	"version": "1.2.2",
+	"version": "1.2.3",
 	"url": "https://www.mediawiki.org/wiki/Extension:PageOwnership",
 	"descriptionmsg": "pageownership-extension-desc",
 	"license-name": "GPL-2.0-or-later",
@@ -49,7 +49,8 @@
 		"SkinTemplateNavigation::Universal": "PageOwnershipHooks::onSkinTemplateNavigation",
 		"ParserFirstCallInit": "PageOwnershipHooks::onParserFirstCallInit",
 		"SkinBuildSidebar": "PageOwnershipHooks::onSkinBuildSidebar",
-		"TitleQuickPermissions": "PageOwnershipHooks::onTitleQuickPermissions"
+		"TitleQuickPermissions": "PageOwnershipHooks::onTitleQuickPermissions",
+		"SidebarBeforeOutput": "PageOwnershipHooks::onSidebarBeforeOutput"
 	},
 	"SpecialPages": {
 		"PageOwnershipPermissions": "SpecialPageOwnershipPermissions"
@@ -191,6 +192,9 @@
 		},
 		"PageOwnershipWhitelistSpecials": {
 			"value": [ "Search", "Userlogin", "CreateAccount", "Preferences", "ChangeEmail", "Confirmemail" ]
+		},
+		"PageOwnershipDisableSidebarLink": {
+			"value": false
 		}
 	},
 	"manifest_version": 2

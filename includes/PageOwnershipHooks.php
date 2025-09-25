@@ -56,7 +56,7 @@ class PageOwnershipHooks {
 	}
 
 	/**
-	 * @param Title|Mediawiki\Title\Title &$title
+	 * @param Title|MediaWiki\Title\Title &$title
 	 * @param null $unused
 	 * @param OutputPage $output
 	 * @param User $user
@@ -89,7 +89,7 @@ class PageOwnershipHooks {
 	}
 
 	/**
-	 * @param Title|Mediawiki\Title\Title $title
+	 * @param Title|MediaWiki\Title\Title $title
 	 * @param User $user
 	 * @param string $action
 	 * @param array &$errors
@@ -107,7 +107,7 @@ class PageOwnershipHooks {
 	}
 
 	/**
-	 * @param Title|Mediawiki\Title\Title $title
+	 * @param Title|MediaWiki\Title\Title $title
 	 * @param User $user
 	 * @param bool &$whitelisted
 	 */
@@ -291,7 +291,7 @@ class PageOwnershipHooks {
 	 * *** Mediawiki < 1.37
 	 * @see SemanticACL/SemanticACL.class.php
 	 * @param Parser|bool $parser
-	 * @param Title|Mediawiki\Title\Title $title
+	 * @param Title|MediaWiki\Title\Title $title
 	 * @param Revision $rev
 	 * @param string|bool|null &$text
 	 * @param array &$deps
@@ -524,12 +524,34 @@ class PageOwnershipHooks {
 				continue;
 			}
 
-			$bar[ wfMessage( 'pageownership-sidebar-section' )->text() ][] = [
+			$bar[ wfMessage( 'pageownership-sidebar-section-user' )->text() ][] = [
 				// @TODO add "reader"
 				// . ( $page['role'] === 'reader' ? ' (' . wfMessage( 'pageownership-sidebar-role-reader' )->text() . ')' : '' ),
 				'text'   => $title->getText(),
 				'href'   => $title->getLocalURL()
 			];
 		}
+	}
+
+	/**
+	 * @param Skin $skin
+	 * @param array &$sidebar
+	 * @return void
+	 */
+	public static function onSidebarBeforeOutput( $skin, &$sidebar ) {
+		if ( !empty( $GLOBALS['wgPageOwnershipDisableSidebarLink'] ) ) {
+			return;
+		}
+
+		$user = $skin->getUser();
+		if ( !$user->isAllowed( 'pageownership-canmanagepermissions' ) ) {
+			return;
+		}
+
+		$specialpage_title = SpecialPage::getTitleFor( 'PageOwnershipPermissions' );
+		$sidebar['pageownership-sidebar-section'][] = [
+			'text'   => wfMessage( 'pageownership-manage-permissions-sidebar' )->text(),
+			'href'   => $specialpage_title->getLocalURL()
+		];
 	}
 }
