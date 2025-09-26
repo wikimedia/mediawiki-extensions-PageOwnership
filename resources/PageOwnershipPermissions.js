@@ -136,11 +136,11 @@ $( () => {
 
 		var options = [];
 		for ( var i in actions ) {
-			if ( action === 'add' && selected.indexOf( i ) !== -1 ) {
+			if ( action === 'add' && selected.includes( i ) ) {
 				continue;
 			}
 
-			if ( action === 'remove' && selected.indexOf( i ) === -1 ) {
+			if ( action === 'remove' && !selected.includes( i ) ) {
 				continue;
 			}
 
@@ -168,7 +168,7 @@ $( () => {
 							messages[ actions[ i ][ ii ] ] :
 							actions[ i ][ ii ],
 						// mw.msg( 'right-' + actions[i][ii] ),
-						selected: selectedItems.indexOf( actions[ i ][ ii ] ) !== -1
+						selected: selectedItems.includes( actions[ i ][ ii ] )
 					} )
 				);
 			}

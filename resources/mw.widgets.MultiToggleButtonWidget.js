@@ -48,7 +48,7 @@
 				this.items[ i ] = new OO.ui.ToggleButtonWidget( {
 					data: i,
 					label: this.options[ i ],
-					value: config.selected.indexOf( i ) !== -1
+					value: config.selected.includes( i )
 				} );
 
 				this.items[ i ].on( 'change', () => {

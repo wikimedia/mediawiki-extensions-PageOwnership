@@ -59,7 +59,7 @@ $( () => {
 	function updateCheckboxes( val ) {
 
 		for ( var i in permissions[ val ] ) {
-			$( '#pageownership_form_input_permissions_' + i + ' input' ).prop( 'checked', ( val === default_role && default_permissions.indexOf( i.replace( '_', ' ' ) ) > -1 ? true : permissions[ val ][ i ].checked ) );
+			$( '#pageownership_form_input_permissions_' + i + ' input' ).prop( 'checked', ( val === default_role && default_permissions.includes( i.replace( '_', ' ' ) ) ? true : permissions[ val ][ i ].checked ) );
 			$( '#pageownership_form_input_permissions_' + i + ' input' ).prop( 'disabled', permissions[ val ][ i ].disabled );
 		}
 

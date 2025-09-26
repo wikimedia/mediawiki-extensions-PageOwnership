@@ -204,7 +204,7 @@ config.inputWidget = new OO.ui.TextInputWidget({
 								// Remove usernames, which are already selected from suggestions
 								suggestions = suggestions
 									.map( ( user ) => {
-										if ( selected.indexOf( user.name ) === -1 ) {
+										if ( !selected.includes( user.name ) ) {
 											return new OO.ui.MenuOptionWidget( {
 												data: user.name,
 												label: user.name,
