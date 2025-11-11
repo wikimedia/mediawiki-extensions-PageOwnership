@@ -138,9 +138,19 @@ class PageOwnershipHooks {
 			return true;
 		}
 
-		if ( $action === 'read' && is_array( $wgWhitelistRead )
-			&& in_array( $title->getFullText(), $wgWhitelistRead ) ) {
-			return true;
+		if ( $action === 'read' && is_array( $wgWhitelistRead ) ) {
+			if ( in_array( $title->getFullText(), $wgWhitelistRead ) ) {
+				return true;
+			}
+
+			if ( $title->getNamespace() === NS_SPECIAL ) {
+				[ $text_ ] = explode( '/', $title->getFullText(), 2 );
+				foreach ( $wgWhitelistRead as $value ) {
+					if ( $value === $text_ ) {
+						return true;
+					}
+				}
+			}
 		}
 
 		// @see MediaWiki\Permissions\PermissionManager -> getAllPermissions
