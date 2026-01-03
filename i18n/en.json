@@ -45,10 +45,10 @@
 	"group-pageownership-editor": "Page Ownership editor",
 	"group-pageownership-article-author": "Article creator (Page Ownership)",
 
-	"right-pageownership-include-subpages": "Includes subpages (Page Ownership)",
+	"right-pageownership-include-subpages": "Include subpages (Page Ownership)",
 
-	"right-pageownership-canmanagepermissions": "Can manage permissions (Page Ownership)",
-	"right-pageownership-caneditpermissions": "Can edit permissions (Page Ownership)",
+	"right-pageownership-canmanagepermissions": "Manage permissions (Page Ownership)",
+	"right-pageownership-caneditpermissions": "Edit permissions (Page Ownership)",
 
 	"action-pageownership-include-subpages": "include subpages (Page Ownership)",
 	"action-pageownership-canmanagepermissions": "manage permissions (Page Ownership)",
