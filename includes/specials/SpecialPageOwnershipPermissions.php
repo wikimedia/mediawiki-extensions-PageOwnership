@@ -22,13 +22,6 @@
  * @copyright Copyright ©2021-2023, https://wikisphere.org
  */
 
-require_once __DIR__ . '/PageOwnershipPermissionsPager.php';
-require_once __DIR__ . '/SpecialPageOwnershipForm.php';
-
-include_once __DIR__ . '/Widgets/HTMLGroupsUsersMultiselectField.php';
-include_once __DIR__ . '/Widgets/HTMLMenuTagMultiselectField.php';
-include_once __DIR__ . '/Widgets/HTMLMultiToggleButtonField.php';
-
 use MediaWiki\Extension\PageOwnership\Aliases\Title as TitleClass;
 use MediaWiki\MediaWikiServices;
 use MediaWiki\Parser\ParserOptions;

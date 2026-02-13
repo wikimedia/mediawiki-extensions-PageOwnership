@@ -1,7 +1,5 @@
 <?php
 
-include_once __DIR__ . '/PageOwnershipTagMultiselectWidget.php';
-
 /**
  * This file is part of the MediaWiki extension PageOwnership.
  *

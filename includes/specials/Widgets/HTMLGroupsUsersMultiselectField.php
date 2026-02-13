@@ -1,7 +1,5 @@
 <?php
 
-include_once __DIR__ . '/GroupsUsersMultiselectWidget.php';
-
 use MediaWiki\MediaWikiServices;
 use Wikimedia\IPUtils;
 

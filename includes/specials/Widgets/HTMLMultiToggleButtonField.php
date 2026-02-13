@@ -1,7 +1,5 @@
 <?php
 
-include_once __DIR__ . '/MultiToggleButtonWidget.php';
-
 class HTMLMultiToggleButtonField extends HTMLTextField {
 
 	/** @inheritDoc */

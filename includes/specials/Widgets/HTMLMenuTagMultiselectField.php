@@ -1,7 +1,5 @@
 <?php
 
-include_once __DIR__ . '/MenuTagMultiselectWidget.php';
-
 /**
  * Implements a tag multiselect input field for arbitrary values.
  *
