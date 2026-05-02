@@ -145,8 +145,7 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 	 * @inheritDoc
 	 */
 	public function __construct() {
-		$listed = true;
-		parent::__construct( 'PageOwnershipPermissions', '', $listed );
+		parent::__construct( 'PageOwnershipPermissions' );
 	}
 
 	/**
