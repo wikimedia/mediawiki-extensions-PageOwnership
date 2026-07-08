@@ -1,6 +1,7 @@
 <?php
 
 use MediaWiki\MediaWikiServices;
+use Wikimedia\ArrayUtils\ArrayUtils;
 use Wikimedia\IPUtils;
 
 class HTMLGroupsUsersMultiselectField extends HTMLUsersMultiselectField {
@@ -15,16 +16,30 @@ class HTMLGroupsUsersMultiselectField extends HTMLUsersMultiselectField {
 	 * @inheritDoc
 	 */
 	public function __construct( $params ) {
-		$params = wfArrayPlus2d( $params, [
-				'exists' => false,
-				'ipallowed' => false,
-				'iprange' => false,
-				'iprangelimits' => [
-					'IPv4' => 0,
-					'IPv6' => 0,
-				],
-			]
-		);
+		if ( method_exists( ArrayUtils::class, 'arrayPlus2d' ) ) {
+			// MW 1.46+
+			$params = ArrayUtils::arrayPlus2d( $params, [
+					'exists' => false,
+					'ipallowed' => false,
+					'iprange' => false,
+					'iprangelimits' => [
+						'IPv4' => 0,
+						'IPv6' => 0,
+					],
+				]
+			);
+		} else {
+			$params = wfArrayPlus2d( $params, [
+					'exists' => false,
+					'ipallowed' => false,
+					'iprange' => false,
+					'iprangelimits' => [
+						'IPv4' => 0,
+						'IPv6' => 0,
+					],
+				]
+			);
+		}
 
 		$this->groups = $this->groupsList();
 		$this->userFactory = MediaWikiServices::getInstance()->getUserFactory();
