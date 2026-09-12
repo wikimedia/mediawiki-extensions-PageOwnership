@@ -48,7 +48,6 @@
 		"RejectParserCacheValue": "PageOwnershipHooks::onRejectParserCacheValue",
 		"ParserOptionsRegister": "PageOwnershipHooks::onParserOptionsRegister",
 		"BeforeParserFetchTemplateRevisionRecord": "PageOwnershipHooks::onBeforeParserFetchTemplateRevisionRecord",
-		"ParserFetchTemplate_": "PageOwnershipHooks::onParserFetchTemplate",
 		"SMW::Store::AfterQueryResultLookupComplete": "PageOwnershipHooks::onSMWStoreAfterQueryResultLookupComplete",
 		"LoadExtensionSchemaUpdates": "PageOwnershipHooks::onLoadExtensionSchemaUpdates",
 		"BeforePageDisplay": "PageOwnershipHooks::onBeforePageDisplay",

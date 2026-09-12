@@ -250,7 +250,6 @@ class PageOwnershipHooks {
 	}
 
 	/**
-	 * *** Mediawiki >= 1.37
 	 * @param Title|Mediawiki\Title\Title $contextTitle
 	 * @param Title|Mediawiki\Title\Title $title
 	 * @param bool &$skip
@@ -261,10 +260,6 @@ class PageOwnershipHooks {
 		// @Attention!! this hook is called from Parser -> fetchTemplateAndTitle
 		// -> statelessFetchTemplate and LuaEngine -> expandTemplate will fail
 		// when returning false !!
-
-		// if ( interface_exists('\\MediaWiki\\Hook\\ParserFetchTemplateHook') ) {
-		// 	return;
-		// }
 
 		// ignore on maintenance scripts
 		if ( defined( 'MW_ENTRY_POINT' ) && MW_ENTRY_POINT === 'cli' ) {
@@ -295,39 +290,6 @@ class PageOwnershipHooks {
 		// \PageOwnership::disableCaching();
 
 		$skip = true;
-		return false;
-	}
-
-	/**
-	 * *** Mediawiki < 1.37
-	 * @see SemanticACL/SemanticACL.class.php
-	 * @param Parser|bool $parser
-	 * @param Title|MediaWiki\Title\Title $title
-	 * @param Revision $rev
-	 * @param string|bool|null &$text
-	 * @param array &$deps
-	 * @return bool|void
-	 */
-	public static function onParserFetchTemplate( $parser, $title, $rev, &$text, &$deps ) {
-		$user = $parser->getUserIdentity() ?? \PageOwnership::getUser();
-
-		$isAuthorized = \PageOwnership::isAuthorized( $user );
-
-		if ( $isAuthorized ) {
-			return true;
-		}
-
-		if ( \PageOwnership::checkPermissions( $title, $user ) !== false ) {
-			return true;
-		}
-
-		// \PageOwnership::disableCaching( $parser );
-
-		// Display error text instead of template.
-		$msgKey = 'pageownership-denied-transclusion-' . ( $user->isAnon() ? 'anonymous' : 'registered' );
-
-		$text = wfMessage( $msgKey )->plain();
-
 		return false;
 	}
 
