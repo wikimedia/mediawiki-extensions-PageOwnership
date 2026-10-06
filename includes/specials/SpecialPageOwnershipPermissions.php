@@ -359,7 +359,7 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 
 		$htmlForm->setMethod( 'post' );
 
-		$htmlForm->setSubmitCallback( [ $this, 'onSubmit' ] );
+		$htmlForm->setSubmitCallback( $this->onSubmit( ... ) );
 
 		$htmlForm->showCancel();
 
@@ -678,7 +678,7 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 	 * @param HTMLForm $htmlForm
 	 * @return bool
 	 */
-	public function onSubmit( $data, $htmlForm ) {
+	private function onSubmit( $data, $htmlForm ) {
 		$request = $this->getRequest();
 
 		$id = $request->getVal( 'edit' );
