@@ -22,9 +22,11 @@
  * @copyright Copyright ©2021-2023, https://wikisphere.org
  */
 
-use MediaWiki\Extension\PageOwnership\Aliases\Title as TitleClass;
 use MediaWiki\MediaWikiServices;
+use MediaWiki\Revision\RevisionRecord;
+use MediaWiki\Storage\EditResult;
 use MediaWiki\Title\Title;
+use MediaWiki\User\UserIdentity;
 
 class PageOwnershipHooks {
 
@@ -57,7 +59,7 @@ class PageOwnershipHooks {
 	}
 
 	/**
-	 * @param Title|MediaWiki\Title\Title &$title
+	 * @param Title &$title
 	 * @param null $unused
 	 * @param OutputPage $output
 	 * @param User $user
@@ -90,7 +92,7 @@ class PageOwnershipHooks {
 	}
 
 	/**
-	 * @param Title|MediaWiki\Title\Title $title
+	 * @param Title $title
 	 * @param User $user
 	 * @param string $action
 	 * @param array &$errors
@@ -108,7 +110,7 @@ class PageOwnershipHooks {
 	}
 
 	/**
-	 * @param Title|MediaWiki\Title\Title $title
+	 * @param Title $title
 	 * @param User $user
 	 * @param bool &$whitelisted
 	 */
@@ -124,7 +126,7 @@ class PageOwnershipHooks {
 	}
 
 	/**
-	 * @param Title|Mediawiki\Title\Title $title
+	 * @param Title $title
 	 * @param User $user
 	 * @param string $action
 	 * @param array|string|MessageSpecifier &$result User
@@ -192,14 +194,14 @@ class PageOwnershipHooks {
 
 	/**
 	 * @param WikiPage $wikiPage
-	 * @param MediaWiki\User\UserIdentity $user
+	 * @param UserIdentity $user
 	 * @param string $summary
 	 * @param int $flags
-	 * @param MediaWiki\Revision\RevisionRecord $revisionRecord
-	 * @param MediaWiki\Storage\EditResult $editResult
+	 * @param RevisionRecord $revisionRecord
+	 * @param EditResult $editResult
 	 * @return bool|void
 	 */
-	public static function onPageSaveComplete( WikiPage $wikiPage, MediaWiki\User\UserIdentity $user, string $summary, int $flags, MediaWiki\Revision\RevisionRecord $revisionRecord, MediaWiki\Storage\EditResult $editResult ) {
+	public static function onPageSaveComplete( WikiPage $wikiPage, UserIdentity $user, string $summary, int $flags, RevisionRecord $revisionRecord, EditResult $editResult ) {
 	}
 
 	/**
@@ -250,8 +252,8 @@ class PageOwnershipHooks {
 	}
 
 	/**
-	 * @param Title|Mediawiki\Title\Title $contextTitle
-	 * @param Title|Mediawiki\Title\Title $title
+	 * @param Title $contextTitle
+	 * @param Title $title
 	 * @param bool &$skip
 	 * @param RevisionRecord &$revRecord
 	 * @return bool
@@ -491,7 +493,7 @@ class PageOwnershipHooks {
 		$pages = \PageOwnership::getUserPagesDB( $user );
 
 		foreach ( $pages as $page ) {
-			$title = TitleClass::newFromID( $page );
+			$title = Title::newFromID( $page );
 
 			if ( !$title ) {
 				continue;

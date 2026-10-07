@@ -22,7 +22,6 @@
  * @copyright Copyright ©2021-2023, https://wikisphere.org
  */
 
-use MediaWiki\Extension\PageOwnership\Aliases\Title as TitleClass;
 use MediaWiki\MediaWikiServices;
 use MediaWiki\Parser\ParserOptions;
 use MediaWiki\Title\Title;
@@ -35,16 +34,16 @@ use Wikimedia\IPUtils;
  */
 class SpecialPageOwnershipPermissions extends SpecialPage {
 
-	/** @var Title|MediaWiki\Title\Title */
+	/** @var Title */
 	public $title;
 
-	/** @var Title|MediaWiki\Title\Title */
+	/** @var Title */
 	public $localTitle;
 
 	/** @var User */
 	private $user;
 
-	/** @var Request */
+	/** @var WebRequest */
 	private $request;
 
 	/** @var int */
@@ -157,7 +156,7 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 		$this->setHeaders();
 		$this->outputHeader();
 
-		$title = TitleClass::newFromText( $par );
+		$title = Title::newFromText( $par );
 
 		if ( $title ) {
 			if ( !$title->canExist() || !$title->isKnown()
@@ -461,7 +460,7 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 
 	/**
 	 * @param array $row
-	 * @param Output $out
+	 * @param OutputPage $out
 	 * @return array
 	 */
 	protected function getFormDescriptor( $row, $out ) {
@@ -584,7 +583,7 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 	}
 
 	/**
-	 * @param Output $out
+	 * @param OutputPage $out
 	 */
 	private function addJsConfigVars( $out ) {
 		$context = $this->getContext();
@@ -717,7 +716,7 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 		}
 
 		foreach ( $row['pages'] as $value ) {
-			$title_ = TitleClass::newFromText( $value );
+			$title_ = Title::newFromText( $value );
 			if ( $title_ && $title_->isKnown() ) {
 				\PageOwnership::invalidateCacheOfPagesWithAskQueriesRelatedToTitle( $title_ );
 				\PageOwnership::invalidateCacheOfPagesWithTemplateLinksTo( $title_ );
@@ -757,7 +756,7 @@ class SpecialPageOwnershipPermissions extends SpecialPage {
 	}
 
 	/**
-	 * @param Request $request
+	 * @param WebRequest $request
 	 * @return string
 	 */
 	protected function showOptions( $request ) {

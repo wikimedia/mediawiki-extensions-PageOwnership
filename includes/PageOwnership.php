@@ -22,9 +22,9 @@
  * @copyright Copyright ©2021-2025, https://wikisphere.org
  */
 
-use MediaWiki\Extension\PageOwnership\Aliases\Title as TitleClass;
 use MediaWiki\MediaWikiServices;
 use MediaWiki\Title\Title;
+use MediaWiki\User\UserGroupManager;
 
 class PageOwnership {
 	/** @var array */
@@ -162,17 +162,17 @@ class PageOwnership {
 	 * @return User|null
 	 */
 	public static function getUser() {
-		if ( self::$User instanceof MediaWiki\User ) {
+		if ( self::$User instanceof User ) {
 			return self::$User;
 		}
 		return RequestContext::getMain()->getUser();
 	}
 
 	/**
-	 * @return MediaWiki\User\UserGroupManager|null
+	 * @return UserGroupManager|null
 	 */
 	public static function getUserGroupManager() {
-		if ( self::$userGroupManager instanceof MediaWiki\User\UserGroupManager ) {
+		if ( self::$userGroupManager instanceof UserGroupManager ) {
 			return self::$userGroupManager;
 		}
 		return MediaWikiServices::getInstance()->getUserGroupManager();
@@ -246,7 +246,7 @@ class PageOwnership {
 	}
 
 	/**
-	 * @param \User $user
+	 * @param User $user
 	 * @param array|string $usernames
 	 * @param array|string $permissionsByType
 	 * @param array|string $additionalRights
@@ -319,7 +319,7 @@ class PageOwnership {
 		}
 
 		foreach ( $pageIDs as $value ) {
-			$title_ = TitleClass::newFromID( $value );
+			$title_ = Title::newFromID( $value );
 			if ( $title_ && $title_->isKnown() ) {
 				self::invalidateCacheOfPagesWithAskQueriesRelatedToTitle( $title_ );
 				self::invalidateCacheOfPagesWithTemplateLinksTo( $title_ );
@@ -331,7 +331,7 @@ class PageOwnership {
 
 	/**
 	 * *** invalidate cache of all pages in which this page has been transcluded
-	 * @param Title|MediaWiki\Title\Title $title
+	 * @param Title $title
 	 * @return void
 	 */
 	public static function invalidateCacheOfPagesWithTemplateLinksTo( $title ) {
@@ -348,7 +348,7 @@ class PageOwnership {
 	}
 
 	/**
-	 * @param Title|MediaWiki\Title\Title $title
+	 * @param Title $title
 	 * @return void
 	 */
 	public static function invalidateCacheOfPagesWithAskQueriesRelatedToTitle( $title ) {
@@ -401,7 +401,7 @@ class PageOwnership {
 	}
 
 	/**
-	 * @param Title|MediaWiki\Title\Title $title
+	 * @param Title $title
 	 * @return null|bool
 	 */
 	public static function doPurge( $title ) {
@@ -496,10 +496,10 @@ class PageOwnership {
 			// $titleIdentifier = self::titleIdentifier( $title_ );
 			$pages = explode( ',', $row['pages'] );
 			foreach ( $pages as $pageID ) {
-				$title_ = TitleClass::newFromID( $pageID );
+				$title_ = Title::newFromID( $pageID );
 				// legacy identifier, remove in future versions
 				if ( !$title_ ) {
-					$title_ = TitleClass::newFromText( $pageID );
+					$title_ = Title::newFromText( $pageID );
 				}
 				if ( self::isAuthor( $title_, $user ) ) {
 					$output[] = $title_->getArticleID();
@@ -559,7 +559,7 @@ class PageOwnership {
 
 		$ret = [];
 		foreach ( $res as $row ) {
-			$title = TitleClass::newFromRow( $row );
+			$title = Title::newFromRow( $row );
 
 			if ( $title->isKnown() ) {
 				$ret[] = $title;
@@ -601,13 +601,13 @@ class PageOwnership {
 		return array_filter( array_map( static function ( $value ) {
 			// article
 			if ( is_numeric( $value ) ) {
-				$title = TitleClass::newFromID( $value );
+				$title = Title::newFromID( $value );
 				if ( $title ) {
 					return $title->getFullText();
 				}
 			// special pages
 			} else {
-				$title = TitleClass::newFromText( $value );
+				$title = Title::newFromText( $value );
 				if ( $title ) {
 					return $title->getFullText();
 				}
@@ -618,7 +618,7 @@ class PageOwnership {
 	}
 
 	/**
-	 * @param Title|MediaWiki\Title\Title $title
+	 * @param Title $title
 	 * @return int|string
 	 */
 	public static function titleIdentifier( $title ) {
@@ -637,7 +637,7 @@ class PageOwnership {
 	 */
 	public static function titleTextsToIDs( $arr ) {
 		return array_filter( array_map( static function ( $value ) {
-					$title = TitleClass::newFromText( $value );
+					$title = Title::newFromText( $value );
 					return self::titleIdentifier( $title );
 		}, $arr ), static function ( $value ) {
 			return !empty( $value );
@@ -664,7 +664,7 @@ class PageOwnership {
 
 	/**
 	 * @see PageOwnershipHooks -> onRejectParserCacheValue
-	 * @param Title|MediaWiki\Title\Title $title
+	 * @param Title $title
 	 * @return bool
 	 */
 	public static function permissionsExist( $title ) {
@@ -722,7 +722,7 @@ class PageOwnership {
 	}
 
 	/**
-	 * @param Title|MediaWiki\Title\Title &$title
+	 * @param Title &$title
 	 * @param User $user
 	 * @param string|null $action
 	 * @return bool|null
@@ -733,7 +733,7 @@ class PageOwnership {
 			$prefixedText = $title->getPrefixedText();
 			$pos = strpos( $prefixedText, '/' );
 			if ( $pos !== false ) {
-				$title = TitleClass::newFromText( substr( $prefixedText, 0, $pos ) );
+				$title = Title::newFromText( substr( $prefixedText, 0, $pos ) );
 			}
 		}
 
@@ -906,7 +906,7 @@ class PageOwnership {
 
 	/**
 	 * *** credits https://gerrit.wikimedia.org/r/plugins/gitiles/mediawiki/extensions/LockAuthor/+/refs/heads/master/includes/LockAuthor.php
-	 * @param Title|MediaWiki\Title\Title $title
+	 * @param Title $title
 	 * @param User $user
 	 * @return bool
 	 */
@@ -1029,7 +1029,7 @@ class PageOwnership {
 	}
 
 	/**
-	 * @param Title|MediaWiki\Title\Title $title
+	 * @param Title $title
 	 * @param bool $exclude_current
 	 * @return array
 	 */
@@ -1051,7 +1051,7 @@ class PageOwnership {
 				$output[] = $title;
 
 			} else {
-				$title_ = TitleClass::newFromText( $title_text );
+				$title_ = Title::newFromText( $title_text );
 				if ( $title_ && $title_->isKnown() ) {
 					$output[] = $title_;
 				}
@@ -1062,7 +1062,7 @@ class PageOwnership {
 	}
 
 	/**
-	 * @param Title|MediaWiki\Title\Title $title
+	 * @param Title $title
 	 * @return void
 	 */
 	public static function getWikiPage( $title ) {

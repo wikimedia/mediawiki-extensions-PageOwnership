@@ -31,9 +31,6 @@
 		"PageOwnershipApiSetPermissions": "includes/api/PageOwnershipApiSetPermissions.php",
 		"PageOwnershipApiGetPermissions": "includes/api/PageOwnershipApiGetPermissions.php"
 	},
-	"AutoloadNamespaces": {
-		"MediaWiki\\Extension\\PageOwnership\\Aliases\\": "includes/aliases/"
-	},
 	"ExtensionMessagesFiles": {
 		"PageOwnershipAlias": "PageOwnership.alias.php",
 		"PageOwnershipMagic": "PageOwnershipMagic.i18n.magic.php"

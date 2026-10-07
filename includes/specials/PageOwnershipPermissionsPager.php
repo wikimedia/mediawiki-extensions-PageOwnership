@@ -22,25 +22,24 @@
  * @copyright Copyright ©2021-2025, https://wikisphere.org
  */
 
-use MediaWiki\Extension\PageOwnership\Aliases\Linker as LinkerClass;
-use MediaWiki\Extension\PageOwnership\Aliases\Title as TitleClass;
+use MediaWiki\Linker\Linker;
 use MediaWiki\Linker\LinkRenderer;
 use MediaWiki\Title\Title;
 
 class PageOwnershipPermissionsPager extends TablePager {
 
-	/** @var Title|MediaWiki\Title\Title */
+	/** @var Title */
 	private $title;
 
-	/** @var Request */
+	/** @var WebRequest */
 	private $request;
 
 	/** @var SpecialPageOwnershipPermissions */
 	private $parentClass;
 
 	/**
-	 * @param SpecialPageOwnership $parentClass
-	 * @param Request $request
+	 * @param SpecialPageOwnershipPermissions $parentClass
+	 * @param WebRequest $request
 	 * @param LinkRenderer $linkRenderer
 	 */
 	public function __construct( $parentClass, $request, LinkRenderer $linkRenderer ) {
@@ -153,7 +152,7 @@ class PageOwnershipPermissionsPager extends TablePager {
 				$link = '<span class="mw-ui-button mw-ui-progressive">edit</span>';
 				$title = SpecialPage::getTitleFor( 'PageOwnershipPermissions', $this->title );
 				$query = [ 'edit' => $row->id ];
-				$formatted = LinkerClass::link( $title, $link, [], $query );
+				$formatted = Linker::link( $title, $link, [], $query );
 				break;
 
 			default:
@@ -183,7 +182,7 @@ class PageOwnershipPermissionsPager extends TablePager {
 
 		// phpcs:ignore Generic.CodeAnalysis.AssignmentInCondition.Found
 		if ( $res && $row = $res->fetchObject() ) {
-			$title = TitleClass::makeTitleSafe( $row->ar_namespace, $row->ar_title );
+			$title = Title::makeTitleSafe( $row->ar_namespace, $row->ar_title );
 			return $title->getFullText();
 		}
 
@@ -220,7 +219,7 @@ class PageOwnershipPermissionsPager extends TablePager {
 			}
 			$seen[$pageid] = true;
 
-			$title = TitleClass::makeTitleSafe( $row->ar_namespace, $row->ar_title );
+			$title = Title::makeTitleSafe( $row->ar_namespace, $row->ar_title );
 			$ret[$pageid] = $title ? $title->getFullText() : null;
 		}
 
@@ -240,18 +239,18 @@ class PageOwnershipPermissionsPager extends TablePager {
 				continue;
 			}
 			if ( is_numeric( $value ) ) {
-				$title = TitleClass::newFromID( $value );
+				$title = Title::newFromID( $value );
 				if ( $title ) {
-					$ret[] = LinkerClass::link( $title, $title->getFullText() );
+					$ret[] = Linker::link( $title, $title->getFullText() );
 				} else {
 					$missingPageIDs[] = $value;
 				}
 
 			// special pages
 			} else {
-				$title = TitleClass::newFromText( $value );
+				$title = Title::newFromText( $value );
 				if ( $title ) {
-					$ret[] = LinkerClass::link( $title, $title->getFullText() );
+					$ret[] = Linker::link( $title, $title->getFullText() );
 				} else {
 					$ret[] = wfMessage( 'pageownership-managepermissions-pager-invalid-title', $value )->text();
 				}
@@ -282,9 +281,9 @@ class PageOwnershipPermissionsPager extends TablePager {
 		return array_filter( array_map( static function ( $value ) {
 			// article
 			if ( is_numeric( $value ) ) {
-				$title = TitleClass::newFromID( $value );
+				$title = Title::newFromID( $value );
 				if ( $title ) {
-					return LinkerClass::link( $title, $title->getFullText() );
+					return Linker::link( $title, $title->getFullText() );
 
 				} else {
 					$ret_ = wfMessage( 'pageownership-managepermissions-pager-pageid-not-found', $value )->text();
@@ -298,9 +297,9 @@ class PageOwnershipPermissionsPager extends TablePager {
 				}
 			// special pages
 			} else {
-				$title = TitleClass::newFromText( $value );
+				$title = Title::newFromText( $value );
 				if ( $title ) {
-					return LinkerClass::link( $title, $title->getFullText() );
+					return Linker::link( $title, $title->getFullText() );
 				} else {
 					return wfMessage( 'pageownership-managepermissions-pager-invalid-title', $value )->text();
 				}
